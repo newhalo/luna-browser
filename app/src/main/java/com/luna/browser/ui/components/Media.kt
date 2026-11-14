@@ -22,6 +22,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.FilterQuality
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.RadialGradientShader
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.delay
@@ -70,9 +77,22 @@ fun Art(model: Any?, modifier: Modifier = Modifier, scale: ContentScale = Conten
     )
 }
 
+/** One drifting light: centre and radius in dp on the 960×540 dp canvas, drift (dx, dy) over a sweep. */
+private class Light(val color: Color, val x: Float, val y: Float, val r: Float, val dx: Float, val dy: Float)
+
+private val lights = listOf(
+    Light(Color(0xCC4F63E8), 210f, 110f, 390f, 260f, 140f),
+    Light(Color(0xCC9B3DB5), 880f, 380f, 320f, -200f, 120f),
+    Light(Color(0xCC1A93A6), 410f, 590f, 290f, 300f, -180f),
+)
+
 /**
- * Slow drifting colour light behind every screen. Only layer transforms animate,
- * so it costs almost nothing on TV GPUs. Static when reduced motion is on.
+ * Slow drifting colour light behind every screen.
+ *
+ * Measured on the MiTV: drawing the lights as three full-screen radial-gradient layers cost the
+ * GPU 33–50 ms per frame. Soft gradients survive heavy upscaling, so they are painted by the CPU
+ * into a 160×90 bitmap (~15 times a second) and the GPU only stretches one small texture.
+ * Static when reduced motion or the setting is off.
  */
 @Composable
 fun Aurora(modifier: Modifier = Modifier, animated: Boolean = true) {
@@ -90,25 +110,27 @@ fun Aurora(modifier: Modifier = Modifier, animated: Boolean = true) {
             }
         }
     }
-    Box(modifier.fillMaxSize().background(Bg)) {
-        Blob(Color(0xFF4F63E8), 780.dp, -180.dp, -280.dp, 260.dp, 140.dp, t)
-        Blob(Color(0xFF9B3DB5), 640.dp, 560.dp, 60.dp, -200.dp, 120.dp, t)
-        Blob(Color(0xFF1A93A6), 580.dp, 120.dp, 300.dp, 300.dp, -180.dp, t)
-    }
-}
-
-@Composable
-private fun Blob(color: Color, size: Dp, x: Dp, y: Dp, dx: Dp, dy: Dp, t: State<Float>) {
-    val d = LocalDensity.current.density
-    Box(
-        Modifier
-            .size(size)
-            .graphicsLayer {
-                translationX = (x.value + dx.value * t.value) * d
-                translationY = (y.value + dy.value * t.value) * d
-                alpha = 0.8f
+    val bitmap = remember { ImageBitmap(160, 90) }
+    val canvas = remember { androidx.compose.ui.graphics.Canvas(bitmap) }
+    val paint = remember { Paint() }
+    Spacer(
+        modifier.fillMaxSize().drawBehind {
+            val k = 160f / 960f // dp on the 960-dp canvas -> bitmap pixels
+            val p = t.floatValue // read in the draw phase: only this layer redraws
+            paint.shader = null
+            paint.color = Bg
+            canvas.drawRect(0f, 0f, 160f, 90f, paint)
+            lights.forEach { l ->
+                val c = Offset((l.x + l.dx * (p - 0.5f)) * k, (l.y + l.dy * (p - 0.5f)) * k)
+                paint.shader = RadialGradientShader(c, l.r * k, listOf(l.color, Color.Transparent))
+                canvas.drawCircle(c, l.r * k, paint)
             }
-            .background(Brush.radialGradient(listOf(color, Color.Transparent))),
+            drawImage(
+                bitmap,
+                dstSize = IntSize(size.width.toInt(), size.height.toInt()),
+                filterQuality = FilterQuality.Low, // bilinear: smooth when stretched
+            )
+        },
     )
 }
 
