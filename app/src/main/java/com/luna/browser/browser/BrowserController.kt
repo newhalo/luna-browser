@@ -145,7 +145,8 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         }
         CookieManager.getInstance().setAcceptCookie(true)
         webView.apply {
-            setBackgroundColor(Color.parseColor("#0B0D12"))
+            // Pages assume a white canvas; a dark one makes dark text unreadable (seen on 24h.com.vn).
+            setBackgroundColor(Color.WHITE)
             isFocusable = true
             isFocusableInTouchMode = true
             isVerticalScrollBarEnabled = false

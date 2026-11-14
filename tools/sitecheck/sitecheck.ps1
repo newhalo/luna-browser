@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
   Opens each site from sites.txt in Luna on the TV and reports how well ads and pop-ups are handled.
 
