@@ -399,6 +399,8 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             video = null
             showControls()
             startPolling()
+            // Going fullscreen means "watch": some players pause on the tap that opened fullscreen.
+            handler.postDelayed({ if (customView != null) togglePlay(true) }, 600)
         }
 
         override fun onHideCustomView() {
