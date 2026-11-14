@@ -205,8 +205,8 @@ private fun Toolbar(app: AppState, b: BrowserController) {
                     }
                 }
                 val fav = app.store.isFavorite(b.url)
-                IconLabelButton(stringResource(R.string.if (fav) R.string.tb_saved else R.string.tb_save), if (fav) Icons.Rounded.Star else Icons.Rounded.StarBorder, { b.toggleFavorite() }, highlighted = fav)
-                IconLabelButton(stringResource(R.string.if (b.cursorMode) R.string.tb_mode_pointer else R.string.tb_mode_links), if (b.cursorMode) Icons.Rounded.Mouse else Icons.Rounded.TouchApp, { b.toggleMode() })
+                IconLabelButton(stringResource(if (fav) R.string.tb_saved else R.string.tb_save), if (fav) Icons.Rounded.Star else Icons.Rounded.StarBorder, { b.toggleFavorite() }, highlighted = fav)
+                IconLabelButton(stringResource(if (b.cursorMode) R.string.tb_mode_pointer else R.string.tb_mode_links), if (b.cursorMode) Icons.Rounded.Mouse else Icons.Rounded.TouchApp, { b.toggleMode() })
                 IconLabelButton(stringResource(R.string.tb_settings), Icons.Rounded.Settings, { app.navigate(Screen.Settings) })
             }
         }

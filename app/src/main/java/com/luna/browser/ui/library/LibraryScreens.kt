@@ -100,7 +100,7 @@ fun HistoryScreen(app: AppState) {
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Txt(stringResource(R.string.hist_title), T.display.copy(fontSize = 38.sp), Modifier.weight(1f))
             if (items.isNotEmpty()) {
-                TvButton(stringResource(R.string.if (confirm) R.string.hist_clear_confirm else R.string.hist_clear), {
+                TvButton(stringResource(if (confirm) R.string.hist_clear_confirm else R.string.hist_clear), {
                     if (confirm) { app.store.clearHistory(); confirm = false; app.toast(R.string.toast_history_cleared) } else confirm = true
                 }, icon = Icons.Rounded.Delete, container = Glass)
             }
