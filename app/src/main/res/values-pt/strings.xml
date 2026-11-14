@@ -171,7 +171,7 @@
     <string name="st_never">Ainda não atualizada</string>
     <string name="st_updated">Atualizada em %1$s</string>
     <string name="list_luna_n">Filtros do Luna</string>
-    <string name="list_luna_d">Regras próprias do Luna para sites de vídeo e pop-ups. Já vem com o app.</string>
+    <string name="list_luna_d">Regras próprias do Luna para sites de vídeo e pop-ups. Atualizadas diariamente a partir do repositório do projeto.</string>
     <string name="list_abpvn_n">ABPVN</string>
     <string name="list_abpvn_d">Lista de filtros de anúncios em vietnamita, mantida pela comunidade ABPVN.</string>
     <string name="list_abpvnh_n">ABPVN – domínios de anúncios</string>
@@ -237,4 +237,26 @@
     <string name="set_phone_qr">Digitalize com a câmara do telemóvel para abrir o comando já emparelhado.</string>
     <string name="ph_tab_remote">Comando</string>
     <string name="ph_tab_type">Escrever</string>
+    <string name="tb_site">Site</string>
+    <string name="site_sub">Estas definições aplicam-se só a este site</string>
+    <string name="site_desktop">Site para computador</string>
+    <string name="site_desktop_d">Mostra a versão completa para computador</string>
+    <string name="site_zoom">Tamanho do texto</string>
+    <string name="site_zoom_d">Aumenta ou diminui o texto da página</string>
+    <string name="site_adblock">Bloqueio de anúncios</string>
+    <string name="site_adblock_d">Desative aqui se a página não funcionar</string>
+    <string name="site_mode">Modo de controlo</string>
+    <string name="site_mode_d">Como o comando se move neste site</string>
+    <string name="site_default_v">Predefinição (%s)</string>
+    <string name="site_pointer">Ponteiro</string>
+    <string name="site_links">Ligações</string>
+    <string name="site_reset">Usar predefinições neste site</string>
+    <string name="site_reset_d">Esquece todas as alterações deste site</string>
+    <string name="toast_site_reset">Definições do site repostas</string>
+    <string name="site_hint">OK altera · Voltar fecha</string>
+    <string name="set_sites">Definições por site</string>
+    <string name="site_none">Nenhuma</string>
+    <string name="set_sites_reset">Repor definições dos sites</string>
+    <string name="set_sites_reset_d">Volta às predefinições em todos os sites</string>
+    <string name="toast_sites_reset">Definições de todos os sites repostas</string>
 </resources>

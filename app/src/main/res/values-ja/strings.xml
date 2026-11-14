@@ -167,7 +167,7 @@
     <string name="st_never">未更新</string>
     <string name="st_updated">%1$sに更新</string>
     <string name="list_luna_n">Lunaフィルター</string>
-    <string name="list_luna_d">動画サイトとポップアップ向けのLuna独自ルールです。アプリに同梱されています。</string>
+    <string name="list_luna_d">動画サイトやポップアップ向けのLuna独自ルール。プロジェクトのリポジトリから毎日更新されます。</string>
     <string name="list_abpvn_n">ABPVN</string>
     <string name="list_abpvn_d">ABPVNコミュニティが更新しているベトナム語の広告フィルターリストです。</string>
     <string name="list_abpvnh_n">ABPVN – 広告ドメイン</string>
@@ -233,4 +233,26 @@
     <string name="set_phone_qr">スマホのカメラで読み取ると、ペアリング済みのリモコンが開きます。</string>
     <string name="ph_tab_remote">リモコン</string>
     <string name="ph_tab_type">入力</string>
+    <string name="tb_site">サイト</string>
+    <string name="site_sub">この設定はこのサイトだけに適用されます</string>
+    <string name="site_desktop">PC版サイト</string>
+    <string name="site_desktop_d">ページのPC版を表示します</string>
+    <string name="site_zoom">文字サイズ</string>
+    <string name="site_zoom_d">ページの文字を大きく・小さくします</string>
+    <string name="site_adblock">広告ブロック</string>
+    <string name="site_adblock_d">ページが正しく動かないときはここでオフにします</string>
+    <string name="site_mode">操作モード</string>
+    <string name="site_mode_d">このサイトでのリモコンの動き方</string>
+    <string name="site_default_v">標準（%s）</string>
+    <string name="site_pointer">ポインター</string>
+    <string name="site_links">リンク</string>
+    <string name="site_reset">このサイトを標準に戻す</string>
+    <string name="site_reset_d">このサイトに行った変更をすべて消します</string>
+    <string name="toast_site_reset">サイト設定をリセットしました</string>
+    <string name="site_hint">OKで変更 · 戻るで閉じる</string>
+    <string name="set_sites">サイト別設定</string>
+    <string name="site_none">なし</string>
+    <string name="set_sites_reset">サイト別設定をすべてリセット</string>
+    <string name="set_sites_reset_d">すべてのサイトを標準に戻します</string>
+    <string name="toast_sites_reset">すべてのサイト設定をリセットしました</string>
 </resources>

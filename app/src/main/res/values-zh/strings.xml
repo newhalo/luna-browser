@@ -167,7 +167,7 @@
     <string name="st_never">尚未更新</string>
     <string name="st_updated">更新于 %1$s</string>
     <string name="list_luna_n">Luna 过滤规则</string>
-    <string name="list_luna_d">Luna 针对视频网站和弹出窗口的自有规则，随应用附带。</string>
+    <string name="list_luna_d">Luna 自带的视频网站和弹窗规则，每天从项目仓库更新。</string>
     <string name="list_abpvn_n">ABPVN</string>
     <string name="list_abpvn_d">由 ABPVN 社区维护的越南语广告过滤列表。</string>
     <string name="list_abpvnh_n">ABPVN – 广告域名</string>
@@ -233,4 +233,26 @@
     <string name="set_phone_qr">用手机相机扫描，即可直接打开已配对的遥控页面。</string>
     <string name="ph_tab_remote">遥控</string>
     <string name="ph_tab_type">输入</string>
+    <string name="tb_site">本站</string>
+    <string name="site_sub">这些设置仅适用于本站</string>
+    <string name="site_desktop">电脑版网站</string>
+    <string name="site_desktop_d">显示页面的完整电脑版</string>
+    <string name="site_zoom">文字大小</string>
+    <string name="site_zoom_d">放大或缩小页面文字</string>
+    <string name="site_adblock">广告拦截</string>
+    <string name="site_adblock_d">页面无法正常工作时可在此关闭</string>
+    <string name="site_mode">控制模式</string>
+    <string name="site_mode_d">遥控器在本站的移动方式</string>
+    <string name="site_default_v">默认（%s）</string>
+    <string name="site_pointer">指针</string>
+    <string name="site_links">链接</string>
+    <string name="site_reset">本站恢复默认</string>
+    <string name="site_reset_d">清除对本站所做的所有更改</string>
+    <string name="toast_site_reset">已重置本站设置</string>
+    <string name="site_hint">确定键更改 · 返回键关闭</string>
+    <string name="set_sites">按网站设置</string>
+    <string name="site_none">无</string>
+    <string name="set_sites_reset">重置所有网站设置</string>
+    <string name="set_sites_reset_d">所有网站恢复默认</string>
+    <string name="toast_sites_reset">已重置所有网站设置</string>
 </resources>

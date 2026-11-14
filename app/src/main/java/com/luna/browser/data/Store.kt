@@ -292,6 +292,35 @@ class Store(ctx: Context) {
         }
     }
 
+    // ---- Per-site settings (each field falls back to the global setting when the site has no opinion) ----
+    private val siteOverrides = mutableStateMapOf<String, SiteOverride>().apply {
+        putAll(SiteSettings.parseAll(sp.getString("sites", "{}")!!))
+    }
+
+    fun siteKey(url: String) = SiteSettings.keyOf(url)
+
+    fun overrideFor(url: String): SiteOverride = siteOverrides[siteKey(url)] ?: SiteOverride()
+
+    fun setOverride(url: String, o: SiteOverride) {
+        val k = siteKey(url)
+        if (k.isEmpty()) return
+        if (o.isEmpty) siteOverrides.remove(k) else siteOverrides[k] = o
+        val json = SiteSettings.serializeAll(siteOverrides.toMap())
+        io.execute { sp.edit().putString("sites", json).apply() }
+    }
+
+    val siteOverrideCount: Int get() = siteOverrides.size
+
+    fun clearSiteOverrides() {
+        siteOverrides.clear()
+        io.execute { sp.edit().putString("sites", "{}").apply() }
+    }
+
+    fun desktopFor(url: String) = overrideFor(url).desktop ?: bool(K.DESKTOP)
+    fun zoomFor(url: String) = overrideFor(url).zoom ?: int(K.ZOOM)
+    fun adblockFor(url: String) = overrideFor(url).adblock ?: bool(K.ADBLOCK)
+    fun pointerFor(url: String): Boolean? = overrideFor(url).pointer
+
     var lastSession by mutableStateOf(readSites("last").firstOrNull())
         private set
 

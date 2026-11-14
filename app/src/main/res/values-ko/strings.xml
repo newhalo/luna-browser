@@ -167,7 +167,7 @@
     <string name="st_never">아직 업데이트하지 않음</string>
     <string name="st_updated">%1$s 업데이트</string>
     <string name="list_luna_n">Luna 필터</string>
-    <string name="list_luna_d">동영상 사이트와 팝업을 위한 Luna 자체 규칙입니다. 앱에 포함되어 있습니다.</string>
+    <string name="list_luna_d">동영상 사이트와 팝업을 위한 Luna 자체 규칙입니다. 프로젝트 저장소에서 매일 업데이트됩니다.</string>
     <string name="list_abpvn_n">ABPVN</string>
     <string name="list_abpvn_d">ABPVN 커뮤니티가 관리하는 베트남어 광고 필터 목록입니다.</string>
     <string name="list_abpvnh_n">ABPVN – 광고 도메인</string>
@@ -233,4 +233,26 @@
     <string name="set_phone_qr">휴대전화 카메라로 스캔하면 연결된 상태로 리모컨이 열립니다.</string>
     <string name="ph_tab_remote">리모컨</string>
     <string name="ph_tab_type">입력</string>
+    <string name="tb_site">사이트</string>
+    <string name="site_sub">이 설정은 이 사이트에만 적용됩니다</string>
+    <string name="site_desktop">PC 버전</string>
+    <string name="site_desktop_d">페이지의 PC 버전을 표시합니다</string>
+    <string name="site_zoom">글자 크기</string>
+    <string name="site_zoom_d">페이지 글자를 키우거나 줄입니다</string>
+    <string name="site_adblock">광고 차단</string>
+    <string name="site_adblock_d">페이지가 제대로 동작하지 않으면 여기서 끄세요</string>
+    <string name="site_mode">조작 모드</string>
+    <string name="site_mode_d">이 사이트에서 리모컨이 움직이는 방식</string>
+    <string name="site_default_v">기본값(%s)</string>
+    <string name="site_pointer">포인터</string>
+    <string name="site_links">링크</string>
+    <string name="site_reset">이 사이트를 기본값으로</string>
+    <string name="site_reset_d">이 사이트에 적용한 변경을 모두 지웁니다</string>
+    <string name="toast_site_reset">사이트 설정을 초기화했습니다</string>
+    <string name="site_hint">OK로 변경 · 뒤로로 닫기</string>
+    <string name="set_sites">사이트별 설정</string>
+    <string name="site_none">없음</string>
+    <string name="set_sites_reset">모든 사이트 설정 초기화</string>
+    <string name="set_sites_reset_d">모든 사이트를 기본값으로 되돌립니다</string>
+    <string name="toast_sites_reset">모든 사이트 설정을 초기화했습니다</string>
 </resources>

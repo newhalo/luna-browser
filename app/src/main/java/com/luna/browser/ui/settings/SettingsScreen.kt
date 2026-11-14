@@ -62,6 +62,7 @@ import com.luna.browser.data.Languages
 import com.luna.browser.data.searchEnginesFor
 import com.luna.browser.ui.components.Aurora
 import com.luna.browser.ui.components.FocusSurface
+import com.luna.browser.ui.components.SettingRow
 import com.luna.browser.ui.components.Txt
 import com.luna.browser.ui.components.qrBitmap
 import com.luna.browser.ui.theme.Accent
@@ -212,24 +213,6 @@ private fun CategoryItem(c: Cat, selected: Boolean, modifier: Modifier, onFocus:
 }
 
 @Composable
-private fun SettingRow(title: String, desc: String, value: String, on: Boolean, danger: Boolean = false, onClick: () -> Unit) {
-    FocusSurface(onClick, Modifier.fillMaxWidth().heightIn(min = Dim.RowHeight), container = Glass, focusScale = 1.02f) {
-        Row(Modifier.padding(horizontal = 22.dp, vertical = 12.dp).align(Alignment.CenterStart), verticalAlignment = Alignment.CenterVertically) {
-            Column(Modifier.weight(1f)) {
-                Txt(title, T.body)
-                Txt(desc, T.caption, maxLines = 2)
-            }
-            if (value.isNotEmpty()) {
-                Box(
-                    Modifier.padding(start = 16.dp).background(if (on) Success.copy(alpha = .16f) else Color(0x14FFFFFF), RoundedCornerShape(20.dp))
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                ) { Txt(value, T.label, color = if (danger) Danger else if (on) Success else TextSecondary) }
-            }
-        }
-    }
-}
-
-@Composable
 private fun InfoRow(title: String, value: String) {
     Row(Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
         Txt(title, T.body, Modifier.weight(1f))
@@ -267,11 +250,17 @@ private fun rows(category: Int, app: AppState): List<SRow> {
             Choice(K.LAUNCH, app.s(R.string.set_launch), app.s(R.string.set_launch_d), listOf("home" to app.s(R.string.launch_home), "resume" to app.s(R.string.launch_resume))),
             Toggle(K.SHOW_CONTINUE, app.s(R.string.set_continue), app.s(R.string.set_continue_d)),
         )
-        2 -> listOf(
+        2 -> listOfNotNull(
             Toggle(K.CURSOR_START, app.s(R.string.set_cursor_start), app.s(R.string.set_cursor_start_d)),
             Choice(K.CURSOR_SPEED, app.s(R.string.set_cursor_speed), app.s(R.string.set_cursor_speed_d), (1..5).map { it.toString() to app.s(R.string.level_n, it) }),
             Toggle(K.DESKTOP, app.s(R.string.set_desktop), app.s(R.string.set_desktop_d)),
             Choice(K.ZOOM, app.s(R.string.set_zoom), app.s(R.string.set_zoom_d), listOf("100", "125", "150", "175").map { it to "$it%" }),
+            Info(app.s(R.string.set_sites), if (s.siteOverrideCount == 0) app.s(R.string.site_none) else s.siteOverrideCount.toString()),
+            if (s.siteOverrideCount > 0) {
+                Action(app.s(R.string.set_sites_reset), app.s(R.string.set_sites_reset_d), danger = true, confirm = true) {
+                    s.clearSiteOverrides(); app.browser.siteSettingsChanged(reload = true); app.toast(R.string.toast_sites_reset)
+                }
+            } else null,
         )
         AD_BLOCKING -> listOf(
             Toggle(K.ADBLOCK, app.s(R.string.set_adblock), app.s(R.string.set_adblock_d)),

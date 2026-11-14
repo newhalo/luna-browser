@@ -167,7 +167,7 @@
     <string name="st_never">Chưa cập nhật</string>
     <string name="st_updated">Cập nhật %1$s</string>
     <string name="list_luna_n">Bộ lọc Luna</string>
-    <string name="list_luna_d">Luật riêng của Luna cho trang phim và quảng cáo bật lên. Đi kèm ứng dụng.</string>
+    <string name="list_luna_d">Luật riêng của Luna cho trang phim và popup. Tự cập nhật hằng ngày từ kho mã của dự án.</string>
     <string name="list_abpvn_n">ABPVN</string>
     <string name="list_abpvn_d">Bộ lọc quảng cáo cho người Việt, do cộng đồng ABPVN cập nhật thường xuyên.</string>
     <string name="list_abpvnh_n">ABPVN – tên miền quảng cáo</string>
@@ -233,4 +233,26 @@
     <string name="set_phone_qr">Quét bằng camera điện thoại để mở trang điều khiển đã ghép nối sẵn.</string>
     <string name="ph_tab_remote">Điều khiển</string>
     <string name="ph_tab_type">Nhập</string>
+    <string name="tb_site">Trang này</string>
+    <string name="site_sub">Chỉ áp dụng cho trang này</string>
+    <string name="site_desktop">Bản máy tính</string>
+    <string name="site_desktop_d">Hiển thị phiên bản đầy đủ dành cho máy tính</string>
+    <string name="site_zoom">Cỡ chữ</string>
+    <string name="site_zoom_d">Phóng to hoặc thu nhỏ chữ trên trang</string>
+    <string name="site_adblock">Chặn quảng cáo</string>
+    <string name="site_adblock_d">Tắt tại đây nếu trang bị lỗi</string>
+    <string name="site_mode">Chế độ điều khiển</string>
+    <string name="site_mode_d">Cách điều khiển từ xa di chuyển trên trang này</string>
+    <string name="site_default_v">Mặc định (%s)</string>
+    <string name="site_pointer">Con trỏ</string>
+    <string name="site_links">Liên kết</string>
+    <string name="site_reset">Dùng mặc định cho trang này</string>
+    <string name="site_reset_d">Xóa mọi thay đổi đã đặt cho trang này</string>
+    <string name="toast_site_reset">Đã đặt lại cài đặt trang</string>
+    <string name="site_hint">OK để đổi · Quay lại để đóng</string>
+    <string name="set_sites">Cài đặt riêng theo trang</string>
+    <string name="site_none">Chưa có</string>
+    <string name="set_sites_reset">Đặt lại cài đặt mọi trang</string>
+    <string name="set_sites_reset_d">Trở về mặc định trên tất cả các trang</string>
+    <string name="toast_sites_reset">Đã đặt lại cài đặt mọi trang</string>
 </resources>

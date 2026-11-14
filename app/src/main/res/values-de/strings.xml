@@ -171,7 +171,7 @@
     <string name="st_never">Noch nicht aktualisiert</string>
     <string name="st_updated">Aktualisiert am %1$s</string>
     <string name="list_luna_n">Luna-Filter</string>
-    <string name="list_luna_d">Lunas eigene Regeln für Videoseiten und Pop-ups. Ist in der App enthalten.</string>
+    <string name="list_luna_d">Lunas eigene Regeln für Videoseiten und Pop-ups. Täglich aus dem Projekt-Repository aktualisiert.</string>
     <string name="list_abpvn_n">ABPVN</string>
     <string name="list_abpvn_d">Vietnamesische Werbefilterliste, gepflegt von der ABPVN-Community.</string>
     <string name="list_abpvnh_n">ABPVN – Werbedomains</string>
@@ -237,4 +237,26 @@
     <string name="set_phone_qr">Mit der Handykamera scannen, um die Fernbedienung bereits gekoppelt zu öffnen.</string>
     <string name="ph_tab_remote">Fernbedienung</string>
     <string name="ph_tab_type">Eingabe</string>
+    <string name="tb_site">Seite</string>
+    <string name="site_sub">Diese Einstellungen gelten nur für diese Seite</string>
+    <string name="site_desktop">Desktop-Version</string>
+    <string name="site_desktop_d">Zeigt die vollständige Desktop-Version der Seite</string>
+    <string name="site_zoom">Textgröße</string>
+    <string name="site_zoom_d">Seitentext vergrößern oder verkleinern</string>
+    <string name="site_adblock">Werbeblocker</string>
+    <string name="site_adblock_d">Hier ausschalten, wenn die Seite nicht funktioniert</string>
+    <string name="site_mode">Steuerungsmodus</string>
+    <string name="site_mode_d">Wie die Fernbedienung sich auf dieser Seite bewegt</string>
+    <string name="site_default_v">Standard (%s)</string>
+    <string name="site_pointer">Zeiger</string>
+    <string name="site_links">Links</string>
+    <string name="site_reset">Standard für diese Seite</string>
+    <string name="site_reset_d">Alle Änderungen für diese Seite verwerfen</string>
+    <string name="toast_site_reset">Seiteneinstellungen zurückgesetzt</string>
+    <string name="site_hint">OK ändert · Zurück schließt</string>
+    <string name="set_sites">Einstellungen pro Seite</string>
+    <string name="site_none">Keine</string>
+    <string name="set_sites_reset">Alle Seiteneinstellungen zurücksetzen</string>
+    <string name="set_sites_reset_d">Auf allen Seiten zurück zum Standard</string>
+    <string name="toast_sites_reset">Alle Seiteneinstellungen zurückgesetzt</string>
 </resources>

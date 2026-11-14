@@ -171,7 +171,7 @@
     <string name="st_never">Pas encore mise à jour</string>
     <string name="st_updated">Mise à jour le %1$s</string>
     <string name="list_luna_n">Filtres Luna</string>
-    <string name="list_luna_d">Les règles propres à Luna pour les sites vidéo et les pop-ups. Fournies avec l’application.</string>
+    <string name="list_luna_d">Règles propres à Luna pour les sites vidéo et les pop-ups. Mises à jour chaque jour depuis le dépôt du projet.</string>
     <string name="list_abpvn_n">ABPVN</string>
     <string name="list_abpvn_d">Liste de filtres publicitaires en vietnamien, tenue à jour par la communauté ABPVN.</string>
     <string name="list_abpvnh_n">ABPVN – domaines publicitaires</string>
@@ -237,4 +237,26 @@
     <string name="set_phone_qr">Scannez avec l’appareil photo du téléphone pour ouvrir la télécommande déjà appairée.</string>
     <string name="ph_tab_remote">Télécommande</string>
     <string name="ph_tab_type">Saisie</string>
+    <string name="tb_site">Site</string>
+    <string name="site_sub">Ces réglages ne concernent que ce site</string>
+    <string name="site_desktop">Version ordinateur</string>
+    <string name="site_desktop_d">Affiche la version complète pour ordinateur</string>
+    <string name="site_zoom">Taille du texte</string>
+    <string name="site_zoom_d">Agrandit ou réduit le texte de la page</string>
+    <string name="site_adblock">Blocage des pubs</string>
+    <string name="site_adblock_d">Désactivez-le ici si la page ne fonctionne pas</string>
+    <string name="site_mode">Mode de contrôle</string>
+    <string name="site_mode_d">Comment la télécommande se déplace sur ce site</string>
+    <string name="site_default_v">Par défaut (%s)</string>
+    <string name="site_pointer">Pointeur</string>
+    <string name="site_links">Liens</string>
+    <string name="site_reset">Valeurs par défaut pour ce site</string>
+    <string name="site_reset_d">Oublie toutes les modifications faites pour ce site</string>
+    <string name="toast_site_reset">Réglages du site réinitialisés</string>
+    <string name="site_hint">OK modifie · Retour ferme</string>
+    <string name="set_sites">Réglages par site</string>
+    <string name="site_none">Aucun</string>
+    <string name="set_sites_reset">Réinitialiser les réglages des sites</string>
+    <string name="set_sites_reset_d">Retour aux valeurs par défaut sur tous les sites</string>
+    <string name="toast_sites_reset">Réglages de tous les sites réinitialisés</string>
 </resources>

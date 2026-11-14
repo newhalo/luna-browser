@@ -189,7 +189,7 @@
     <string name="st_never">Not updated yet</string>
     <string name="st_updated">Updated %1$s</string>
     <string name="list_luna_n">Luna filters</string>
-    <string name="list_luna_d">Luna’s own rules for video sites and pop-ups. Ships with the app.</string>
+    <string name="list_luna_d">Luna’s own rules for video sites and pop-ups. Updated daily from the project’s repository.</string>
     <string name="list_abpvn_n">ABPVN</string>
     <string name="list_abpvn_d">Vietnamese ad-filter list kept up to date by the ABPVN community.</string>
     <string name="list_abpvnh_n">ABPVN – ad domains</string>
@@ -258,4 +258,26 @@
     <string name="set_phone_qr">Scan with your phone camera to open the remote already paired.</string>
     <string name="ph_tab_remote">Remote</string>
     <string name="ph_tab_type">Type</string>
+    <string name="tb_site">Site</string>
+    <string name="site_sub">These settings apply to this site only</string>
+    <string name="site_desktop">Desktop site</string>
+    <string name="site_desktop_d">Show the full desktop version of the page</string>
+    <string name="site_zoom">Text size</string>
+    <string name="site_zoom_d">Make the page text bigger or smaller</string>
+    <string name="site_adblock">Ad blocking</string>
+    <string name="site_adblock_d">Switch it off here if the page doesn\'t work</string>
+    <string name="site_mode">Control mode</string>
+    <string name="site_mode_d">How the remote moves around this site</string>
+    <string name="site_default_v">Default (%s)</string>
+    <string name="site_pointer">Pointer</string>
+    <string name="site_links">Links</string>
+    <string name="site_reset">Use defaults for this site</string>
+    <string name="site_reset_d">Forget every change made for this site</string>
+    <string name="toast_site_reset">Site settings reset</string>
+    <string name="site_hint">OK changes · Back closes</string>
+    <string name="set_sites">Site settings</string>
+    <string name="site_none">None</string>
+    <string name="set_sites_reset">Reset all site settings</string>
+    <string name="set_sites_reset_d">Go back to the defaults on every site</string>
+    <string name="toast_sites_reset">All site settings reset</string>
 </resources>

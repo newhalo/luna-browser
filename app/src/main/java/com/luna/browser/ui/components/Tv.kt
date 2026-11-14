@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -51,9 +52,12 @@ import androidx.compose.ui.unit.sp
 import com.luna.browser.AppState
 import com.luna.browser.ui.theme.Accent
 import com.luna.browser.ui.theme.Bg
+import com.luna.browser.ui.theme.Danger
 import com.luna.browser.ui.theme.Dim
 import com.luna.browser.ui.theme.FocusRing
+import com.luna.browser.ui.theme.Glass
 import com.luna.browser.ui.theme.Outline
+import com.luna.browser.ui.theme.Success
 import com.luna.browser.ui.theme.Surface
 import com.luna.browser.ui.theme.SurfaceFocus
 import com.luna.browser.ui.theme.T
@@ -162,6 +166,36 @@ fun IconLabelButton(
         Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(icon, null, tint = if (!enabled) TextSecondary.copy(alpha = .5f) else if (highlighted) Accent else TextPrimary, modifier = Modifier.size(26.dp))
             Txt(label, T.caption.copy(fontSize = 15.sp), color = if (enabled) TextPrimary else TextSecondary.copy(alpha = .5f))
+        }
+    }
+}
+
+/**
+ * A settings row: title and description on the left, the current value as a pill on the right
+ * (green when [on], red when [danger]). Used by Settings and by the per-site panel.
+ */
+@Composable
+fun SettingRow(
+    title: String,
+    desc: String,
+    value: String,
+    on: Boolean,
+    danger: Boolean = false,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    FocusSurface(onClick, modifier.fillMaxWidth().heightIn(min = Dim.RowHeight), container = Glass, focusScale = 1.02f) {
+        Row(Modifier.padding(horizontal = 22.dp, vertical = 12.dp).align(Alignment.CenterStart), verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Txt(title, T.body)
+                Txt(desc, T.caption, maxLines = 2)
+            }
+            if (value.isNotEmpty()) {
+                Box(
+                    Modifier.padding(start = 16.dp).background(if (on) Success.copy(alpha = .16f) else Color(0x14FFFFFF), RoundedCornerShape(20.dp))
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                ) { Txt(value, T.label, color = if (danger) Danger else if (on) Success else TextSecondary) }
+            }
         }
     }
 }

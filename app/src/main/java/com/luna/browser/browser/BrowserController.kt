@@ -175,14 +175,73 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     // ---- Lifecycle ----
     fun applySettings() {
         val s = webView.settings
-        val ua = if (app.store.bool(K.DESKTOP)) desktopUa else baseUa
+        val ref = webView.url ?: url
+        val ua = uaFor(ref)
         if (s.userAgentString != ua) {
             s.userAgentString = ua
             uaChanged = true
         }
-        s.textZoom = app.store.int(K.ZOOM)
+        s.textZoom = if (ref.startsWith("http")) app.store.zoomFor(ref) else app.store.int(K.ZOOM)
         s.javaScriptCanOpenWindowsAutomatically = !app.store.bool(K.BLOCK_POPUPS)
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, app.store.bool(K.THIRD_PARTY))
+    }
+
+    // ---- Per-site settings ----
+    private var lastSiteKey = ""
+    private var uaFixedFor = ""
+
+    private fun uaFor(target: String) =
+        if (if (target.startsWith("http")) app.store.desktopFor(target) else app.store.bool(K.DESKTOP)) desktopUa else baseUa
+
+    /** Whether the blocker is on for the page being shown (a site can switch it off for itself). */
+    private fun adblockOn(): Boolean {
+        val page = filterPageUrl.ifEmpty { url }
+        return if (page.startsWith("http")) app.store.adblockFor(page) else app.store.bool(K.ADBLOCK)
+    }
+
+    /**
+     * Applies the settings of the site about to be opened BEFORE the request goes out (the user agent
+     * has to be right for the very first request). A control-mode choice for a site is applied when
+     * entering that site; sites without one keep whatever mode the viewer is in.
+     */
+    private fun prepareFor(target: String) {
+        if (!target.startsWith("http")) return
+        val st = app.store
+        webView.settings.userAgentString = uaFor(target)
+        webView.settings.textZoom = st.zoomFor(target)
+        val key = st.siteKey(target)
+        if (key != lastSiteKey) {
+            lastSiteKey = key
+            st.pointerFor(target)?.let { if (cursorMode != it) { cursorMode = it; held.clear() } }
+        }
+    }
+
+    // The per-site panel (Compose): while it is open the keys belong to it.
+    var sitePanel by mutableStateOf(false)
+        private set
+    private var siteNeedsReload = false
+
+    fun showSitePanel() { toolbarVisible = false; siteNeedsReload = false; sitePanel = true }
+
+    /** Something that needs a reload (user agent, ad blocking) was changed in the panel. */
+    fun siteChangeNeedsReload() { siteNeedsReload = true }
+
+    fun hideSitePanel() {
+        sitePanel = false
+        siteSettingsChanged(reload = siteNeedsReload)
+        siteNeedsReload = false
+        webView.requestFocus()
+    }
+
+    /** Re-applies the settings of the current site (after a change in the panel or in Settings). */
+    fun siteSettingsChanged(reload: Boolean) {
+        val ref = webView.url ?: url
+        if (!ref.startsWith("http")) return
+        val st = app.store
+        webView.settings.userAgentString = uaFor(ref)
+        webView.settings.textZoom = st.zoomFor(ref)
+        st.pointerFor(ref)?.let { if (cursorMode != it) { cursorMode = it; held.clear() } }
+        if (reload) reload()
     }
 
     /** True while the browser screen is showing; the inline video watcher only runs then. */
@@ -224,6 +283,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
 
     // ---- Navigation actions ----
     fun load(target: String) {
+        prepareFor(target)
         error = null
         url = target
         filterPageUrl = target
@@ -276,6 +336,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             if (controlsVisible) controlsVisible = false else exitFullscreen()
             return true
         }
+        if (sitePanel) { hideSitePanel(); return true }
         if (toolbarVisible) { hideToolbar(); return true }
         if (webView.canGoBack()) { webView.goBack(); return true }
         return false
@@ -302,7 +363,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             if (!request.isForMainFrame) return false
             val target = request.url.toString()
             // Click-hijack: the page swaps itself for a known ad / betting page.
-            if (app.store.bool(K.ADBLOCK) && url.startsWith("http") && app.ads.shouldBlock(target, url, Type.DOCUMENT)) {
+            if (adblockOn() && url.startsWith("http") && app.ads.shouldBlock(target, url, Type.DOCUMENT)) {
                 notePopupBlocked(R.string.toast_blocked_redirect)
                 return true
             }
@@ -316,11 +377,12 @@ class BrowserController(private val activity: Activity, private val app: AppStat
                     return true
                 }
             }
+            prepareFor(target)
             return false
         }
 
         override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
-            if (app.store.bool(K.ADBLOCK) && !request.isForMainFrame &&
+            if (adblockOn() && !request.isForMainFrame &&
                 app.ads.shouldBlock(request.url.toString(), filterPageUrl, AdBlocker.typeOf(request))
             ) {
                 return WebResourceResponse("text/plain", "utf-8", 204, "No Content", emptyMap(), ByteArrayInputStream(ByteArray(0)))
@@ -331,6 +393,15 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         override fun onPageStarted(view: WebView, pageUrl: String?, favicon: Bitmap?) {
             pageStartedAt = SystemClock.uptimeMillis()
             resumeTried = null   // a new document: the saved position may apply again
+            pageUrl?.let { u ->
+                val want = uaFor(u)
+                if (u.startsWith("http") && view.settings.userAgentString != want) {
+                    view.settings.userAgentString = want
+                    // Reached without passing through load() / a link (e.g. a redirect): restart once with the right agent.
+                    if (uaFixedFor != u) { uaFixedFor = u; handler.post { view.reload() } }
+                }
+                if (u.startsWith("http")) view.settings.textZoom = app.store.zoomFor(u)
+            }
             injectFallbackScripts(view)
             error = null
             loading = true
@@ -462,7 +533,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
                     v.stopLoading()
                     handler.post { v.destroy() }
                     // There are no tabs on a TV: only same-site windows (or sign-in pages) may replace the page.
-                    val listed = app.store.bool(K.ADBLOCK) && app.ads.blocksPopup(target, url)
+                    val listed = adblockOn() && app.ads.blocksPopup(target, url)
                     if (!listed && (!app.store.bool(K.BLOCK_POPUPS) || PopupGuard.allowPopup(target, url))) load(target)
                     else notePopupBlocked(R.string.toast_blocked_adwindow)
                 }
@@ -484,7 +555,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
 
     /** Hides ad elements with the filter lists' cosmetic rules for this page. */
     private fun injectCosmetics(view: WebView) {
-        if (!app.store.bool(K.ADBLOCK)) return
+        if (!adblockOn()) return
         val page = filterPageUrl.ifEmpty { return }
         val css = app.ads.cosmeticCss(page)
         if (css.isEmpty()) return
@@ -581,7 +652,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         // Remotes differ: many (Google TV, Chromecast) have no Menu key, so Info and Bookmark open the toolbar too.
         // Long Back and "Up at the very top of the page" always work.
         if (code == KeyEvent.KEYCODE_MENU || code == KeyEvent.KEYCODE_INFO || code == KeyEvent.KEYCODE_BOOKMARK) {
-            if (!down) { if (toolbarVisible) hideToolbar() else showToolbar() }
+            if (!down) { if (sitePanel) hideSitePanel() else if (toolbarVisible) hideToolbar() else showToolbar() }
             return true
         }
         // Red coloured key (present on many TV remotes): switch pointer / link mode without holding OK.
@@ -591,7 +662,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         }
         if (customView != null) return handleVideoKey(e)
         // Toolbar and error panels are Compose: let the focus system drive them.
-        if (toolbarVisible || error != null) return false
+        if (toolbarVisible || sitePanel || error != null) return false
         when (code) {
             KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, KeyEvent.KEYCODE_MEDIA_PLAY, KeyEvent.KEYCODE_MEDIA_PAUSE,
             KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, KeyEvent.KEYCODE_MEDIA_REWIND -> {

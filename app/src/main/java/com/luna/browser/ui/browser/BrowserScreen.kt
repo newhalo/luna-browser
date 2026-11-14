@@ -21,6 +21,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -41,6 +44,7 @@ import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material.icons.rounded.TouchApp
+import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.WifiOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -48,12 +52,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -76,7 +83,13 @@ import com.luna.browser.Screen
 import com.luna.browser.browser.BrowserController
 import com.luna.browser.browser.ErrorKind
 import com.luna.browser.browser.PageError
+import com.luna.browser.data.K
+import com.luna.browser.data.SiteOverride
+import com.luna.browser.data.SiteSettings
 import com.luna.browser.data.hostOf
+import com.luna.browser.ui.components.SettingRow
+import com.luna.browser.ui.components.SiteIcon
+import com.luna.browser.ui.theme.Scrim
 import com.luna.browser.ui.components.FocusSurface
 import com.luna.browser.ui.components.IconLabelButton
 import com.luna.browser.ui.components.TvButton
@@ -95,8 +108,8 @@ import kotlinx.coroutines.delay
 @Composable
 fun BrowserScreen(app: AppState) {
     val b = app.browser
-    LaunchedEffect(b.toolbarVisible, b.error) {
-        if (!b.toolbarVisible && b.error == null) b.webView.requestFocus()
+    LaunchedEffect(b.toolbarVisible, b.error, b.sitePanel) {
+        if (!b.toolbarVisible && b.error == null && !b.sitePanel) b.webView.requestFocus()
     }
     Box(Modifier.fillMaxSize().background(Bg)) {
         AndroidView(
@@ -104,7 +117,7 @@ fun BrowserScreen(app: AppState) {
             modifier = Modifier.fillMaxSize().onSizeChanged { b.onViewSize(it.width, it.height) },
         )
 
-        if (b.cursorMode && b.customView == null && !b.toolbarVisible && b.error == null && !b.capturing) CursorOverlay(b)
+        if (b.cursorMode && b.customView == null && !b.toolbarVisible && !b.sitePanel && b.error == null && !b.capturing) CursorOverlay(b)
 
         // Slim progress bar
         if (b.loading && b.error == null && b.customView == null) {
@@ -117,6 +130,7 @@ fun BrowserScreen(app: AppState) {
         b.error?.let { ErrorPanel(app, it) }
         if (b.customView != null) FullscreenLayer(b) else OsdFlash(b)
         Toolbar(app, b)
+        if (b.sitePanel) SitePanel(app, b)
     }
 }
 
@@ -174,41 +188,120 @@ private fun Toolbar(app: AppState, b: BrowserController) {
         ) {
             val addressFr = remember { FocusRequester() }
             LaunchedEffect(Unit) { runCatching { addressFr.requestFocus() } }
-            Row(
+            // Two rows: the address on top (wide, readable), the actions below. Down from the actions closes it.
+            var inActions by remember { mutableStateOf(false) }
+            Column(
                 Modifier.fillMaxWidth()
                     .clip(RoundedCornerShape(26.dp))
                     .background(Color(0xE6121622))
                     .border(1.dp, Outline, RoundedCornerShape(26.dp))
-                    .padding(10.dp)
+                    .padding(12.dp)
                     .onPreviewKeyEvent { e ->
                         b.touchToolbar()
-                        if (e.type == KeyEventType.KeyDown && e.key == Key.DirectionDown) { b.hideToolbar(); true } else false
+                        if (e.type == KeyEventType.KeyDown && e.key == Key.DirectionDown && inActions) { b.hideToolbar(); true } else false
                     },
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                IconLabelButton(stringResource(R.string.tb_back), Icons.AutoMirrored.Rounded.ArrowBack, { b.goBack() }, enabled = b.canGoBack)
-                IconLabelButton(stringResource(R.string.tb_forward), Icons.AutoMirrored.Rounded.ArrowForward, { b.goForward() }, enabled = b.canGoForward)
-                IconLabelButton(stringResource(R.string.tb_refresh), Icons.Rounded.Refresh, { b.reload(); b.hideToolbar() })
-                IconLabelButton(stringResource(R.string.tb_home), Icons.Rounded.Home, { app.goHome() })
                 FocusSurface(
                     onClick = { b.hideToolbar(); app.openAddress(b.url) },
-                    modifier = Modifier.weight(1f).height(66.dp).focusRequester(addressFr),
+                    modifier = Modifier.fillMaxWidth().height(66.dp).focusRequester(addressFr),
                     shape = RoundedCornerShape(33.dp),
                 ) {
-                    Row(Modifier.padding(horizontal = 20.dp).align(Alignment.CenterStart), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(if (b.url.startsWith("https")) Icons.Rounded.Lock else Icons.Rounded.Search, null, tint = TextSecondary, modifier = Modifier.size(22.dp))
-                        Column(Modifier.padding(start = 12.dp)) {
+                    Row(Modifier.padding(horizontal = 22.dp).align(Alignment.CenterStart), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(if (b.url.startsWith("https")) Icons.Rounded.Lock else Icons.Rounded.Search, null, tint = TextSecondary, modifier = Modifier.size(24.dp))
+                        Column(Modifier.padding(start = 14.dp)) {
                             Txt(if (b.url.isEmpty()) stringResource(R.string.tb_address_hint) else hostOf(b.url), T.label)
                             Txt(b.title.ifBlank { stringResource(R.string.tb_edit_hint) }, T.caption)
                         }
                     }
                 }
-                val fav = app.store.isFavorite(b.url)
-                IconLabelButton(stringResource(if (fav) R.string.tb_saved else R.string.tb_save), if (fav) Icons.Rounded.Star else Icons.Rounded.StarBorder, { b.toggleFavorite() }, highlighted = fav)
-                IconLabelButton(stringResource(if (b.cursorMode) R.string.tb_mode_pointer else R.string.tb_mode_links), if (b.cursorMode) Icons.Rounded.Mouse else Icons.Rounded.TouchApp, { b.toggleMode() })
-                IconLabelButton(stringResource(R.string.tb_settings), Icons.Rounded.Settings, { app.navigate(Screen.Settings) })
+                Row(
+                    Modifier.fillMaxWidth().onFocusChanged { inActions = it.hasFocus },
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconLabelButton(stringResource(R.string.tb_back), Icons.AutoMirrored.Rounded.ArrowBack, { b.goBack() }, enabled = b.canGoBack)
+                    IconLabelButton(stringResource(R.string.tb_forward), Icons.AutoMirrored.Rounded.ArrowForward, { b.goForward() }, enabled = b.canGoForward)
+                    IconLabelButton(stringResource(R.string.tb_refresh), Icons.Rounded.Refresh, { b.reload(); b.hideToolbar() })
+                    IconLabelButton(stringResource(R.string.tb_home), Icons.Rounded.Home, { app.goHome() })
+                    val fav = app.store.isFavorite(b.url)
+                    IconLabelButton(stringResource(if (fav) R.string.tb_saved else R.string.tb_save), if (fav) Icons.Rounded.Star else Icons.Rounded.StarBorder, { b.toggleFavorite() }, highlighted = fav)
+                    IconLabelButton(stringResource(if (b.cursorMode) R.string.tb_mode_pointer else R.string.tb_mode_links), if (b.cursorMode) Icons.Rounded.Mouse else Icons.Rounded.TouchApp, { b.toggleMode() })
+                    IconLabelButton(
+                        stringResource(R.string.tb_site), Icons.Rounded.Tune, { b.showSitePanel() },
+                        enabled = b.url.startsWith("http"), highlighted = app.store.overrideFor(b.url).let { !it.isEmpty },
+                    )
+                    IconLabelButton(stringResource(R.string.tb_settings), Icons.Rounded.Settings, { app.navigate(Screen.Settings) })
+                }
             }
+        }
+    }
+}
+
+// ---------------------------------------------------------------- Per-site settings
+
+/**
+ * "This site" panel: every row cycles through Default → options when OK is pressed, and applies at once
+ * (text size, control mode) or when the panel closes (desktop site and ad blocking reload the page).
+ */
+@Composable
+private fun SitePanel(app: AppState, b: BrowserController) {
+    val st = app.store
+    val url = b.url
+    val o = st.overrideFor(url)            // reads the snapshot map, so the rows update as they change
+    val host = hostOf(url)
+    val first = remember { FocusRequester() }
+    LaunchedEffect(Unit) { runCatching { first.requestFocus() } }
+    val on = stringResource(R.string.set_on)
+    val off = stringResource(R.string.set_off)
+    fun onOff(v: Boolean) = if (v) on else off
+    val defDesktop = stringResource(R.string.site_default_v, onOff(st.bool(K.DESKTOP)))
+    val defZoom = stringResource(R.string.site_default_v, "${st.int(K.ZOOM)}%")
+    val defBlock = stringResource(R.string.site_default_v, onOff(st.bool(K.ADBLOCK)))
+    val defMode = stringResource(R.string.site_default_v, stringResource(if (st.bool(K.CURSOR_START)) R.string.site_pointer else R.string.site_links))
+    val pointer = stringResource(R.string.site_pointer)
+    val links = stringResource(R.string.site_links)
+    fun chip(text: String) = "‹  $text  ›"
+    fun set(next: SiteOverride) = st.setOverride(url, next)
+
+    Box(Modifier.fillMaxSize().background(Scrim), contentAlignment = Alignment.Center) {
+        Column(
+            Modifier.width(780.dp).heightIn(max = 520.dp)
+                .clip(RoundedCornerShape(28.dp)).background(Color(0xF2121622)).border(1.dp, Outline, RoundedCornerShape(28.dp))
+                .padding(26.dp).verticalScroll(rememberScrollState()),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                SiteIcon(host, st.iconFor(host), 48.dp)
+                Column(Modifier.padding(start = 16.dp)) {
+                    Txt(host, T.title)
+                    Txt(stringResource(R.string.site_sub), T.caption)
+                }
+            }
+            Spacer(Modifier.height(4.dp))
+            SettingRow(
+                stringResource(R.string.site_desktop), stringResource(R.string.site_desktop_d),
+                chip(when (o.desktop) { null -> defDesktop; true -> on; false -> off }), false,
+                modifier = Modifier.focusRequester(first),
+            ) { set(o.copy(desktop = SiteSettings.next(o.desktop, listOf(null, true, false)))); b.siteChangeNeedsReload() }
+            SettingRow(
+                stringResource(R.string.site_zoom), stringResource(R.string.site_zoom_d),
+                chip(o.zoom?.let { "$it%" } ?: defZoom), false,
+            ) { set(o.copy(zoom = SiteSettings.next(o.zoom, listOf(null, 100, 125, 150, 175)))); b.siteSettingsChanged(reload = false) }
+            SettingRow(
+                stringResource(R.string.site_adblock), stringResource(R.string.site_adblock_d),
+                chip(when (o.adblock) { null -> defBlock; true -> on; false -> off }), false,
+            ) { set(o.copy(adblock = SiteSettings.next(o.adblock, listOf(null, true, false)))); b.siteChangeNeedsReload() }
+            SettingRow(
+                stringResource(R.string.site_mode), stringResource(R.string.site_mode_d),
+                chip(when (o.pointer) { null -> defMode; true -> pointer; false -> links }), false,
+            ) { set(o.copy(pointer = SiteSettings.next(o.pointer, listOf(null, true, false)))); b.siteSettingsChanged(reload = false) }
+            if (!o.isEmpty) {
+                SettingRow(
+                    stringResource(R.string.site_reset), stringResource(R.string.site_reset_d), "", false, danger = true,
+                ) { set(SiteOverride()); b.siteChangeNeedsReload(); b.siteSettingsChanged(reload = false); app.toast(R.string.toast_site_reset) }
+            }
+            Txt(stringResource(R.string.site_hint), T.caption, Modifier.padding(top = 4.dp, start = 6.dp), color = TextSecondary)
         }
     }
 }

@@ -179,7 +179,7 @@
     <string name="st_never">Ещё не обновлялись</string>
     <string name="st_updated">Обновлено %1$s</string>
     <string name="list_luna_n">Фильтры Luna</string>
-    <string name="list_luna_d">Собственные правила Luna для видеосайтов и всплывающих окон. Входят в приложение.</string>
+    <string name="list_luna_d">Собственные правила Luna для видеосайтов и всплывающих окон. Обновляются ежедневно из репозитория проекта.</string>
     <string name="list_abpvn_n">ABPVN</string>
     <string name="list_abpvn_d">Вьетнамский список фильтров рекламы, который поддерживает сообщество ABPVN.</string>
     <string name="list_abpvnh_n">ABPVN – рекламные домены</string>
@@ -245,4 +245,26 @@
     <string name="set_phone_qr">Отсканируйте камерой телефона, чтобы открыть пульт уже подключённым.</string>
     <string name="ph_tab_remote">Пульт</string>
     <string name="ph_tab_type">Ввод</string>
+    <string name="tb_site">Сайт</string>
+    <string name="site_sub">Эти настройки действуют только для этого сайта</string>
+    <string name="site_desktop">Версия для ПК</string>
+    <string name="site_desktop_d">Показывать полную версию страницы для компьютера</string>
+    <string name="site_zoom">Размер текста</string>
+    <string name="site_zoom_d">Увеличить или уменьшить текст на странице</string>
+    <string name="site_adblock">Блокировка рекламы</string>
+    <string name="site_adblock_d">Отключите здесь, если страница не работает</string>
+    <string name="site_mode">Режим управления</string>
+    <string name="site_mode_d">Как пульт перемещается по этому сайту</string>
+    <string name="site_default_v">По умолчанию (%s)</string>
+    <string name="site_pointer">Указатель</string>
+    <string name="site_links">Ссылки</string>
+    <string name="site_reset">Настройки по умолчанию</string>
+    <string name="site_reset_d">Сбросить все изменения для этого сайта</string>
+    <string name="toast_site_reset">Настройки сайта сброшены</string>
+    <string name="site_hint">OK — изменить · Назад — закрыть</string>
+    <string name="set_sites">Настройки сайтов</string>
+    <string name="site_none">Нет</string>
+    <string name="set_sites_reset">Сбросить настройки сайтов</string>
+    <string name="set_sites_reset_d">Вернуть значения по умолчанию на всех сайтах</string>
+    <string name="toast_sites_reset">Настройки всех сайтов сброшены</string>
 </resources>

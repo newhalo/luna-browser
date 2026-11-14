@@ -1,9 +1,13 @@
 [Adblock Plus 2.0]
 ! Title: Luna filters
+! Version: 2026.11.15
 ! Description: Luna Browser's own rules. They complement ABPVN. Adblock Plus / uBlock Origin syntax.
 ! Homepage: https://github.com/newhalo/luna-browser/blob/marter/docs/ADBLOCK.md
 !
 ! HOW TO MAINTAIN
+! - Installed apps download THIS file from the repository every day (no app release needed), and keep
+!   whichever copy has the higher "! Version:" - so bump the Version line (YYYY.MM.DD) with every change.
+!   BundledListTest runs in CI and blocks a broken edit.
 ! - A site shows ads again: try "Update filter lists" in Settings first (ABPVN usually has the rule already).
 ! - Still there: add a rule in the matching section below, with a date and the affected site.
 ! - Re-check with tools/sitecheck (see docs/ADBLOCK.md), add a unit test if the rule has a new shape.

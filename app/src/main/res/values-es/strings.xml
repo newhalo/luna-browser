@@ -171,7 +171,7 @@
     <string name="st_never">Sin actualizar</string>
     <string name="st_updated">Actualizada el %1$s</string>
     <string name="list_luna_n">Filtros de Luna</string>
-    <string name="list_luna_d">Reglas propias de Luna para sitios de vídeo y ventanas emergentes. Incluidas en la aplicación.</string>
+    <string name="list_luna_d">Reglas propias de Luna para sitios de vídeo y ventanas emergentes. Se actualizan a diario desde el repositorio del proyecto.</string>
     <string name="list_abpvn_n">ABPVN</string>
     <string name="list_abpvn_d">Lista de filtros de anuncios en vietnamita, mantenida por la comunidad ABPVN.</string>
     <string name="list_abpvnh_n">ABPVN – dominios de anuncios</string>
@@ -237,4 +237,26 @@
     <string name="set_phone_qr">Escanea con la cámara del móvil para abrir el mando ya emparejado.</string>
     <string name="ph_tab_remote">Mando</string>
     <string name="ph_tab_type">Escribir</string>
+    <string name="tb_site">Sitio</string>
+    <string name="site_sub">Estos ajustes solo se aplican a este sitio</string>
+    <string name="site_desktop">Sitio de escritorio</string>
+    <string name="site_desktop_d">Muestra la versión completa para ordenador</string>
+    <string name="site_zoom">Tamaño del texto</string>
+    <string name="site_zoom_d">Agranda o reduce el texto de la página</string>
+    <string name="site_adblock">Bloqueo de anuncios</string>
+    <string name="site_adblock_d">Desactívalo aquí si la página no funciona</string>
+    <string name="site_mode">Modo de control</string>
+    <string name="site_mode_d">Cómo se mueve el mando por este sitio</string>
+    <string name="site_default_v">Predeterminado (%s)</string>
+    <string name="site_pointer">Puntero</string>
+    <string name="site_links">Enlaces</string>
+    <string name="site_reset">Usar valores predeterminados</string>
+    <string name="site_reset_d">Olvida todos los cambios de este sitio</string>
+    <string name="toast_site_reset">Ajustes del sitio restablecidos</string>
+    <string name="site_hint">OK cambia · Atrás cierra</string>
+    <string name="set_sites">Ajustes por sitio</string>
+    <string name="site_none">Ninguno</string>
+    <string name="set_sites_reset">Restablecer ajustes de sitios</string>
+    <string name="set_sites_reset_d">Vuelve a los valores predeterminados en todos los sitios</string>
+    <string name="toast_sites_reset">Ajustes de todos los sitios restablecidos</string>
 </resources>

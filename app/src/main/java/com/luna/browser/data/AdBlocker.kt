@@ -16,6 +16,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.luna.browser.data.filter.FilterBuilder
+import com.luna.browser.data.filter.ListVersion
 import com.luna.browser.data.filter.FilterEngine
 import com.luna.browser.data.filter.Type
 import kotlinx.coroutines.Dispatchers
@@ -41,12 +42,17 @@ data class FilterList(
     val defaultOn: (String) -> Boolean = { true },
     /** Big lists stay off by default on low-memory TVs. */
     val heavy: Boolean = false,
+    /** A download with fewer rules than this is rejected (captive portals, error pages). */
+    val minRules: Int = 50,
 )
 
 val FilterLists = listOf(
+    // Luna's own rules: bundled in the app AND fetched from this repository every day, so a fix for a site that
+    // changed its ads reaches everyone without a new app version. The copy with the higher "! Version:" wins.
     FilterList(
         "luna", R.string.list_luna_n, R.string.list_luna_d,
-        url = null, asset = "filters/luna.txt",
+        url = "https://raw.githubusercontent.com/newhalo/luna-browser/HEAD/app/src/main/assets/filters/luna.txt",
+        asset = "filters/luna.txt", minRules = 20,
     ),
     // The ABPVN lists target Vietnamese sites: on by default for Vietnamese users, optional for everyone else.
     FilterList(
@@ -119,9 +125,9 @@ class AdBlocker(private val ctx: Context) {
     private fun fileOf(l: FilterList) = File(dir, "${l.id}.txt")
 
     private fun textOf(l: FilterList): String? {
-        val f = fileOf(l)
-        if (f.exists()) return runCatching { f.readText() }.getOrNull()
-        return l.asset?.let { a -> runCatching { ctx.assets.open(a).bufferedReader().use { it.readText() } }.getOrNull() }
+        val downloaded = fileOf(l).takeIf { it.exists() }?.let { f -> runCatching { f.readText() }.getOrNull() }
+        val bundled = l.asset?.let { a -> runCatching { ctx.assets.open(a).bufferedReader().use { it.readText() } }.getOrNull() }
+        return ListVersion.newer(downloaded, bundled)
     }
 
     /** Rebuilds the engine from every enabled list (background thread). */
@@ -209,7 +215,7 @@ class AdBlocker(private val ctx: Context) {
         }
         val text = sink.toString("UTF-8")
         // Guard against captive portals / error pages replacing a real list.
-        if (text.lines().count { it.isNotBlank() && !it.startsWith("!") && !it.startsWith("#") } < 50) error("too short")
+        if (text.lines().count { it.isNotBlank() && !it.startsWith("!") && !it.startsWith("#") } < l.minRules) error("too short")
         val tmp = File(dir, "${l.id}.tmp")
         tmp.writeText(text)
         tmp.renameTo(fileOf(l))
