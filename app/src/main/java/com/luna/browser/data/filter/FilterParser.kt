@@ -71,12 +71,12 @@ class FilterBuilder {
         if (exception) s = s.substring(2)
 
         var opts = ""
-        if (s.startsWith("/") && s.length > 2) {
-            val end = s.lastIndexOf('/')
-            if (end > 0) {
-                val after = s.substring(end + 1)
-                if (after.startsWith("$")) { opts = after.substring(1); s = s.substring(0, end + 1) }
-            }
+        // A regex rule is /…/ optionally followed by $options. "/vast.js$script" is a path, not a regex.
+        val lastSlash = s.lastIndexOf('/')
+        val isRegex = s.startsWith("/") && lastSlash > 0 && (lastSlash == s.length - 1 || s[lastSlash + 1] == '$')
+        if (isRegex) {
+            val after = s.substring(lastSlash + 1)
+            if (after.startsWith("$")) { opts = after.substring(1); s = s.substring(0, lastSlash + 1) }
         } else {
             val d = s.lastIndexOf('$')
             if (d >= 0 && !s.substring(d + 1).contains('/')) { opts = s.substring(d + 1); s = s.substring(0, d) }
