@@ -79,9 +79,9 @@ fun Aurora(modifier: Modifier = Modifier, animated: Boolean = true) {
             0f, 1f, infiniteRepeatable(tween(22_000, easing = LinearEasing), RepeatMode.Reverse), label = "t",
         )
     Box(modifier.fillMaxSize().background(Bg)) {
-        Blob(Color(0xFF3D4FB8), 760.dp, -160.dp, -260.dp, 220.dp, 120.dp, t)
-        Blob(Color(0xFF7A2E8C), 620.dp, 560.dp, 120.dp, -180.dp, 90.dp, t)
-        Blob(Color(0xFF136E7E), 560.dp, 160.dp, 300.dp, 260.dp, -160.dp, t)
+        Blob(Color(0xFF4F63E8), 780.dp, -180.dp, -280.dp, 260.dp, 140.dp, t)
+        Blob(Color(0xFF9B3DB5), 640.dp, 560.dp, 60.dp, -200.dp, 120.dp, t)
+        Blob(Color(0xFF1A93A6), 580.dp, 120.dp, 300.dp, 300.dp, -180.dp, t)
     }
 }
 
@@ -94,7 +94,7 @@ private fun Blob(color: Color, size: Dp, x: Dp, y: Dp, dx: Dp, dy: Dp, t: State<
             .graphicsLayer {
                 translationX = (x.value + dx.value * t.value) * d
                 translationY = (y.value + dy.value * t.value) * d
-                alpha = 0.55f
+                alpha = 0.8f
             }
             .background(Brush.radialGradient(listOf(color, Color.Transparent))),
     )
@@ -176,7 +176,8 @@ fun MediaCard(
         if (showTitle) {
             Spacer(Modifier.height(10.dp))
             Txt(
-                item.title, T.label.copy(fontSize = 16.sp, fontWeight = if (focused) FontWeight.SemiBold else FontWeight.Normal),
+                // Brand cards already show the name inside, so the caption shows the address instead.
+                if (item.art == null) item.subtitle else item.title, T.label.copy(fontSize = 16.sp, fontWeight = if (focused) FontWeight.SemiBold else FontWeight.Normal),
                 color = if (focused) TextPrimary else TextSecondary, modifier = Modifier.padding(horizontal = 2.dp),
             )
         }

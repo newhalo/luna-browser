@@ -577,7 +577,18 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         handler.postDelayed(idleHide, 3000)
     }
 
-    private val idleHide = Runnable { if (held.isEmpty()) cursorActive = false }
+    private val idleHide = Runnable {
+        if (held.isEmpty()) {
+            cursorActive = false
+            // Pointer just faded out: a good moment to refresh the thumbnail with what the viewer is reading.
+            val now = SystemClock.uptimeMillis()
+            if (!loading && error == null && url.startsWith("http") && now - lastSnap > 15_000) {
+                lastSnap = now
+                snapshot(url)
+            }
+        }
+    }
+    private var lastSnap = 0L
 
     /** Scroll by pixels (positive = down) using a mouse-wheel event so inner scrollers work too. */
     private fun scrollWheel(pixels: Float) {

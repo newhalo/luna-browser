@@ -35,6 +35,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInParent
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -110,12 +114,22 @@ fun HomeScreen(app: AppState) {
             Header(app)
             HeroInfo(hero, app.online)
             SearchRow(app, searchFr, firstCardFr) { hero = null }
+            val scroll = rememberScrollState()
+            val scope = rememberCoroutineScope()
+            val rowY = remember { mutableMapOf<Int, Int>() }
             Column(
-                Modifier.weight(1f).fillMaxWidth().verticalScroll(rememberScrollState()).padding(top = 6.dp, bottom = 32.dp),
+                Modifier.weight(1f).fillMaxWidth().verticalScroll(scroll).padding(top = 6.dp, bottom = 260.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp),
             ) {
                 rows.forEachIndexed { r, (title, items, width) ->
-                    MediaRow(app, title, items, width, if (r == 0) firstCardFr else null, onFocus = { hero = it }) { app.openUrl(it.url) }
+                    // Netflix-style pivot: the focused row always snaps to the top of the rows area.
+                    Box(
+                        Modifier
+                            .onGloballyPositioned { rowY[r] = it.positionInParent().y.toInt() }
+                            .onFocusChanged { f -> if (f.hasFocus) scope.launch { scroll.animateScrollTo(rowY[r] ?: 0) } },
+                    ) {
+                        MediaRow(app, title, items, width, if (r == 0) firstCardFr else null, onFocus = { hero = it }) { app.openUrl(it.url) }
+                    }
                 }
             }
         }
