@@ -124,10 +124,11 @@ fun BrowserScreen(app: AppState) {
 private fun CursorOverlay(b: BrowserController) {
     val alpha by animateFloatAsState(if (b.cursorActive) 1f else 0f, tween(ms(220)), label = "cursorAlpha")
     val pulse = remember { Animatable(1f) }
+    val pulseMs = ms(280)
     LaunchedEffect(b.clickPulse) {
         if (b.clickPulse > 0) {
             pulse.snapTo(0f)
-            pulse.animateTo(1f, tween(ms(280)))
+            pulse.animateTo(1f, tween(pulseMs))
         }
     }
     val d = LocalDensity.current.density
