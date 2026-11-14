@@ -11,7 +11,6 @@ import android.os.Looper
 import android.os.Message
 import android.os.SystemClock
 import android.view.InputDevice
-import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.PixelCopy
@@ -786,6 +785,7 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
         val (js, paused) = when (force) { true -> playJs to false; false -> pauseJs to true; null -> toggleJs to null }
         val cmd = when (force) { true -> "play"; false -> "pause"; null -> "toggle" }
         runVideo(js, cmd, 0, after = { s -> s.copy(paused = paused ?: !s.paused) }) { s ->
+            if (SystemClock.uptimeMillis() < resumeFlashUntil) return@runVideo
             flash(app.s(if (s.paused) R.string.vid_paused else R.string.vid_playing), if (s.paused) Icons.Rounded.Pause else Icons.Rounded.PlayArrow)
         }
     }
@@ -916,6 +916,9 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
     /** The video (by [ResumeRules.key]) whose saved position was already offered in this fullscreen session. */
     private var resumeTried: String? = null
 
+    /** The "Resumed from 12:34" message is not replaced by the generic "Playing" one before this time. */
+    private var resumeFlashUntil = 0L
+
     private fun saveProgress(s: VideoState, flush: Boolean = false) {
         val u = url
         if (u.isBlank() || s.failed || (s.buffering && !flush)) return
@@ -932,11 +935,11 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
             resumeTried = key
             val saved = app.store.resumeFor(u)
             val delta = saved?.let { ResumeRules.restoreDelta(it, s.position, s.duration) }
-            Log.d("LunaResume", "first state key=$key pos=${s.position} dur=${s.duration} saved=${saved?.pos}/${saved?.dur} delta=$delta")
             if (saved != null && delta != null) {
                 val js = "b.currentTime=Math.max(0,Math.min(isFinite(b.duration)?b.duration:1e9,b.currentTime+($delta)));"
                 runVideo(js, "seek", delta)
                 flash(app.s(R.string.vid_resumed, ResumeRules.clock(saved.pos)), Icons.Rounded.PlayArrow, hold = true)
+                resumeFlashUntil = SystemClock.uptimeMillis() + 1800
                 return
             }
         }
