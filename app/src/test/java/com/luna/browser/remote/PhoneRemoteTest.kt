@@ -94,10 +94,8 @@ class PhoneRemoteTest {
     @Test fun oversizedHeadersAreDropped() {
         java.net.Socket("127.0.0.1", remote.port).use {
             it.soTimeout = 2000
-            it.getOutputStream().write(("GET / HTTP/1.1
-X: " + "a".repeat(20_000) + "
-
-").toByteArray())
+            val crlf = "\r\n"
+            it.getOutputStream().write(("GET / HTTP/1.1${crlf}X: " + "a".repeat(20_000) + crlf + crlf).toByteArray())
             assertTrue(it.getInputStream().read() == -1)   // closed without an answer
         }
         assertEquals(200, get("/").first)
