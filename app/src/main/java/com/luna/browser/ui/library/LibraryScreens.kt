@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -53,7 +54,7 @@ import com.luna.browser.ui.theme.Glass
 import com.luna.browser.ui.theme.T
 
 @Composable
-private fun LibraryFrame(app: AppState, content: @Composable () -> Unit) {
+private fun LibraryFrame(app: AppState, content: @Composable ColumnScope.() -> Unit) {
     Box(Modifier.fillMaxSize()) {
         Aurora(animated = app.store.bool(K.ANIMATED_BG))
         Box(Modifier.fillMaxSize().background(Bg.copy(alpha = 0.6f)))
