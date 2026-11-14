@@ -34,6 +34,13 @@ Measured with [`tools/perf`](../tools/perf) (`measure.ps1` + `frames.py`, which 
 | Seeking: each key repeat reloaded the stream | Presses and repeats accumulate, the target is previewed, **one** seek is sent when the key is released; holding accelerates 10 s → 30 s → 60 s |
 | First page load froze Home while Chromium initialised | The WebView provider is pre-loaded on a background thread shortly after start |
 
+## Filter lists and memory
+
+With EasyList (≈ 78,000 rules) on top of the other lists, the app's memory grows from ≈ 171 MB to ≈ 236 MB
+(PSS) on the test TV; pointer movement and scrolling on a heavy news page stay at 60 fps. Lists are compiled on a
+background-priority thread, and downloads wait 20 s after start. EasyList is therefore on by default for every
+language except Vietnamese (which uses ABPVN) and can be switched off in Settings.
+
 ## Rules for new UI
 
 - **Count full-screen layers.** Each translucent full-screen layer costs ~5 ms of GPU on this TV. Avoid

@@ -52,7 +52,7 @@
     <string name="tb_saved">Gemerkt</string>
     <string name="tb_mode_pointer">Zeiger</string>
     <string name="tb_mode_links">Links</string>
-    <string name="tb_settings">Einstellungen</string>
+    <string name="tb_settings">Optionen</string>
     <string name="tb_address_hint">Suchen oder Adresse eingeben</string>
     <string name="tb_edit_hint">OK drücken, um eine andere Adresse einzugeben</string>
 
@@ -126,7 +126,7 @@
 
     <string name="set_language">Sprache</string>
     <string name="set_language_d">Die Sprache von Luna. „Automatisch“ folgt der Systemsprache des Fernsehers.</string>
-    <string name="lang_auto">Automatisch (Systemsprache)</string>
+    <string name="lang_auto">Automatisch</string>
     <string name="set_engine">Suchmaschine</string>
     <string name="set_engine_d">Wird verwendet, wenn du Wörter statt einer Webadresse eingibst.</string>
     <string name="set_anim_bg">Animierter Hintergrund</string>

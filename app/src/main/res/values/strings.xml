@@ -141,7 +141,7 @@
     <!-- Settings: general -->
     <string name="set_language">Language</string>
     <string name="set_language_d">The language of Luna. “Automatic” follows the TV’s system language.</string>
-    <string name="lang_auto">Automatic (system language)</string>
+    <string name="lang_auto">Automatic</string>
     <string name="set_engine">Search engine</string>
     <string name="set_engine_d">Used when you type words instead of a web address.</string>
     <string name="set_anim_bg">Animated background</string>

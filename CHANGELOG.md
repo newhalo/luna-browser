@@ -6,14 +6,22 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- **Localisation**: all UI text moved to string resources. Ten languages — English (default), Vietnamese,
+  Spanish, French, German, Portuguese, Russian, Japanese, Korean, Simplified Chinese. The UI follows the TV's
+  system language; *Settings → General → Language* overrides it live. Android 13+ per-app language picker supported.
+- Regional defaults: quick-access sites, search engines, voice-search language and filter lists per language.
+- **EasyList** as a filter list (on by default except for Vietnamese, where ABPVN is).
+- `LocalizationTest` (same keys, placeholders and plural forms in every language), `docs/LOCALIZATION.md`.
+
 ### Changed
-- Documentation, scripts and repository files are now in English; the in-app UI is still Vietnamese
-  (localisation is on the [roadmap](README.md#roadmap)).
+- Documentation, scripts and repository files are now in English.
 - Signing: debug builds use the public `app/dev.keystore`; release builds read a private key from environment
   variables (`LUNA_KEYSTORE_FILE`, …) and fall back to the dev key.
 
-### Added
-- Gradle wrapper, release workflow, Dependabot, issue / PR templates, contribution and security policies.
+### Repository
+- Gradle wrapper, release workflow, Dependabot (monthly, grouped), issue / PR templates, contribution and
+  security policies, code of conduct, third-party notices.
 
 ## [0.2.0] — 2026-11-14
 

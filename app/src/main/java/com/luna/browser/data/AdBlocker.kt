@@ -60,7 +60,9 @@ val FilterLists = listOf(
     FilterList(
         "easylist", R.string.list_easy_n, R.string.list_easy_d,
         url = "https://easylist.to/easylist/easylist.txt",
-        defaultOn = { false },
+        // The general-purpose list for everyone who isn't served by ABPVN. ~78k rules, +~65 MB of memory on
+        // the test TV, no measurable effect on browsing smoothness (see docs/PERFORMANCE.md).
+        defaultOn = { it != "vi" },
     ),
 )
 

@@ -6,7 +6,7 @@ filter lists** (Adblock Plus / uBlock Origin syntax) that can be updated without
 
 ```
         ┌──────────────────────── Filter lists (text, ABP syntax) ────────────────────────┐
-        │  filters/luna.txt (bundled)   ABPVN list (daily)   ABPVN hosts list (daily)     │
+        │  filters/luna.txt (bundled)   EasyList · ABPVN · ABPVN hosts (downloaded daily)  │
         └───────────────────────────────────────┬─────────────────────────────────────────┘
                                                 ▼
                                    FilterEngine  (data/filter/)
@@ -33,8 +33,8 @@ filter lists** (Adblock Plus / uBlock Origin syntax) that can be updated without
 
 ## When a site shows ads again
 
-1. **Update the lists:** Settings → Ad blocking → *Update filter lists*. The ABPVN maintainers usually have the
-   rule already.
+1. **Update the lists:** Settings → Ad blocking → *Update filter lists*. The EasyList / ABPVN maintainers
+   usually have the rule already. (EasyList is on by default except for Vietnamese, where ABPVN is.)
 2. **Find the source:** put the page in `tools/sitecheck/sites.local.txt` (git-ignored; one URL per line) and run
    the check against a **debug** build installed on your TV:
 
@@ -53,7 +53,8 @@ filter lists** (Adblock Plus / uBlock Origin syntax) that can be updated without
    - un-break a site that the blocker breaks: `@@||site.com^$document`
 4. **Add a unit test** in `app/src/test/.../FilterEngineTest.kt` if the rule has a shape the tests don't cover yet.
 5. Open a pull request. CI runs the tests and builds the APK.
-6. If the rule helps everyone, also report it to ABPVN (<https://abpvn.com>).
+6. If the rule helps everyone, also report it upstream: EasyList (<https://easylist.to>) or ABPVN
+   (<https://abpvn.com>, for Vietnamese sites).
 
 ## When a site changes its tricks
 

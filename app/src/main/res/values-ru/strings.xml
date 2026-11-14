@@ -134,7 +134,7 @@
 
     <string name="set_language">Язык</string>
     <string name="set_language_d">Язык Luna. «Автоматически» — язык системы телевизора.</string>
-    <string name="lang_auto">Автоматически (язык системы)</string>
+    <string name="lang_auto">Авто</string>
     <string name="set_engine">Поисковая система</string>
     <string name="set_engine_d">Используется, когда вы вводите слова, а не адрес сайта.</string>
     <string name="set_anim_bg">Анимированный фон</string>

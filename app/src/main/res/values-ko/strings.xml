@@ -122,7 +122,7 @@
 
     <string name="set_language">언어</string>
     <string name="set_language_d">Luna의 언어입니다. “자동”은 TV의 시스템 언어를 따릅니다.</string>
-    <string name="lang_auto">자동 (시스템 언어)</string>
+    <string name="lang_auto">자동</string>
     <string name="set_engine">검색엔진</string>
     <string name="set_engine_d">웹 주소 대신 단어를 입력했을 때 사용됩니다.</string>
     <string name="set_anim_bg">움직이는 배경</string>

@@ -122,7 +122,7 @@
 
     <string name="set_language">Ngôn ngữ</string>
     <string name="set_language_d">Ngôn ngữ của Luna. “Tự động” theo ngôn ngữ hệ thống của TV.</string>
-    <string name="lang_auto">Tự động (ngôn ngữ hệ thống)</string>
+    <string name="lang_auto">Tự động</string>
     <string name="set_engine">Công cụ tìm kiếm</string>
     <string name="set_engine_d">Dùng khi bạn gõ từ khóa thay vì địa chỉ trang web.</string>
     <string name="set_anim_bg">Hình nền chuyển động</string>

@@ -20,6 +20,7 @@ Luna renders web pages with the device's **Android System WebView** (Chromium); 
 
 | List | License |
 |---|---|
+| [EasyList](https://easylist.to) | GPL-3.0 or CC BY-SA 3.0 (dual-licensed) |
 | [ABPVN](https://abpvn.com) (`abpvn.txt` and the hosts list) | GPL-3.0 |
 
 Luna **downloads** these lists from their maintainers' servers when the user enables them and refreshes them

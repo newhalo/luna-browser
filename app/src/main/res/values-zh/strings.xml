@@ -122,7 +122,7 @@
 
     <string name="set_language">语言</string>
     <string name="set_language_d">Luna 的显示语言。“自动”将跟随电视的系统语言。</string>
-    <string name="lang_auto">自动（系统语言）</string>
+    <string name="lang_auto">自动</string>
     <string name="set_engine">搜索引擎</string>
     <string name="set_engine_d">输入关键词而不是网址时使用。</string>
     <string name="set_anim_bg">动态背景</string>

@@ -17,8 +17,8 @@ Most Android TV browsers are phone browsers stretched onto a big screen. Luna st
 an on-screen pointer you steer with the D-pad, one-press access to everything, video controls made for
 **Play / Pause / Left / Right**, a built-in ad and pop-up blocker, and a home screen that feels like a streaming app.
 
-> **Status:** early (0.x) but daily-driven on a real TV. The interface is currently **in Vietnamese**; English and
-> other languages are the top item on the [roadmap](#roadmap) — contributions welcome.
+> **Status:** early (0.x) but daily-driven on a real TV. The UI is available in **10 languages** and follows the TV's
+> system language — see [docs/LOCALIZATION.md](docs/LOCALIZATION.md).
 
 ## Features
 
@@ -31,7 +31,7 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
   (where most film sites put it). Hold ← / → to seek: key repeats accumulate, accelerate (10 s → 30 s → 60 s) and
   are previewed on the progress bar, then sent as **one** seek, so the stream doesn't reload at every step.
 - **Ad, tracker and pop-up blocking** — a standards-based filter engine (Adblock Plus / uBlock Origin syntax)
-  with the community [ABPVN](https://abpvn.com) lists refreshed daily, a built-in list, generic pop-up and
+  with the community [EasyList](https://easylist.to) and [ABPVN](https://abpvn.com) lists refreshed daily, a built-in list, generic pop-up and
   redirect protection, removal of invisible click-catching overlays and "disable your ad blocker" nags.
   Details in [docs/ADBLOCK.md](docs/ADBLOCK.md).
 - **Made for TV hardware** — 0.6 s cold start and ~55 fps on a 32-bit MediaTek TV SoC; see
@@ -40,12 +40,14 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
   large type, *Reduce motion* setting.
 - Floating toolbar (Back, Forward, Refresh, Home, address, Save, pointer mode, Settings), History, Favourites,
   clear error screens (offline, DNS, timeout, TLS), settings in seven plain-language groups.
+- **Speaks your language** — English, Tiếng Việt, Español, Français, Deutsch, Português, Русский, 日本語, 한국어, 中文.
+  Follows the TV's system language automatically; switch any time in Settings → General → Language.
 - **Private by design** — no accounts, analytics or telemetry. See [Privacy](#privacy).
 
 ## Screenshots
 
-> Captured on a Xiaomi TV S Pro 65" (4K, Android 14). The UI is Vietnamese; sample content is the open-source
-> Blender movie *Big Buck Bunny* and Wikipedia.
+> Captured on a Xiaomi TV S Pro 65" (4K, Android 14). Sample content is the open-source Blender movie
+> *Big Buck Bunny* and Wikipedia.
 
 | | |
 |:--|:--|
@@ -111,15 +113,16 @@ Official releases use a private key; see [docs/RELEASING.md](docs/RELEASING.md).
 
 ```
 app/src/main/java/com/luna/browser/
-  MainActivity.kt, AppState.kt        entry point, navigation, global key handling
+  MainActivity.kt, AppState.kt        entry point, navigation, global key handling, language
   browser/                            WebView controller (cursor, video, popups), PopupGuard
   data/                               Store (settings, history), AdBlocker, filter/ (list parser + engine)
   ui/                                 Compose screens, TV components, theme
+app/src/main/res/values*/strings.xml  UI strings: English default + 9 translations
 app/src/main/assets/filters/luna.txt  Luna's own filter rules (Adblock Plus syntax)
 app/src/test/                         unit tests (filter engine)
 tools/sitecheck/                      on-TV ad-blocking report (Chrome DevTools + adb)
 tools/perf/                           on-TV frame timing
-docs/                                 architecture, design system, ad blocking, performance, releasing
+docs/                                 architecture, design, ad blocking, performance, localization, releasing
 ```
 
 Start with [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
@@ -130,7 +133,7 @@ Luna has no accounts, no analytics and no telemetry. The only network traffic be
 
 | Request | When | Why |
 |---|---|---|
-| ABPVN filter lists (`raw.githubusercontent.com`, `abpvn.com`) | first run, then daily | ad-blocking rules (can be switched off in Settings) |
+| Filter lists: EasyList (`easylist.to`) or, for Vietnamese, ABPVN (`raw.githubusercontent.com`, `abpvn.com`) | first run, then daily | ad-blocking rules (each list can be switched off in Settings) |
 | `google.com/s2/favicons` | home screen, only for the built-in quick sites | their icons |
 | Thumbnails (`i.ytimg.com` or the page's own `og:image`) | home / history cards | artwork for pages you visited |
 
@@ -139,7 +142,7 @@ Pages are rendered by the Android System WebView and get **no** JavaScript bridg
 
 ## Roadmap
 
-- [ ] **Localisation** — move UI strings to `strings.xml` with an English default (Vietnamese becomes a translation).
+- [ ] More languages and native-speaker review of the existing translations ([how](docs/LOCALIZATION.md)).
 - [ ] Tabs.
 - [ ] Downloads handling.
 - [ ] Per-site settings (desktop / mobile, zoom, pointer mode).
@@ -156,7 +159,7 @@ issue template — it is usually a one-line fix. For vulnerabilities see [SECURI
 
 ## Acknowledgements
 
-[ABPVN](https://abpvn.com) for the Vietnamese filter lists · [Jetpack Compose](https://developer.android.com/jetpack/compose) ·
+[EasyList](https://easylist.to) and [ABPVN](https://abpvn.com) for the filter lists · [Jetpack Compose](https://developer.android.com/jetpack/compose) ·
 [Coil](https://coil-kt.github.io/coil/) · the Chromium / Android WebView team · the Blender Foundation for open
 movies that make great test footage. Full list: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 

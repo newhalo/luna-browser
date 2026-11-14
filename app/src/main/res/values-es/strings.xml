@@ -126,7 +126,7 @@
 
     <string name="set_language">Idioma</string>
     <string name="set_language_d">El idioma de Luna. «Automático» sigue el idioma del sistema del televisor.</string>
-    <string name="lang_auto">Automático (idioma del sistema)</string>
+    <string name="lang_auto">Automático</string>
     <string name="set_engine">Buscador</string>
     <string name="set_engine_d">Se usa cuando escribes palabras en lugar de una dirección web.</string>
     <string name="set_anim_bg">Fondo animado</string>
