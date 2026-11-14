@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/logo.png" alt="Luna Browser logo: a crescent moon" width="120">
+
 # Luna Browser
 
 **A web browser built for the living-room TV — designed for the remote, readable from the sofa, smooth on weak TV hardware.**
