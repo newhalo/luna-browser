@@ -194,7 +194,7 @@ class AdBlocker(private val ctx: Context) {
         val c = URL(l.url).openConnection() as HttpURLConnection
         c.connectTimeout = 10_000
         c.readTimeout = 30_000
-        c.setRequestProperty("User-Agent", "LunaBrowser/0.2 (Android TV)")
+        c.setRequestProperty("User-Agent", "LunaBrowser/0.3 (Android TV)")
         if (c.responseCode != 200) error("HTTP ${c.responseCode}")
         // A list is a few MB at most; refuse anything absurd rather than fill memory or storage.
         val sink = java.io.ByteArrayOutputStream()

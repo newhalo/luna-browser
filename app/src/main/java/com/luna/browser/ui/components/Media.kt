@@ -98,7 +98,7 @@ fun Art(
     )
 }
 
-private const val USER_AGENT = "LunaBrowser/0.2 (Android TV; +https://github.com/newhalo/luna-browser)"
+private const val USER_AGENT = "LunaBrowser/0.3 (Android TV; +https://github.com/newhalo/luna-browser)"
 
 /** One drifting light: centre and radius in dp on the 960×540 dp canvas, drift (dx, dy) over a sweep. */
 private class Light(val color: Color, val x: Float, val y: Float, val r: Float, val dx: Float, val dy: Float)

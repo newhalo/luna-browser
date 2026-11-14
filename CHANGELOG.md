@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-11-14
+
 ### Added
 - **Continue where you left off**: videos of three minutes or more remember their position (checked twice a second
   while fullscreen, saved every few seconds). Reopening the page seeks back and says so; Home cards show a progress
@@ -62,4 +64,5 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - First version: Jetpack Compose TV UI on the system WebView, virtual cursor, floating toolbar, fullscreen
   video controls, host-based ad blocking, settings, history and favourites.
 
-[Unreleased]: https://github.com/newhalo/luna-browser/compare/HEAD...HEAD
+[Unreleased]: https://github.com/newhalo/luna-browser/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/newhalo/luna-browser/releases/tag/v0.3.0
