@@ -42,6 +42,10 @@ android {
     buildTypes {
         debug {
             signingConfig = signingConfigs.getByName("dev")
+            // A separate app id, so a debug build installs NEXT TO the release app (own data, own launcher
+            // icon "Luna (debug)") instead of fighting it over the signing key.
+            applicationIdSuffix = ".debug"
+            versionNameSuffix = "-debug"
         }
         release {
             isMinifyEnabled = true

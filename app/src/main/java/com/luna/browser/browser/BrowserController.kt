@@ -185,7 +185,12 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         CookieManager.getInstance().setAcceptThirdPartyCookies(webView, app.store.bool(K.THIRD_PARTY))
     }
 
+    /** True while the browser screen is showing; the inline video watcher only runs then. */
+    private var active = false
+
     fun onEnter() {
+        active = true
+        startInlineWatch()
         applySettings()
         if (uaChanged && webView.url != null) webView.reload()
         uaChanged = false
@@ -200,6 +205,14 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     }
 
     fun onLeave() {
+        active = false
+        handler.removeCallbacks(inlineWatch)
+        // Remember where the video was left before the page is paused.
+        if (customView == null) {
+            webView.evaluateJavascript(videoJs("", "state", 0)) { r ->
+                parse(r)?.let { saveProgress(it, flush = true) }
+            }
+        }
         held.clear()
         webView.onPause()
     }
@@ -317,6 +330,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
 
         override fun onPageStarted(view: WebView, pageUrl: String?, favicon: Bitmap?) {
             pageStartedAt = SystemClock.uptimeMillis()
+            resumeTried = null   // a new document: the saved position may apply again
             injectFallbackScripts(view)
             error = null
             loading = true
@@ -426,6 +440,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             video?.let { saveProgress(it, flush = true) }
             resumeTried = null
             customView = null
+            if (active) startInlineWatch()
             customCb = null
             controlsVisible = false
             video = null
@@ -938,8 +953,13 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
             if (saved != null && delta != null) {
                 val js = "b.currentTime=Math.max(0,Math.min(isFinite(b.duration)?b.duration:1e9,b.currentTime+($delta)));"
                 runVideo(js, "seek", delta)
-                flash(app.s(R.string.vid_resumed, ResumeRules.clock(saved.pos)), Icons.Rounded.PlayArrow, hold = true)
-                resumeFlashUntil = SystemClock.uptimeMillis() + 1800
+                val msg = app.s(R.string.vid_resumed, ResumeRules.clock(saved.pos))
+                if (customView != null) {
+                    flash(msg, Icons.Rounded.PlayArrow, hold = true)
+                    resumeFlashUntil = SystemClock.uptimeMillis() + 1800
+                } else {
+                    app.toast(msg)
+                }
                 return
             }
         }
@@ -953,6 +973,29 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
     fun typeIntoFocused(text: String, submit: Boolean, done: (Boolean) -> Unit) {
         val js = TYPE_JS.replace("__TEXT__", JSONObject.quote(text)).replace("__SUBMIT__", submit.toString())
         webView.evaluateJavascript(js) { r -> done(r == "\"ok\"") }
+    }
+
+    /**
+     * Watches a video that plays inside the page (not fullscreen), so its position is remembered too.
+     * Cheap: one tiny script every few seconds while the browser is showing; pages without a video
+     * back off to a slower check.
+     */
+    private var noVideoChecks = 0
+    private val inlineWatch = object : Runnable {
+        override fun run() {
+            if (!active || customView != null) return
+            webView.evaluateJavascript(videoJs("", "state", 0)) { r ->
+                val s = parse(r)
+                if (s == null) noVideoChecks++ else { noVideoChecks = 0; trackProgress(s) }
+                if (active && customView == null) handler.postDelayed(this, if (noVideoChecks > 2) 12_000 else 4_000)
+            }
+        }
+    }
+
+    private fun startInlineWatch() {
+        noVideoChecks = 0
+        handler.removeCallbacks(inlineWatch)
+        handler.postDelayed(inlineWatch, 4_000)
     }
 
     private fun startPolling() {
