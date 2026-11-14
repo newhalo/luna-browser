@@ -1,7 +1,7 @@
-# Summarises `dumpsys gfxinfo <pkg> framestats`: UI-thread, GPU and frame-to-frame timing.
+﻿# Summarises `dumpsys gfxinfo <pkg> framestats`: UI-thread, GPU and frame-to-frame timing.
 # Usage: python frames.py framestats.txt   (tools/perf/measure.ps1 runs it for you)
 import sys, statistics
-txt = open(sys.argv[1], encoding="utf-8", errors="ignore").read()
+txt = open(sys.argv[1], encoding="utf-8-sig", errors="ignore").read()
 blocks = txt.split("---PROFILEDATA---")
 rows, hdr = [], None
 for b in blocks[1::2]:
