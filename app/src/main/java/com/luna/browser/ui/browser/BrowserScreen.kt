@@ -198,7 +198,7 @@ private fun Toolbar(app: AppState, b: BrowserController) {
                         Icon(if (b.url.startsWith("https")) Icons.Rounded.Lock else Icons.Rounded.Search, null, tint = TextSecondary, modifier = Modifier.size(22.dp))
                         Column(Modifier.padding(start = 12.dp)) {
                             Txt(if (b.url.isEmpty()) "Search or enter address" else hostOf(b.url), T.label)
-                            Txt(b.title.ifBlank { "Press OK to type an address" }, T.caption.copy(fontSize = 14.sp))
+                            Txt(b.title.ifBlank { "Press OK to type an address" }, T.caption)
                         }
                     }
                 }
@@ -317,7 +317,7 @@ private fun BoxScope.VideoOverlay(b: BrowserController) {
                     Box(Modifier.fillMaxWidth(frac).fillMaxHeight().background(Accent))
                 }
                 Spacer(Modifier.height(12.dp))
-                Txt("◀ ▶  Seek     OK  Play / Pause     Back  Hide controls", T.caption, color = Color(0xCCFFFFFF))
+                Txt("Left / Right  Skip      OK  Play / Pause      Back  Hide controls", T.caption, color = Color(0xCCFFFFFF))
             }
         }
     }

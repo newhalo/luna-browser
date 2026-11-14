@@ -40,6 +40,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -98,7 +100,7 @@ fun FocusSurface(
             .background(if (focused) SurfaceFocus else container)
             .border(if (focused) BorderStroke(3.dp, FocusRing) else BorderStroke(1.dp, Outline), shape)
             .onFocusChanged { focused = it.isFocused }
-            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, onClick = onClick),
+            .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, role = Role.Button, onClick = onClick),
     ) { content(focused) }
 }
 
@@ -151,14 +153,14 @@ fun IconLabelButton(
 ) {
     FocusSurface(
         onClick = { if (enabled) onClick() },
-        modifier = modifier.width(80.dp).height(66.dp),
+        modifier = modifier.width(84.dp).height(66.dp),
         shape = RoundedCornerShape(14.dp),
         container = if (highlighted) Accent.copy(alpha = 0.2f) else Surface,
         focusScale = 1.08f,
     ) {
         Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(icon, null, tint = if (!enabled) TextSecondary.copy(alpha = .5f) else if (highlighted) Accent else TextPrimary, modifier = Modifier.size(26.dp))
-            Txt(label, T.caption.copy(fontSize = 14.sp), color = if (enabled) TextPrimary else TextSecondary.copy(alpha = .5f))
+            Txt(label, T.caption.copy(fontSize = 15.sp), color = if (enabled) TextPrimary else TextSecondary.copy(alpha = .5f))
         }
     }
 }
@@ -202,7 +204,7 @@ fun LetterTile(text: String, size: Dp, modifier: Modifier = Modifier) {
     )
     val (a, b) = palette[(text.hashCode() and 0x7fffffff) % palette.size]
     Box(
-        modifier.size(size).clip(RoundedCornerShape(size / 4))
+        modifier.clearAndSetSemantics { }.size(size).clip(RoundedCornerShape(size / 4))
             .background(Brush.linearGradient(listOf(Color(a), Color(b)))),
         contentAlignment = Alignment.Center,
     ) {
@@ -217,7 +219,7 @@ fun SiteCard(title: String, subtitle: String, onClick: () -> Unit, modifier: Mod
             LetterTile(title, 44.dp)
             Column {
                 Txt(title, T.body.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold))
-                Txt(subtitle, T.caption.copy(fontSize = 14.sp), color = TextSecondary)
+                Txt(subtitle, T.caption, color = TextSecondary)
             }
         }
     }
@@ -228,7 +230,7 @@ fun ToastHost(app: AppState, modifier: Modifier = Modifier) {
     val msg = app.toastMsg
     LaunchedEffect(msg) {
         if (msg != null) {
-            kotlinx.coroutines.delay(2600)
+            kotlinx.coroutines.delay(2600L + msg.length * 45L)
             if (app.toastMsg == msg) app.toastMsg = null
         }
     }
