@@ -39,6 +39,8 @@ data class FilterList(
     val asset: String? = null,
     /** Whether the list is switched on the first time, given the system language code ("vi", "en", …). */
     val defaultOn: (String) -> Boolean = { true },
+    /** Big lists stay off by default on low-memory TVs. */
+    val heavy: Boolean = false,
 )
 
 val FilterLists = listOf(
@@ -63,6 +65,7 @@ val FilterLists = listOf(
         // The general-purpose list for everyone who isn't served by ABPVN. ~78k rules, +~65 MB of memory on
         // the test TV, no measurable effect on browsing smoothness (see docs/PERFORMANCE.md).
         defaultOn = { it != "vi" },
+        heavy = true,
     ),
 )
 
@@ -90,7 +93,8 @@ class AdBlocker(private val ctx: Context) {
     val status = mutableStateMapOf<String, ListStatus>()
     private val enabled = mutableStateMapOf<String, Boolean>().apply {
         val systemLang = ctx.resources.configuration.locales[0].language
-        FilterLists.forEach { put(it.id, prefs.getBoolean("on.${it.id}", it.defaultOn(systemLang))) }
+        val lowEnd = DeviceProfile.isLowEnd(ctx)
+        FilterLists.forEach { put(it.id, prefs.getBoolean("on.${it.id}", it.defaultOn(systemLang) && !(lowEnd && it.heavy))) }
     }
 
     init {

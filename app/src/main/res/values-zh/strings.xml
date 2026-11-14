@@ -82,7 +82,7 @@
     <string name="vid_back_s">快退 %1$d 秒</string>
 
     <string name="toast_no_downloads">暂不支持下载</string>
-    <string name="toast_tip">提示：按“菜单”键打开工具栏，长按“确定”键可在指针和链接模式之间切换</string>
+    <string name="toast_tip">提示：按“菜单”键（或长按“返回”键）打开工具栏，长按“确定”键可在指针和链接模式之间切换</string>
     <string name="toast_fav_added">已添加到收藏夹</string>
     <string name="toast_fav_removed">已从收藏夹移除</string>
     <string name="toast_mode_pointer">指针模式：移动指针，按“确定”键选择</string>

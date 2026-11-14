@@ -86,7 +86,7 @@
     <string name="vid_back_s">Voltar %1$d segundos</string>
 
     <string name="toast_no_downloads">Os downloads ainda não são compatíveis</string>
-    <string name="toast_tip">Dica: pressione Menu para a barra de ferramentas e mantenha OK para alternar entre ponteiro e links</string>
+    <string name="toast_tip">Dica: pressione Menu (ou segure Voltar) para a barra de ferramentas e mantenha OK para alternar entre ponteiro e links</string>
     <string name="toast_fav_added">Adicionado aos Favoritos</string>
     <string name="toast_fav_removed">Removido dos Favoritos</string>
     <string name="toast_mode_pointer">Modo ponteiro: mova o ponteiro e pressione OK para selecionar</string>

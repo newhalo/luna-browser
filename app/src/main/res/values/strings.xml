@@ -98,7 +98,7 @@
 
     <!-- Toasts -->
     <string name="toast_no_downloads">Downloads aren’t supported yet</string>
-    <string name="toast_tip">Tip: press Menu for the toolbar, hold OK to switch between pointer and link mode</string>
+    <string name="toast_tip">Tip: press Menu (or hold Back) for the toolbar, hold OK to switch between pointer and link mode</string>
     <string name="toast_fav_added">Added to Favorites</string>
     <string name="toast_fav_removed">Removed from Favorites</string>
     <string name="toast_mode_pointer">Pointer mode: move the pointer, press OK to select</string>

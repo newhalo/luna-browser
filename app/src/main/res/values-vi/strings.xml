@@ -82,7 +82,7 @@
     <string name="vid_back_s">Tua lùi %1$d giây</string>
 
     <string name="toast_no_downloads">Luna chưa hỗ trợ tải tệp xuống</string>
-    <string name="toast_tip">Mẹo: bấm Menu để mở thanh công cụ, giữ OK để đổi giữa con trỏ và chế độ liên kết</string>
+    <string name="toast_tip">Mẹo: bấm Menu (hoặc giữ Quay lại) để mở thanh công cụ, giữ OK để đổi giữa con trỏ và chế độ liên kết</string>
     <string name="toast_fav_added">Đã thêm vào Yêu thích</string>
     <string name="toast_fav_removed">Đã bỏ khỏi Yêu thích</string>
     <string name="toast_mode_pointer">Chế độ con trỏ: di chuyển con trỏ, bấm OK để chọn</string>

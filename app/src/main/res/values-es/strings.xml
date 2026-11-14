@@ -86,7 +86,7 @@
     <string name="vid_back_s">Retroceder %1$d segundos</string>
 
     <string name="toast_no_downloads">Las descargas aún no son compatibles</string>
-    <string name="toast_tip">Consejo: pulsa Menú para ver la barra de herramientas y mantén OK para cambiar entre puntero y enlaces</string>
+    <string name="toast_tip">Consejo: pulsa Menú (o mantén Atrás) para ver la barra de herramientas y mantén OK para cambiar entre puntero y enlaces</string>
     <string name="toast_fav_added">Añadido a Favoritos</string>
     <string name="toast_fav_removed">Quitado de Favoritos</string>
     <string name="toast_mode_pointer">Modo puntero: mueve el puntero y pulsa OK para seleccionar</string>

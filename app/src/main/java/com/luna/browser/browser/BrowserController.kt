@@ -316,7 +316,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
 
         override fun onPageStarted(view: WebView, pageUrl: String?, favicon: Bitmap?) {
             pageStartedAt = SystemClock.uptimeMillis()
-            if (!docStartScript && app.store.bool(K.BLOCK_POPUPS)) view.evaluateJavascript(PopupGuard.OVERLAY_JS, null)
+            injectFallbackScripts(view)
             error = null
             loading = true
             progress = 0.05f
@@ -335,6 +335,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             if (error == null && pageUrl != null) onVisited(pageUrl, title)
             injectCosmetics(view)
             if (app.store.bool(K.BLOCK_POPUPS)) view.evaluateJavascript(PopupGuard.OVERLAY_JS, null)
+            if (!docStartScript) view.evaluateJavascript(PopupGuard.VIDEO_BRIDGE_JS, null)
         }
 
         override fun doUpdateVisitedHistory(view: WebView, pageUrl: String?, isReload: Boolean) {
@@ -478,6 +479,17 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     // ---- Pop-up guard ----
     private var pageStartedAt = 0L
     private var docStartScript = false
+
+    /**
+     * Old WebViews (before the document-start script API, roughly Chrome 76) can't inject into every frame
+     * early. Fall back to injecting into the top page as soon as it starts and again when it finishes:
+     * pop-up and overlay protection still work, but a player inside a cross-origin iframe can't be bridged.
+     */
+    private fun injectFallbackScripts(view: WebView) {
+        if (docStartScript) return
+        if (app.store.bool(K.BLOCK_POPUPS)) view.evaluateJavascript(PopupGuard.OVERLAY_JS, null)
+        view.evaluateJavascript(PopupGuard.VIDEO_BRIDGE_JS, null)
+    }
     private var lastPopupToast = 0L
 
     private fun notePopupBlocked(@StringRes msg: Int) {
@@ -547,8 +559,15 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     fun handleKey(e: KeyEvent): Boolean {
         val code = e.keyCode
         val down = e.action == KeyEvent.ACTION_DOWN
-        if (code == KeyEvent.KEYCODE_MENU) {
+        // Remotes differ: many (Google TV, Chromecast) have no Menu key, so Info and Bookmark open the toolbar too.
+        // Long Back and "Up at the very top of the page" always work.
+        if (code == KeyEvent.KEYCODE_MENU || code == KeyEvent.KEYCODE_INFO || code == KeyEvent.KEYCODE_BOOKMARK) {
             if (!down) { if (toolbarVisible) hideToolbar() else showToolbar() }
+            return true
+        }
+        // Red coloured key (present on many TV remotes): switch pointer / link mode without holding OK.
+        if (code == KeyEvent.KEYCODE_PROG_RED && customView == null && !toolbarVisible && error == null) {
+            if (!down) toggleMode()
             return true
         }
         if (customView != null) return handleVideoKey(e)

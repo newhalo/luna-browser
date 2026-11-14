@@ -86,7 +86,7 @@
     <string name="vid_back_s">Reculer de %1$d secondes</string>
 
     <string name="toast_no_downloads">Les téléchargements ne sont pas encore pris en charge</string>
-    <string name="toast_tip">Astuce : appuyez sur Menu pour la barre d’outils, maintenez OK pour basculer entre pointeur et liens</string>
+    <string name="toast_tip">Astuce : appuyez sur Menu (ou maintenez Retour) pour la barre d’outils, maintenez OK pour basculer entre pointeur et liens</string>
     <string name="toast_fav_added">Ajouté aux favoris</string>
     <string name="toast_fav_removed">Retiré des favoris</string>
     <string name="toast_mode_pointer">Mode pointeur : déplacez le pointeur, appuyez sur OK pour sélectionner</string>

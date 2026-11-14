@@ -86,7 +86,7 @@
     <string name="vid_back_s">%1$d Sekunden zurück</string>
 
     <string name="toast_no_downloads">Downloads werden noch nicht unterstützt</string>
-    <string name="toast_tip">Tipp: Menü öffnet die Symbolleiste, OK gedrückt halten wechselt zwischen Zeiger und Link-Modus</string>
+    <string name="toast_tip">Tipp: Menü (oder Zurück gedrückt halten) öffnet die Symbolleiste, OK gedrückt halten wechselt zwischen Zeiger und Link-Modus</string>
     <string name="toast_fav_added">Zu Favoriten hinzugefügt</string>
     <string name="toast_fav_removed">Aus Favoriten entfernt</string>
     <string name="toast_mode_pointer">Zeiger-Modus: Zeiger bewegen, mit OK auswählen</string>

@@ -82,7 +82,7 @@
     <string name="vid_back_s">%1$d초 뒤로</string>
 
     <string name="toast_no_downloads">다운로드는 아직 지원되지 않습니다</string>
-    <string name="toast_tip">팁: 메뉴를 누르면 도구 모음이 열리고, OK를 길게 누르면 포인터와 링크 모드가 전환됩니다</string>
+    <string name="toast_tip">팁: 메뉴(또는 뒤로 길게 누르기)로 도구 모음을 열고, OK를 길게 누르면 포인터와 링크 모드가 전환됩니다</string>
     <string name="toast_fav_added">즐겨찾기에 추가했습니다</string>
     <string name="toast_fav_removed">즐겨찾기에서 삭제했습니다</string>
     <string name="toast_mode_pointer">포인터 모드: 포인터를 움직이고 OK로 선택하세요</string>

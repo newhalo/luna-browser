@@ -196,6 +196,8 @@ class Store(ctx: Context) {
     val thumbsDir = File(ctx.filesDir, "thumbs").apply { mkdirs() }
     val iconsDir = File(ctx.filesDir, "icons").apply { mkdirs() }
 
+    private val lowEnd = DeviceProfile.isLowEnd(ctx)
+
     private val defaults = mapOf(
         K.ENGINE to "Google", K.LAUNCH to "home",
         K.SHOW_CONTINUE to "true", K.SHOW_RECENT to "true",
@@ -203,7 +205,9 @@ class Store(ctx: Context) {
         K.DESKTOP to "true", K.ZOOM to "125",
         K.ADBLOCK to "true", K.BLOCK_POPUPS to "true",
         K.SEEK_STEP to "10", K.THIRD_PARTY to "true",
-        K.REDUCE_MOTION to "false", K.ANIMATED_BG to "true", K.TIP_SHOWN to "false", K.LANGUAGE to "auto",
+        // Entry-level TVs start with the light settings; everything can be switched back on in Settings.
+        K.REDUCE_MOTION to lowEnd.toString(), K.ANIMATED_BG to (!lowEnd).toString(),
+        K.TIP_SHOWN to "false", K.LANGUAGE to "auto",
     )
 
     val settings = mutableStateMapOf<String, String>().apply {

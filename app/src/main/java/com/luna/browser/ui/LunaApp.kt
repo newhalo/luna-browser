@@ -13,6 +13,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
+import com.luna.browser.ui.theme.canvasDensity
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,9 +50,14 @@ fun LunaApp(app: AppState) {
     // Compose reads strings through LocalContext, so providing the language-aware context here makes
     // stringResource() follow the chosen language and switch live when it changes.
     val lctx = app.ctx
+    // Keep the UI the same physical size on any TV: lay out on a 960 dp canvas whatever the density setting.
+    val base = LocalDensity.current
+    val config = LocalConfiguration.current
+    val density = canvasDensity(config.screenWidthDp * base.density, config.screenHeightDp * base.density)
     CompositionLocalProvider(
         LocalContext provides lctx,
         LocalConfiguration provides lctx.resources.configuration,
+        LocalDensity provides Density(density, base.fontScale),
     ) {
     LunaTheme(reduceMotion = app.store.bool(K.REDUCE_MOTION)) {
         // No in-app splash: Android 12+ already shows the system splash while the process starts,

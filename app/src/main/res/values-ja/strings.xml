@@ -82,7 +82,7 @@
     <string name="vid_back_s">%1$d秒巻き戻し</string>
 
     <string name="toast_no_downloads">ダウンロードにはまだ対応していません</string>
-    <string name="toast_tip">ヒント：メニューでツールバーを表示、OKを長押しでポインターとリンクを切り替えます</string>
+    <string name="toast_tip">ヒント：メニュー（または戻るの長押し）でツールバーを表示、OKを長押しでポインターとリンクを切り替えます</string>
     <string name="toast_fav_added">お気に入りに追加しました</string>
     <string name="toast_fav_removed">お気に入りから削除しました</string>
     <string name="toast_mode_pointer">ポインターモード：ポインターを動かしてOKで選択します</string>

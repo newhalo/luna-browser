@@ -94,7 +94,7 @@
     <string name="vid_back_s">Назад на %1$d с</string>
 
     <string name="toast_no_downloads">Загрузка файлов пока не поддерживается</string>
-    <string name="toast_tip">Совет: «Меню» открывает панель, удержание OK переключает указатель и режим ссылок</string>
+    <string name="toast_tip">Совет: «Меню» (или удержание «Назад») открывает панель, удержание OK переключает указатель и режим ссылок</string>
     <string name="toast_fav_added">Добавлено в избранное</string>
     <string name="toast_fav_removed">Удалено из избранного</string>
     <string name="toast_mode_pointer">Режим указателя: двигайте указатель, выбирайте кнопкой OK</string>
