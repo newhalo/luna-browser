@@ -1,24 +1,34 @@
 ﻿<#
 .SYNOPSIS
-  Opens each site from sites.txt in Luna on the TV and reports how well ads and pop-ups are handled.
+  Opens each site from a list in Luna on a TV and reports how well ads and pop-ups are handled.
 
 .DESCRIPTION
-  Needs: a debug build of Luna installed on the TV, adb over Wi-Fi, Node.js 22+ on this PC.
+  Needs: a DEBUG build of Luna installed on the TV, adb over Wi-Fi, Node.js 22+ on this PC.
   For every site: open it, wait, inspect the page through DevTools (inspect.js), collect the
   "LunaFilter" log lines (what was blocked and by which rule), press OK once at the pointer to
   provoke click-hijacks, check the page is still on the same site, and take a screenshot.
-  Writes out/report.md and out/<host>.png.
+  Writes out/report.md and out/<host>.png (both git-ignored).
+
+  Sites come from sites.local.txt (git-ignored, your own list) when it exists, otherwise sites.txt.
+
+.PARAMETER Device
+  adb address of the TV, e.g. 192.168.1.50:5555. Defaults to the LUNA_TV environment variable.
 
 .EXAMPLE
-  powershell -ExecutionPolicy Bypass -File tools\sitecheck\sitecheck.ps1 -Device 192.168.31.27:5555
+  powershell -ExecutionPolicy Bypass -File tools\sitecheck\sitecheck.ps1 -Device 192.168.1.50:5555
 #>
 param(
-    [string]$Device = "192.168.31.27:5555",
-    [string]$Adb = "$PSScriptRoot\..\platform-tools\adb.exe",
-    [string]$Sites = "$PSScriptRoot\sites.txt",
+    [string]$Device = $env:LUNA_TV,
+    [string]$Adb = "adb",
+    [string]$Sites = "",
     [int]$LoadSeconds = 15
 )
 $ErrorActionPreference = "Continue"
+if (-not $Device) { throw "Pass -Device <ip:5555> or set the LUNA_TV environment variable." }
+if (-not $Sites) {
+    $local = Join-Path $PSScriptRoot "sites.local.txt"
+    $Sites = if (Test-Path $local) { $local } else { Join-Path $PSScriptRoot "sites.txt" }
+}
 $out = Join-Path $PSScriptRoot "out"
 New-Item -ItemType Directory -Force $out | Out-Null
 $cdp = Join-Path $PSScriptRoot "cdp.js"
@@ -44,7 +54,7 @@ foreach ($site in $list) {
     adb forward tcp:9222 "localabstract:webview_devtools_remote_$procId" | Out-Null
 
     $before = inspectPage
-    # Press OK at the pointer (centre of the page) — the classic pop-under trigger.
+    # Press OK at the pointer (centre of the page): the classic pop-under trigger.
     adb shell input keyevent KEYCODE_DPAD_CENTER
     Start-Sleep 5
     $after = inspectPage
@@ -58,25 +68,25 @@ foreach ($site in $list) {
     $hijacked = (siteOf $finalHost) -ne (siteOf $siteHost)
     $loaded = -not $before.error
 
-    $verdict = if (-not $loaded) { "⚠️ Không mở được" }
-        elseif ($hijacked) { "❌ Bị chuyển sang $finalHost" }
-        elseif ($before.overlays -gt 0 -or $before.adSlots.Count -gt 0 -or $before.fixedBanners -gt 0) { "🟡 Còn quảng cáo hiển thị" }
-        else { "✅ Sạch" }
-    $rows += "| $siteHost | $verdict | $($blocked.Count) | $($before.adSlots.Count) / $($before.fixedBanners) | $($before.overlays) | $(if ($before.guard) { 'có' } else { 'không' }) |"
-    $details += "### $siteHost`n- Tiêu đề: $($before.title)`n- Trang sau khi bấm: $($after.url)`n- Video / iframe: $($before.videos) / $($before.iframes)`n" +
-        "- Đã chặn theo tên miền: " + (($blockedHosts | Select-Object -First 10 | ForEach-Object { "$($_.Name) ($($_.Count))" }) -join ", ") + "`n" +
-        "- Ô quảng cáo còn thấy: " + (($before.adSlots) -join "; ") + "`n" +
-        "- Tên miền bên thứ ba trang đã gọi: " + (($before.thirdParty) -join ", ") + "`n" +
-        "- Ảnh chụp: out/$siteHost.png`n"
+    $verdict = if (-not $loaded) { "[WARN] could not load" }
+        elseif ($hijacked) { "[FAIL] redirected to $finalHost" }
+        elseif ($before.overlays -gt 0 -or $before.adSlots.Count -gt 0 -or $before.fixedBanners -gt 0) { "[WARN] ads still visible" }
+        else { "[OK] clean" }
+    $rows += "| $siteHost | $verdict | $($blocked.Count) | $($before.adSlots.Count) / $($before.fixedBanners) | $($before.overlays) | $(if ($before.guard) { 'yes' } else { 'no' }) |"
+    $details += "### $siteHost`n- Title: $($before.title)`n- Page after pressing OK: $($after.url)`n- Videos / iframes: $($before.videos) / $($before.iframes)`n" +
+        "- Blocked by host: " + (($blockedHosts | Select-Object -First 10 | ForEach-Object { "$($_.Name) ($($_.Count))" }) -join ", ") + "`n" +
+        "- Ad slots still visible: " + (($before.adSlots) -join "; ") + "`n" +
+        "- Third-party hosts the page called: " + (($before.thirdParty) -join ", ") + "`n" +
+        "- Screenshot: out/$siteHost.png`n"
 }
 adb forward --remove tcp:9222 | Out-Null
 adb shell input keyevent KEYCODE_MEDIA_PAUSE
 
 $date = Get-Date -Format "yyyy-MM-dd HH:mm"
 $report = @"
-# Kiểm tra chặn quảng cáo — $date
+# Ad-blocking check - $date
 
-| Trang | Kết quả | Request bị chặn | Ô quảng cáo / banner dính | Lớp phủ vô hình | Bộ chống popup |
+| Site | Result | Blocked requests | Ad slots / sticky banners | Invisible overlays | Pop-up guard |
 |---|---|---|---|---|---|
 $($rows -join "`n")
 

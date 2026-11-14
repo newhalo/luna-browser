@@ -1,75 +1,86 @@
-# Chặn quảng cáo và popup — cách hoạt động và cách bảo trì
+# Ad and pop-up blocking
 
-Trang phim miễn phí đổi tên miền và cách chèn quảng cáo liên tục. Luna không viết code riêng cho
-từng trang. Thay vào đó, mọi thứ đi qua **ba lớp chung**, và phần thay đổi theo trang nằm trong
-**danh sách lọc dạng văn bản** (cú pháp Adblock Plus / uBlock Origin).
+Free streaming and news sites change domains and ad tricks all the time. Luna therefore has **no per-site
+code**. Everything goes through a few generic layers, and everything that varies per site lives in **plain-text
+filter lists** (Adblock Plus / uBlock Origin syntax) that can be updated without touching the app.
 
 ```
-           ┌────────────────────────── Danh sách lọc (văn bản, cú pháp ABP) ─────────────────────────┐
-           │  filters/luna.txt (đi kèm app)   ABPVN (tải hằng ngày)   ABPVN hosts (tải hằng ngày)    │
-           └───────────────────────────────────────┬──────────────────────────────────────────────────┘
-                                                   ▼
-                                     FilterEngine (data/filter/)
-                ┌──────────────────────────┬───────┴─────────────┬──────────────────────────────┐
-                ▼                          ▼                     ▼                              ▼
-   1. Chặn request mạng       2. Ẩn phần tử (CSS)      3. Chặn chuyển trang / popup    (PopupGuard — luật chung,
-   shouldInterceptRequest      injectCosmetics          shouldOverrideUrlLoading,       không cần danh sách)
-                                                         onCreateWindow
+        ┌──────────────────────── Filter lists (text, ABP syntax) ────────────────────────┐
+        │  filters/luna.txt (bundled)   ABPVN list (daily)   ABPVN hosts list (daily)     │
+        └───────────────────────────────────────┬─────────────────────────────────────────┘
+                                                ▼
+                                   FilterEngine  (data/filter/)
+              ┌─────────────────────────┬───────┴────────────────┬─────────────────────────┐
+              ▼                         ▼                        ▼                         ▼
+     1. Block requests         2. Hide elements        3. Block navigation        PopupGuard
+     shouldInterceptRequest    injectCosmetics         shouldOverrideUrlLoading   (generic rules,
+                                                       onCreateWindow              no list needed)
 ```
 
-| Lớp | Ở đâu | Xử lý được |
+| Layer | Where | Handles |
 |---|---|---|
-| Chặn request | `AdBlocker.shouldBlock` ← `BrowserController.shouldInterceptRequest` | script/ảnh/iframe quảng cáo, mạng popunder |
-| Ẩn phần tử | `FilterEngine.css` → `injectCosmetics` | banner dính đáy (catfish), khung quảng cáo trong trang |
-| Chuyển trang / popup | `BrowserController` + `PopupGuard` | trang bị thay bằng quảng cáo, cửa sổ bật lên, trang tự chuyển hướng |
-| Lớp phủ vô hình | `PopupGuard.OVERLAY_JS` (chèn ở đầu mọi frame) | iframe/lớp trong suốt phủ toàn màn hình bắt cú click |
-| Điều khiển video | `PopupGuard.VIDEO_BRIDGE_JS` | trình phát nằm trong iframe khác tên miền |
+| Request blocking | `AdBlocker.shouldBlock` ← `BrowserController.shouldInterceptRequest` | ad / tracker scripts, images and iframes, pop-under networks |
+| Element hiding | `FilterEngine.css` → `injectCosmetics` | sticky bottom banners ("catfish"), in-page ad boxes |
+| Navigation blocking | `BrowserController` + `PopupGuard` | pages hijacked to an ad site, pop-up windows, unsolicited redirects |
+| Invisible overlays | `PopupGuard.OVERLAY_JS` (injected at document start in every frame) | transparent iframes / layers that catch the first click on the player; "disable your ad blocker" dialogs |
+| Video control | `PopupGuard.VIDEO_BRIDGE_JS` | players that live in a cross-origin iframe |
 
-Luật chung của `PopupGuard` (không phụ thuộc trang):
-- Cửa sổ mới chỉ được mở nếu **cùng trang** hoặc là trang đăng nhập (Google, Facebook, Apple, Microsoft, Zalo).
-- Trang **tự chuyển sang trang khác** khi người xem không bấm gì (sau 2,5 giây kể từ lúc tải) bị chặn.
-- Chuyển trang tới tên miền nằm trong danh sách lọc bị chặn.
+`PopupGuard` rules that need no list:
 
-## Khi một trang lại hiện quảng cáo
+- A new window may open only for the **same site** or a sign-in provider (Google, Facebook, Apple, Microsoft, Zalo).
+- A page that sends itself to another site without any key press (after 2.5 s of loading) is stopped.
+- Navigation to a host that a filter list blocks is stopped.
 
-1. **Cập nhật danh sách:** Cài đặt → Chặn quảng cáo → *Cập nhật danh sách chặn*. ABPVN thường đã có luật mới.
-2. **Tìm nguồn quảng cáo:** thêm trang vào `tools/sitecheck/sites.txt` rồi chạy
+## When a site shows ads again
+
+1. **Update the lists:** Settings → Ad blocking → *Update filter lists*. The ABPVN maintainers usually have the
+   rule already.
+2. **Find the source:** put the page in `tools/sitecheck/sites.local.txt` (git-ignored; one URL per line) and run
+   the check against a **debug** build installed on your TV:
 
    ```bash
-   powershell -ExecutionPolicy Bypass -File tools/sitecheck/sitecheck.ps1 -Device 192.168.31.27:5555
+   powershell -ExecutionPolicy Bypass -File tools/sitecheck/sitecheck.ps1 -Device 192.168.1.50:5555
    ```
 
-   Xem `tools/sitecheck/out/report.md`: các request đã bị chặn (và bởi luật nào), ô quảng cáo còn thấy,
-   tên miền bên thứ ba trang đã gọi, trang có bị chuyển đi sau khi bấm không, kèm ảnh chụp màn hình.
-3. **Thêm luật** vào `app/src/main/assets/filters/luna.txt`, đúng mục, kèm ghi chú ngày và trang:
-   - Chặn cả tên miền quảng cáo: `||ten-mien-quang-cao.com^`
-   - Chặn một đường dẫn trên một trang: `||cdn.trang.com/ads/$script,domain=trang.com`
-   - Ẩn một phần tử trên một trang: `trang.com##.banner-duoi`
-   - Ẩn trên mọi trang tên `phimabc.*` (mọi đuôi tên miền): `phimabc.*##.ads-top`
-   - Trang bị chặn nhầm: `@@||trang.com^$document`
-4. **Viết test** cho trường hợp đó trong `app/src/test/.../FilterEngineTest.kt` nếu luật có dạng mới.
-5. Push → CI chạy test và build APK → cài lên TV → chạy lại sitecheck.
-6. (Nên làm) Báo luật cho ABPVN để cả cộng đồng được hưởng: https://abpvn.com
+   Needs `adb` on the PATH and Node.js 22+. `tools/sitecheck/out/report.md` lists, per page: which requests
+   were blocked (and by which rule), ad slots still visible, third-party hosts the page called, whether
+   pressing OK sent you to another site, plus a screenshot.
+3. **Add a rule** to `app/src/main/assets/filters/luna.txt`, in the right section, with a date and the site:
+   - block a whole ad domain: `||ads.example-network.com^`
+   - block one path on one site: `||cdn.site.com/ads/$script,domain=site.com`
+   - hide an element on one site: `site.com##.bottom-banner`
+   - hide it on every TLD of a name: `sitename.*##.ads-top`
+   - un-break a site that the blocker breaks: `@@||site.com^$document`
+4. **Add a unit test** in `app/src/test/.../FilterEngineTest.kt` if the rule has a shape the tests don't cover yet.
+5. Open a pull request. CI runs the tests and builds the APK.
+6. If the rule helps everyone, also report it to ABPVN (<https://abpvn.com>).
 
-## Khi trang đổi cách làm quảng cáo
+## When a site changes its tricks
 
-| Dấu hiệu trong báo cáo | Thường là | Sửa ở đâu |
+| Symptom in the report | Usually | Fix |
 |---|---|---|
-| ❌ Bị chuyển sang trang khác sau khi bấm | script popunder mới | thêm tên miền script vào mục 1 của `luna.txt` |
-| 🟡 Ô quảng cáo / banner dính còn thấy | banner mới | luật `##` cho trang đó (mục 4) |
-| Lớp phủ vô hình > 0 | kiểu lớp phủ mới | điều chỉnh `OVERLAY_JS` (ngưỡng z-index, diện tích) |
-| Video trong iframe không điều khiển được | trình phát dùng Shadow DOM / canvas | `VIDEO_BRIDGE_JS` |
+| `[FAIL] redirected to …` after pressing OK | a new pop-under script | add its domain to section 1 of `luna.txt` |
+| `[WARN] ads still visible` | a new banner | a `##` rule for that site (section 4) |
+| Invisible overlays > 0 | a new kind of click-catcher | tune `OVERLAY_JS` (z-index, area thresholds) |
+| Video in an iframe can't be controlled | player uses Shadow DOM / canvas | `VIDEO_BRIDGE_JS` |
 
-## Thêm một danh sách lọc mới
+## Adding another filter list
 
-Thêm một mục vào `FilterLists` trong `data/AdBlocker.kt` (tên, mô tả, URL). Danh sách sẽ tự hiện
-trong Cài đặt, được tải về, cập nhật hằng ngày và có thể bật/tắt. Cú pháp hỗ trợ: xem đầu file
-`data/filter/FilterEngine.kt`. Luật dạng scriptlet / procedural (`#?#`, `#$#`, `##+js`) được bỏ qua.
+Add an entry to `FilterLists` in `data/AdBlocker.kt` (id, name, description, URL). It appears in Settings,
+is downloaded, refreshed daily and can be switched on or off by the user. Supported syntax is documented at the
+top of `data/filter/FilterEngine.kt`; scriptlet and procedural filters (`#?#`, `#$#`, `##+js`) are skipped.
 
-## Giới hạn hiện tại
+## Known limits
 
-- WebView không cho biết loại tài nguyên; Luna đoán theo phần mở rộng và header `Accept`. Luật có
-  `$script` sẽ không khớp với script không có đuôi `.js` (chúng được coi là "không rõ loại" và chỉ
-  khớp với luật script/xhr/other).
-- `filters/luna.txt` chỉ cập nhật theo phiên bản app (repo đang private). Muốn cập nhật không cần
-  cài lại, có thể đưa file lên một gist công khai và thêm URL vào mục `luna` trong `FilterLists`.
+- WebView does not report a request's resource type, so Luna infers it from the URL extension and the `Accept`
+  header. A `$script` rule will not match a script served without a `.js` extension (such a request is treated as
+  "unknown type" and matches only script / xhr / other rules).
+- Bundled `luna.txt` only changes with app releases. To ship updates without a release you could host it publicly
+  and add its URL as another entry in `FilterLists`.
+- No filter list can stop an ad that is rendered *inside* the video stream.
+
+## A note on use
+
+Luna is a general-purpose browser: it does not host, index or link to any content, and the blocker is meant to
+protect people from intrusive ads, trackers and malicious pop-ups. You are responsible for respecting the laws
+and the terms of service that apply to the sites you visit.

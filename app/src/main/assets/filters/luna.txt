@@ -1,17 +1,17 @@
 [Adblock Plus 2.0]
-! Title: Bộ lọc Luna
-! Description: Luật riêng của Luna Browser, bổ sung cho ABPVN. Cú pháp Adblock Plus / uBlock Origin.
-! Homepage: docs/ADBLOCK.md
+! Title: Luna filters
+! Description: Luna Browser's own rules. They complement ABPVN. Adblock Plus / uBlock Origin syntax.
+! Homepage: https://github.com/newhalo/luna-browser/blob/marter/docs/ADBLOCK.md
 !
-! CÁCH BẢO TRÌ
-! - Trang bị quảng cáo mới: thử "Cập nhật danh sách chặn" trước (ABPVN thường đã có luật).
-! - Nếu vẫn còn: thêm luật vào mục tương ứng bên dưới, ghi ngày và trang bị ảnh hưởng.
-! - Kiểm tra lại bằng tools/sitecheck (xem docs/ADBLOCK.md), rồi phát hành bản mới.
-! - Luật chung cho mọi trang để ở mục 1–3; luật riêng cho một trang để ở mục 4.
+! HOW TO MAINTAIN
+! - A site shows ads again: try "Update filter lists" in Settings first (ABPVN usually has the rule already).
+! - Still there: add a rule in the matching section below, with a date and the affected site.
+! - Re-check with tools/sitecheck (see docs/ADBLOCK.md), add a unit test if the rule has a new shape.
+! - Rules for every site go in sections 1-3; rules for one site go in section 4.
 !
 ! =====================================================================
-! 1. Mạng quảng cáo bật lên (popunder / clickunder / chuyển hướng)
-!    Các mạng này phủ lớp vô hình lên trình phát để mở quảng cáo khi bấm.
+! 1. Pop-up / pop-under / click-under networks
+!    These lay an invisible layer over the video player to open ads on click.
 ! =====================================================================
 ||adcash.com^
 ||admaven.com^
@@ -44,14 +44,14 @@
 ||tsyndicate.com^
 ||a-ads.com^
 ||adexchangeclear.com^
-! Đường dẫn script popunder hay gặp, kể cả khi tên miền đổi liên tục
+! Common pop-under script paths, even when the domain keeps changing
 /popunder*.js$script
 /pop-under*.js$script
 /clickunder*.js$script
 /onclick-pop*.js$script
 !
 ! =====================================================================
-! 2. Mạng quảng cáo hiển thị và theo dõi
+! 2. Display-ad and tracking networks
 ! =====================================================================
 ||2mdn.net^
 ||adform.net^
@@ -89,13 +89,13 @@
 ||teads.tv^
 ||yieldmo.com^
 ||zedo.com^
-! Mạng quảng cáo Việt Nam
+! Vietnamese ad networks
 ||admicro.vn^
 ||adtima.vn^
 ||eclick.vn^
 !
 ! =====================================================================
-! 3. Ẩn khung quảng cáo trên mọi trang
+! 3. Hide ad containers on every site
 ! =====================================================================
 ##ins.adsbygoogle
 ##[id^="google_ads"]
@@ -103,7 +103,7 @@
 ##.ad-container
 ##.adsbox
 ##iframe[src*="doubleclick.net"]
-! Banner dính đáy / đỉnh màn hình (catfish) phổ biến trên trang phim Việt
+! "Catfish" banners stuck to the top / bottom of the screen
 ##.catfish
 ##.catfish-bottom
 ##.catfish-top
@@ -118,10 +118,8 @@
 ##.ads-popup
 !
 ! =====================================================================
-! 4. Luật riêng cho từng trang
-!    Định dạng: tên-miền##bộ-chọn  hoặc  ||đường-dẫn$domain=tên-miền
-!    Ghi chú ngày kiểm tra để biết luật còn cần không.
+! 4. Per-site rules
+!    Format: domain##selector   or   ||path$domain=domain
+!    Note the date you checked, so a stale rule is easy to spot later.
 ! =====================================================================
-! vn2d.my (Phim VN2) — kiểm tra 14/11/2026: popunder qua bolasarpen.com (đã chặn ở mục 1).
-! Nút "Tắt quảng cáo" giả của trang không cần thiết khi đã chặn:
-vn2d.my###toggle_hiddenads
+! (No site-specific rules yet. Add them here — see docs/ADBLOCK.md.)

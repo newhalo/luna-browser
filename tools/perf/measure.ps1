@@ -9,7 +9,7 @@
 param(
     [string]$Label = "frames",
     [AllowEmptyCollection()][AllowEmptyString()][string[]]$Keys = @("DPAD_RIGHT", "DPAD_LEFT", "DPAD_RIGHT", "DPAD_LEFT"),
-    [string]$Device = "192.168.31.27:5555",
+    [string]$Device = $env:LUNA_TV,
     [string]$Adb = "$PSScriptRoot\..\platform-tools\adb.exe",
     [switch]$ColdStart,
     # Measure with no key presses (ambient animation only)

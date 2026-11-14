@@ -1,13 +1,25 @@
-*.iml
+# Gradle / Android Studio
 .gradle/
-local.properties
-.idea/
 build/
+local.properties
+*.iml
+.idea/
 captures/
 .externalNativeBuild/
 .cxx/
 *.apk
 *.aab
-dist/
+
+# Release signing material (the public dev key app/dev.keystore is intentionally tracked)
+*.jks
+release.keystore
+keystore.properties
+
+# Local tooling and test output
+/dist/
+/dist-debug/
 tools/platform-tools/
 tools/sitecheck/out/
+tools/sitecheck/sites.local.txt
+.DS_Store
+Thumbs.db

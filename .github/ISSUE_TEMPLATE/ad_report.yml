@@ -1,0 +1,44 @@
+name: Ad / pop-up report
+description: A website still shows ads, opens pop-ups or breaks because of the blocker
+labels: [adblock]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks! These reports are usually the quickest to fix. First try **Settings → Ad blocking →
+        Update filter lists**: the community lists often already have the rule.
+  - type: input
+    id: url
+    attributes:
+      label: Page address
+      placeholder: "https://example.com/some/page"
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What goes wrong?
+      options:
+        - Ads are still visible
+        - A pop-up or new window opens
+        - The page redirects to another site
+        - An "disable your ad blocker" dialog appears
+        - The blocker breaks the page or the video
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Where on the page, and when (on load, when pressing OK on the player, …)?
+  - type: textarea
+    id: sitecheck
+    attributes:
+      label: sitecheck report (optional)
+      description: Paste `tools/sitecheck/out/report.md` for the page — see docs/ADBLOCK.md.
+      render: markdown
+  - type: input
+    id: version
+    attributes:
+      label: Luna version and filter-list date
+      description: Settings → About, and the update date shown under Settings → Ad blocking

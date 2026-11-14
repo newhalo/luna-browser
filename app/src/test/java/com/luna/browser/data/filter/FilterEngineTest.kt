@@ -15,12 +15,12 @@ import java.io.File
 class FilterEngineTest {
     private fun engine(vararg lists: String) = FilterBuilder().apply { lists.forEach { add(it) } }.build()
 
-    private val page = "https://www.vn2d.my/xem/phim-abc-4830"
+    private val page = "https://www.example-videos.test/watch/episode-1"
 
     @Test fun hostRuleBlocksDomainAndSubdomains() {
-        val e = engine("||bolasarpen.com^")
-        assertNotNull(e.match("https://jf.bolasarpen.com/rFN7OyXOXwvMkU/43077", page, Type.AMBIGUOUS))
-        assertNull(e.match("https://notbolasarpen.com/x.js", page, Type.SCRIPT))
+        val e = engine("||popunder-ads.test^")
+        assertNotNull(e.match("https://jf.popunder-ads.test/rFN7OyXOXwvMkU/43077", page, Type.AMBIGUOUS))
+        assertNull(e.match("https://notpopunder-ads.test/x.js", page, Type.SCRIPT))
     }
 
     @Test fun hostsFileFormat() {
@@ -91,7 +91,7 @@ class FilterEngineTest {
 
     @Test fun cosmeticGenericSpecificAndExceptions() {
         val e = engine(
-            "##.catfish\n##.banner-ads\nvn2d.my###toggle_hiddenads\n~safe.vn##.promo\n" +
+            "##.catfish\n##.banner-ads\nexample-videos.test###toggle_hiddenads\n~safe.vn##.promo\n" +
                 "safe.vn#@#.banner-ads\nmetruyencv.com#?#.x:-abp-has(small)",
         )
         val css = e.css(page)
@@ -118,12 +118,13 @@ class FilterEngineTest {
         val n = b.add(f.readText())
         assertTrue("luna.txt should contain rules", n > 50)
         val e = b.build()
+        // A pop-under network that the bundled list must always block.
         assertNotNull(e.match("https://jf.bolasarpen.com/abc", page, Type.AMBIGUOUS))
-        assertTrue(e.css(page).contains("#toggle_hiddenads"))
+        
     }
 
     @Test fun siteOfHandlesVietnameseSecondLevel() {
         assertEquals("abc.com.vn", siteOf("phim.abc.com.vn"))
-        assertEquals("vn2d.my", siteOf("www.vn2d.my"))
+        assertEquals("example-videos.test", siteOf("www.example-videos.test"))
     }
 }

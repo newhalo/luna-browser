@@ -1,51 +1,51 @@
-# Hiệu năng trên TV
+# Performance on a TV
 
-Thiết bị đo: Xiaomi TV S Pro 65 (MiTV-MOEU0), Android 14, MediaTek MT5879, **CPU 32-bit (armeabi-v7a)**,
-GPU **Mali-G52**, RAM 2,4 GB. Màn hình 4K, giao diện dựng ở 1920×1080 rồi phóng lên.
-Cách đo: [`tools/perf`](../tools/perf) (`measure.ps1` + `frames.py`, đọc `dumpsys gfxinfo framestats`).
+Test device: Xiaomi TV S Pro 65" (MiTV-MOEU0), Android 14, MediaTek MT5879 with a **32-bit CPU (armeabi-v7a)**,
+**Mali-G52** GPU, 2.4 GB RAM. 4K panel; the UI is rendered at 1920×1080 and scaled up.
+Measured with [`tools/perf`](../tools/perf) (`measure.ps1` + `frames.py`, which read `dumpsys gfxinfo framestats`).
 
-## Kết quả (14/11/2026)
+## Results (2026-11-14)
 
-| Chỉ số | Ban đầu (bản debug) | Sau tối ưu (bản release) |
+| Metric | Before (debug build) | After (release build) |
 |---|---|---|
-| Khởi động nguội (`am start -W`) | 4,2–4,8 s | **0,59–0,68 s** |
-| Trang chủ, chuyển thẻ — luồng giao diện | 105 ms/khung | **10,7 ms** |
-| Trang chủ, chuyển thẻ — GPU | ~54 ms* | **25,5 ms** |
-| Trang chủ, chuyển thẻ — khoảng cách khung (trung vị) | ~105 ms (≈ 9 fps) | **17,9 ms (≈ 55 fps)** |
-| Trang chủ đứng yên — GPU | 32 ms* | **16,2 ms** (aurora ~15 lần/giây) |
-| Trang web, di con trỏ / cuộn | — | 16,7 ms (60 fps) |
-| Video toàn màn hình khi tua | tua lại mỗi lần lặp phím | **1 lần tua** sau khi thả phím; GPU 2,5 ms |
+| Cold start (`am start -W`) | 4.2–4.8 s | **0.59–0.68 s** |
+| Home, moving between cards — UI thread | 105 ms / frame | **10.7 ms** |
+| Home, moving between cards — GPU | ~54 ms* | **25.5 ms** |
+| Home, moving between cards — frame interval (median) | ~105 ms (≈ 9 fps) | **17.9 ms (≈ 55 fps)** |
+| Home, idle — GPU | 32 ms* | **16.2 ms** (aurora at ~15 updates/s) |
+| Web page, moving the pointer / scrolling | — | 16.7 ms (60 fps) |
+| Fullscreen video, held-arrow seek | one seek per key repeat | **one seek** after the key is released; GPU 2.5 ms |
 
-\* đo trên bản release đầu tiên, trước khi giảm lớp vẽ.
+\* measured on the first release build, before the GPU-layer reductions.
 
-## Đã làm và vì sao
+## What was found and fixed
 
-| Vấn đề tìm thấy | Cách sửa |
+| Finding | Fix |
 |---|---|
-| Bản cài trên TV là debug (không R8, ART không biên dịch trước) | Dùng bản **release** hằng ngày; `profileinstaller` cài baseline profile của Compose |
-| Màn chào trong app chờ cố định 900 ms, nối sau màn chào hệ thống | Bỏ; dùng màn chào hệ thống (Android 12+) với logo Luna |
-| Mỗi lần di focus, cả trang chủ dựng lại; `File.exists()` trong lúc dựng | `hero` chỉ đọc ở nơi cần; danh sách thẻ ghi nhớ theo `Store.version`; ảnh/tên miền/favicon tính một lần |
-| Ghi lịch sử (JSON 300 mục) trên luồng giao diện | Ghi ở luồng nền tuần tự |
-| Biên dịch ~20.000 luật lọc tranh CPU lúc khởi động | Luồng ưu tiên thấp; tải danh sách hoãn 20 s |
-| Nền aurora: 3 lớp gradient toàn màn hình, 60 lần/giây | CPU vẽ vào ảnh 160×90, GPU chỉ phóng to; ~15 lần/giây; **tạm dừng khi đang bấm phím** |
-| GPU chỉ chịu được ~5 lớp vẽ toàn màn hình/khung | Bỏ nền cửa sổ + nền gốc; ảnh nền vẽ thẳng với alpha (không qua bộ đệm phụ); 2 lớp phủ gộp thành 1 ảnh nhỏ; lớp làm tối của Cài đặt nằm sẵn trong aurora |
-| `Crossfade` dùng bộ đệm phụ toàn màn hình khi đổi ảnh nền | `LightCrossfade` với `CompositingStrategy.ModulateAlpha` |
-| Lịch sử dựng 300 dòng một lúc | `LazyColumn` |
-| Tua: mỗi lần lặp phím = một lần tua → video tải lại liên tục | Cộng dồn, hiển thị vị trí đích, gửi **một** lệnh tua khi thả phím; giữ lâu thì bước tăng 10 s → 30 s → 60 s |
-| Lần đầu mở web bị khựng do nạp Chromium | Nạp sẵn nhà cung cấp WebView ở luồng nền sau khởi động |
+| The TV was running a *debug* build (no R8, no ahead-of-time compilation) | Use the **release** build day to day; `profileinstaller` ships the Compose / AndroidX baseline profiles |
+| A fixed 900 ms in-app splash on top of the system splash | Removed; the Android 12+ system splash shows Luna's logo, home fades in |
+| Every focus move recomposed the whole home screen; `File.exists()` during composition | `hero` is read only where needed; rows are memoised on a `Store.version` counter; artwork / host / favicon lookups are computed once |
+| History (300-entry JSON) written on the UI thread | Written on a background single-thread executor |
+| Compiling ~20,000 filter rules competed with the first frames | Background-priority thread; list download deferred 20 s after start |
+| Aurora: three full-screen gradient layers redrawn at 60 Hz | Painted by the CPU into a 160×90 bitmap and stretched; ~15 updates/s; **pauses while the viewer is pressing keys** |
+| The GPU can only afford ~5 full-screen blended layers per frame | Window and root backgrounds removed; backdrop image alpha applied at draw time (no offscreen buffer); the two scrims merged into one small bitmap; Settings dimming baked into the aurora |
+| `Crossfade` renders each child into a full-screen offscreen buffer | `LightCrossfade` using `CompositingStrategy.ModulateAlpha` |
+| History composed 300 rows at once | `LazyColumn` |
+| Seeking: each key repeat reloaded the stream | Presses and repeats accumulate, the target is previewed, **one** seek is sent when the key is released; holding accelerates 10 s → 30 s → 60 s |
+| First page load froze Home while Chromium initialised | The WebView provider is pre-loaded on a background thread shortly after start |
 
-## Nguyên tắc khi thêm giao diện mới
+## Rules for new UI
 
-- **Đếm lớp toàn màn hình**: mỗi lớp bán trong suốt toàn màn hình tốn ~5 ms GPU trên TV này. Tránh
-  `Modifier.alpha`, `Crossfade`, `graphicsLayer { alpha }` cho vùng lớn — dùng `alpha` khi vẽ hoặc
-  `CompositingStrategy.ModulateAlpha`.
-- **Không I/O trong lúc dựng giao diện** (đọc file, `File.exists`, parse JSON).
-- **Đọc state ở chỗ thấp nhất** (truyền `() -> T` thay vì `T`) để chỉ phần cần thiết dựng lại.
-- Hiệu ứng nền chạy liên tục phải **dừng khi người dùng đang thao tác**.
-- Đo lại trước/sau bằng `tools/perf/measure.ps1` trên bản **release**.
+- **Count full-screen layers.** Each translucent full-screen layer costs ~5 ms of GPU on this TV. Avoid
+  `Modifier.alpha`, `Crossfade` and `graphicsLayer { alpha }` over large areas — pass `alpha` to the draw call or
+  use `CompositingStrategy.ModulateAlpha`.
+- **No I/O while composing** (file access, JSON parsing, `File.exists`).
+- **Read state as low as possible** — pass `() -> T` instead of `T` so only the part that needs it recomposes.
+- **Ambient animation must stop when the viewer is interacting.**
+- Measure before and after with `tools/perf/measure.ps1` on a **release** build.
 
-## Bản debug vs release
+## Debug vs release
 
-- **Release**: dùng hằng ngày (nhanh, không debug được).
-- **Debug**: dùng khi cần `tools/sitecheck` (DevTools, log chặn quảng cáo). Hai bản ký cùng khóa nên
-  cài đè qua lại không mất dữ liệu.
+- **Release** — daily use (fast, not debuggable).
+- **Debug** — needed for `tools/sitecheck` (DevTools, the filter log). Both are signed with the same key, so you
+  can install one over the other without losing data.

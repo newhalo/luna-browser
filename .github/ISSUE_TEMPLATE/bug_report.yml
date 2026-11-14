@@ -1,0 +1,45 @@
+name: Bug report
+description: Something in Luna does not work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do with the remote, what did you expect, what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open ...
+        2. Press ...
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Luna version
+      description: Settings → About
+      placeholder: "0.2.0"
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: TV / device and Android version
+      placeholder: "Xiaomi TV S Pro 65, Android 14"
+    validations:
+      required: true
+  - type: input
+    id: webview
+    attributes:
+      label: Web engine version
+      description: Settings → About → Web engine
+  - type: textarea
+    id: extra
+    attributes:
+      label: Logs or screenshots
+      description: "`adb logcat -d | grep -i luna` and a screenshot (`adb exec-out screencap -p > shot.png`) help a lot."

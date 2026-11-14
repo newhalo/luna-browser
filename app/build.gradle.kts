@@ -15,26 +15,39 @@ android {
         versionName = "0.2.0"
     }
 
-    // One fixed key for every build (local and CI), so updates install over the
-    // previous version on the TV without wiping its data. Sideload-only app.
+    // Signing
+    //  - "dev": a PUBLIC development key (app/dev.keystore, password "lunabrowser"). Every contributor and
+    //    CI run signs debug and unsigned-fallback builds with it, so builds install over each other without
+    //    wiping app data. It proves nothing about who built an APK: never distribute builds signed with it
+    //    as official releases.
+    //  - "release": the maintainer's private key, supplied through environment variables
+    //    (LUNA_KEYSTORE_FILE, LUNA_KEYSTORE_PASSWORD, LUNA_KEY_ALIAS, LUNA_KEY_PASSWORD). It is never in the repo.
     signingConfigs {
-        create("luna") {
-            storeFile = file("luna.keystore")
+        create("dev") {
+            storeFile = file("dev.keystore")
             storePassword = "lunabrowser"
             keyAlias = "luna"
             keyPassword = "lunabrowser"
+        }
+        System.getenv("LUNA_KEYSTORE_FILE")?.let { path ->
+            create("release") {
+                storeFile = file(path)
+                storePassword = System.getenv("LUNA_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("LUNA_KEY_ALIAS")
+                keyPassword = System.getenv("LUNA_KEY_PASSWORD")
+            }
         }
     }
 
     buildTypes {
         debug {
-            signingConfig = signingConfigs.getByName("luna")
+            signingConfig = signingConfigs.getByName("dev")
         }
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("luna")
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("dev")
         }
     }
     compileOptions {
