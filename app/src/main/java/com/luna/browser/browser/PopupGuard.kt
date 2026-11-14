@@ -66,7 +66,17 @@ if(e.tagName==='IFRAME'){var src=e.getAttribute('src')||'';return src===''||src=
 if(parseFloat(s.opacity)<0.1)return true;var bg=s.backgroundColor;
 var clear=(bg==='transparent'||bg==='rgba(0, 0, 0, 0)')&&s.backgroundImage==='none';
 return clear&&!(e.innerText||'').trim()&&!e.querySelector('img,video,canvas,iframe');}catch(x){return false;}}
-function sweep(){var list=[];if(document.body)list=Array.prototype.slice.call(document.body.children);
+var abRe=/(t[ắa]t|v[ôo]\s*hi[ệe]u\s*h[óo]a|g[ỡo]\s*b[ỏo])\s*(tr[ìi]nh\s*)?(ch[ặa]n\s*qu[ảa]ng\s*c[áa]o|ad\s*-?block)|disable\s+(your\s+)?ad\s*-?block|turn\s+off\s+(your\s+)?ad\s*-?block|ad\s*-?block(er)?\s+(detected|is\s+enabled)|whitelist\s+(this|our)\s+site/i;
+function antiAdblock(){if(!document.body)return;var found=false;
+var cand=document.querySelectorAll('body > *, body > * > *, [class*=modal], [id*=modal], [class*=popup], [id*=popup], [class*=adblock], [id*=adblock]');
+for(var i=0;i<cand.length;i++){var e=cand[i];if(!e.isConnected)continue;var s=getComputedStyle(e);
+if(s.position!=='fixed'&&s.position!=='absolute')continue;if((parseInt(s.zIndex,10)||0)<10)continue;
+var t=e.innerText||'';if(t.length<800&&abRe.test(t)){e.remove();found=true;}}
+if(!found)return;
+var top=document.body.children;for(var j=top.length-1;j>=0;j--){var b=top[j],bs=getComputedStyle(b),br=b.getBoundingClientRect();
+if(bs.position==='fixed'&&br.width*br.height>innerWidth*innerHeight*0.8&&!(b.innerText||'').trim())b.remove();}
+document.documentElement.style.setProperty('overflow','auto','important');document.body.style.setProperty('overflow','auto','important');}
+function sweep(){antiAdblock();var list=[];if(document.body)list=Array.prototype.slice.call(document.body.children);
 list=list.concat(Array.prototype.slice.call(document.querySelectorAll('iframe')),Array.prototype.slice.call(document.documentElement.children));
 for(var i=0;i<list.length;i++){var e=list[i];if(e!==document.body&&e!==document.head&&bad(e))e.remove();}}
 var t;var mo=new MutationObserver(function(){clearTimeout(t);t=setTimeout(sweep,120);});
