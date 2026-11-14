@@ -1,6 +1,8 @@
 package com.luna.browser.data
 
 import android.content.Context
+import androidx.annotation.StringRes
+import com.luna.browser.R
 import android.content.pm.ApplicationInfo
 import android.util.Log
 import com.luna.browser.data.filter.urlHost
@@ -29,27 +31,36 @@ import java.util.concurrent.atomic.AtomicInteger
  */
 data class FilterList(
     val id: String,
-    val name: String,
-    val description: String,
+    @StringRes val name: Int,
+    @StringRes val description: Int,
     /** Download URL; null for lists that only ship inside the app. */
     val url: String?,
     /** Bundled copy in assets, used until (or instead of) a download. */
     val asset: String? = null,
-    val enabledByDefault: Boolean = true,
+    /** Whether the list is switched on the first time, given the system language code ("vi", "en", …). */
+    val defaultOn: (String) -> Boolean = { true },
 )
 
 val FilterLists = listOf(
     FilterList(
-        "luna", "Bộ lọc Luna", "Luật riêng của Luna cho trang phim và quảng cáo bật lên. Đi kèm ứng dụng.",
+        "luna", R.string.list_luna_n, R.string.list_luna_d,
         url = null, asset = "filters/luna.txt",
     ),
+    // The ABPVN lists target Vietnamese sites: on by default for Vietnamese users, optional for everyone else.
     FilterList(
-        "abpvn", "ABPVN", "Bộ lọc quảng cáo cho người Việt, do cộng đồng ABPVN cập nhật hằng ngày.",
+        "abpvn", R.string.list_abpvn_n, R.string.list_abpvn_d,
         url = "https://raw.githubusercontent.com/abpvn/abpvn/master/filter/abpvn.txt",
+        defaultOn = { it == "vi" },
     ),
     FilterList(
-        "abpvn-hosts", "ABPVN – tên miền quảng cáo", "Hơn 20.000 tên miền quảng cáo, cá cược và theo dõi.",
+        "abpvn-hosts", R.string.list_abpvnh_n, R.string.list_abpvnh_d,
         url = "https://abpvn.com/android/abpvn.txt",
+        defaultOn = { it == "vi" },
+    ),
+    FilterList(
+        "easylist", R.string.list_easy_n, R.string.list_easy_d,
+        url = "https://easylist.to/easylist/easylist.txt",
+        defaultOn = { false },
     ),
 )
 
@@ -76,7 +87,8 @@ class AdBlocker(private val ctx: Context) {
         private set
     val status = mutableStateMapOf<String, ListStatus>()
     private val enabled = mutableStateMapOf<String, Boolean>().apply {
-        FilterLists.forEach { put(it.id, prefs.getBoolean("on.${it.id}", it.enabledByDefault)) }
+        val systemLang = ctx.resources.configuration.locales[0].language
+        FilterLists.forEach { put(it.id, prefs.getBoolean("on.${it.id}", it.defaultOn(systemLang))) }
     }
 
     init {

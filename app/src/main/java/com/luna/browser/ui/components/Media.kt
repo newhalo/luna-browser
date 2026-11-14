@@ -58,6 +58,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.luna.browser.AppState
+import com.luna.browser.R
 import com.luna.browser.data.MediaItem
 import com.luna.browser.ui.theme.Bg
 import com.luna.browser.ui.theme.LocalReduceMotion
@@ -311,26 +313,27 @@ fun MediaCard(
     }
 }
 
-/** Vietnamese relative time: "Vừa xong", "5 phút trước", "Hôm qua"… */
-fun timeAgo(ts: Long): String {
+/** Localised relative time ("Just now", "5 minutes ago", "Yesterday", …) using plurals. */
+fun timeAgo(app: AppState, ts: Long): String {
     if (ts <= 0) return ""
     val diff = (System.currentTimeMillis() - ts) / 1000
     return when {
-        diff < 60 -> "Vừa xong"
-        diff < 3600 -> "${diff / 60} phút trước"
-        diff < 86_400 -> "${diff / 3600} giờ trước"
-        diff < 172_800 -> "Hôm qua"
-        diff < 604_800 -> "${diff / 86_400} ngày trước"
-        else -> "${diff / 604_800} tuần trước"
+        diff < 60 -> app.s(R.string.ago_now)
+        diff < 3600 -> app.plural(R.plurals.ago_minutes, (diff / 60).toInt())
+        diff < 86_400 -> app.plural(R.plurals.ago_hours, (diff / 3600).toInt())
+        diff < 172_800 -> app.s(R.string.ago_yesterday)
+        diff < 604_800 -> app.plural(R.plurals.ago_days, (diff / 86_400).toInt())
+        else -> app.plural(R.plurals.ago_weeks, (diff / 604_800).toInt())
     }
 }
 
-fun greeting(): String = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
-    in 4..10 -> "Chào buổi sáng"
-    in 11..13 -> "Chào buổi trưa"
-    in 14..17 -> "Chào buổi chiều"
-    else -> "Chào buổi tối"
-}
+fun greeting(app: AppState): String = app.s(
+    when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
+        in 4..11 -> R.string.greet_morning
+        in 12..17 -> R.string.greet_afternoon
+        else -> R.string.greet_evening
+    },
+)
 
 @Composable
 fun Pill(text: String, modifier: Modifier = Modifier) {

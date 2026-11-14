@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_history">历史记录</string>
+    <string name="nav_favorites">收藏夹</string>
+    <string name="nav_settings">设置</string>
+    <string name="go_home">返回主页</string>
+
+    <string name="greet_morning">早上好</string>
+    <string name="greet_afternoon">下午好</string>
+    <string name="greet_evening">晚上好</string>
+    <string name="home_prompt">今天想看点什么？</string>
+    <string name="home_offline">电视未连接到互联网</string>
+    <string name="home_press_ok">按“确定”键打开</string>
+    <string name="home_continue">继续观看</string>
+    <string name="home_your_sites">常用网站</string>
+    <string name="home_favorites">收藏夹</string>
+    <string name="home_search_hint">搜索或输入网址</string>
+    <string name="home_voice">语音搜索</string>
+
+    <string name="addr_title">搜索或输入网址</string>
+    <string name="addr_example">例如：youtube.com，或动画片</string>
+    <string name="addr_open">打开</string>
+    <string name="addr_voice">语音</string>
+    <string name="addr_cancel">取消</string>
+    <string name="voice_prompt">您想搜索什么？</string>
+    <string name="toast_no_voice">此电视不支持语音搜索</string>
+
+    <string name="ago_now">刚刚</string>
+    <string name="ago_yesterday">昨天</string>
+    <plurals name="ago_minutes">
+        <item quantity="other">%d分钟前</item>
+    </plurals>
+    <plurals name="ago_hours">
+        <item quantity="other">%d小时前</item>
+    </plurals>
+    <plurals name="ago_days">
+        <item quantity="other">%d天前</item>
+    </plurals>
+    <plurals name="ago_weeks">
+        <item quantity="other">%d周前</item>
+    </plurals>
+
+    <string name="tb_back">后退</string>
+    <string name="tb_forward">前进</string>
+    <string name="tb_refresh">刷新</string>
+    <string name="tb_home">主页</string>
+    <string name="tb_save">收藏</string>
+    <string name="tb_saved">已收藏</string>
+    <string name="tb_mode_pointer">指针</string>
+    <string name="tb_mode_links">链接</string>
+    <string name="tb_settings">设置</string>
+    <string name="tb_address_hint">搜索或输入网址</string>
+    <string name="tb_edit_hint">按“确定”键输入其他网址</string>
+
+    <string name="err_retry">重试</string>
+    <string name="err_change">更改网址</string>
+    <string name="err_home">主页</string>
+    <string name="err_offline_t">没有互联网连接</string>
+    <string name="err_offline_m">请检查电视是否已连接到 Wi-Fi 或有线网络，然后重试。</string>
+    <string name="err_notfound_t">找不到网站</string>
+    <string name="err_notfound_m">网址可能输入有误，或该网站暂时无法访问。</string>
+    <string name="err_timeout_t">网站没有响应</string>
+    <string name="err_timeout_m">页面响应时间过长，请稍后重试。</string>
+    <string name="err_ssl_t">连接不安全</string>
+    <string name="err_ssl_blocked_m">为保护您的信息，Luna 已拦截此页面。请重试或打开其他页面。</string>
+    <string name="err_ssl_failed_m">Luna 无法与此网站建立安全连接。</string>
+    <string name="err_other_t">无法打开页面</string>
+    <string name="err_other_m">打开页面时出错。请重试或返回主页。</string>
+
+    <string name="vid_loading">正在加载视频…</string>
+    <string name="vid_failed">无法播放此视频</string>
+    <string name="vid_failed_hint">按“返回”键退出全屏，然后重试。</string>
+    <string name="vid_no_video">未找到可控制的视频</string>
+    <string name="vid_paused">已暂停</string>
+    <string name="vid_playing">正在播放</string>
+    <string name="vid_live">直播</string>
+    <string name="vid_hint">"左 / 右  快进快退      确定  播放 / 暂停      返回  隐藏控制栏"</string>
+    <string name="vid_skip_to">跳转到 %1$s</string>
+    <string name="vid_forward_to">"快进到 %1$s  (%2$s)"</string>
+    <string name="vid_back_to">"快退到 %1$s  (%2$s)"</string>
+    <string name="vid_forward_s">快进 %1$d 秒</string>
+    <string name="vid_back_s">快退 %1$d 秒</string>
+
+    <string name="toast_no_downloads">暂不支持下载</string>
+    <string name="toast_tip">提示：按“菜单”键打开工具栏，长按“确定”键可在指针和链接模式之间切换</string>
+    <string name="toast_fav_added">已添加到收藏夹</string>
+    <string name="toast_fav_removed">已从收藏夹移除</string>
+    <string name="toast_mode_pointer">指针模式：移动指针，按“确定”键选择</string>
+    <string name="toast_mode_links">链接模式：用方向键在链接之间跳转</string>
+    <string name="toast_blocked_redirect">已拦截跳转到广告页面</string>
+    <string name="toast_blocked_auto">已拦截试图自动跳转的页面</string>
+    <string name="toast_blocked_popup">已拦截一个弹出窗口</string>
+    <string name="toast_blocked_adwindow">已拦截一个广告窗口</string>
+    <string name="toast_confirm">再按一次“确定”键以确认</string>
+    <string name="toast_history_cleared">历史记录已清除</string>
+    <string name="toast_cookies_cleared">Cookie 和网站数据已清除</string>
+    <string name="toast_cache_cleared">缓存已清除</string>
+    <string name="toast_filters_ok">过滤列表已更新</string>
+    <string name="toast_filters_fail">无法更新过滤列表，请稍后重试。</string>
+
+    <string name="hist_title">历史记录</string>
+    <string name="hist_clear">清除历史记录</string>
+    <string name="hist_clear_confirm">再按一次“确定”键以清除</string>
+    <string name="hist_empty_t">暂无历史记录</string>
+    <string name="hist_empty_m">您看过的网页和视频会连同缩略图显示在这里，方便快速重新打开。</string>
+    <string name="fav_title">收藏夹</string>
+    <string name="fav_empty_t">暂无收藏</string>
+    <string name="fav_empty_m">浏览网页时按“菜单”键并选择“收藏”，即可保存到这里。</string>
+    <string name="fav_remove">移除</string>
+
+    <string name="set_title">设置</string>
+    <string name="set_cat_general">通用</string>
+    <string name="set_cat_home">主页</string>
+    <string name="set_cat_browsing">浏览</string>
+    <string name="set_cat_adblock">广告拦截</string>
+    <string name="set_cat_video">视频</string>
+    <string name="set_cat_privacy">隐私</string>
+    <string name="set_cat_about">关于</string>
+    <string name="set_on">"✓  开"</string>
+    <string name="set_off">关</string>
+    <string name="set_press_again">再按一次“确定”键</string>
+
+    <string name="set_language">语言</string>
+    <string name="set_language_d">Luna 的显示语言。“自动”将跟随电视的系统语言。</string>
+    <string name="lang_auto">自动（系统语言）</string>
+    <string name="set_engine">搜索引擎</string>
+    <string name="set_engine_d">输入关键词而不是网址时使用。</string>
+    <string name="set_anim_bg">动态背景</string>
+    <string name="set_anim_bg_d">屏幕后方柔和的彩色光线缓缓移动。</string>
+    <string name="set_reduce">减少动效</string>
+    <string name="set_reduce_d">使用更简单、更快的动画，适合性能较低的电视。</string>
+
+    <string name="set_launch">打开 Luna 时</string>
+    <string name="set_launch_d">选择您最先看到的画面。</string>
+    <string name="launch_home">主屏幕</string>
+    <string name="launch_resume">上次浏览的页面</string>
+    <string name="set_continue">显示“继续观看”</string>
+    <string name="set_continue_d">显示您最近看过的网页和视频，并附带缩略图。</string>
+
+    <string name="set_cursor_start">以指针模式启动</string>
+    <string name="set_cursor_start_d">网页打开时带有屏幕指针。关闭后可用方向键在链接之间跳转。</string>
+    <string name="set_cursor_speed">指针速度</string>
+    <string name="set_cursor_speed_d">按住方向键时指针移动的快慢。</string>
+    <string name="level_n">%1$d 级</string>
+    <string name="set_desktop">请求桌面版网站</string>
+    <string name="set_desktop_d">显示完整版网站，更适合大屏幕。</string>
+    <string name="set_zoom">网页文字大小</string>
+    <string name="set_zoom_d">放大网页上的文字，坐在沙发上也能看清。</string>
+
+    <string name="set_adblock">拦截广告和跟踪器</string>
+    <string name="set_adblock_d">不加载已知广告网站的内容。</string>
+    <string name="set_popups">拦截弹出窗口</string>
+    <string name="set_popups_d">阻止网页自行打开新窗口。</string>
+    <string name="set_blocked">已拦截</string>
+    <string name="set_blocked_n">%1$d 条广告</string>
+    <string name="set_rules">正在使用的规则</string>
+    <string name="set_lists">过滤列表</string>
+    <string name="list_rules_n">" · %1$s 条规则"</string>
+    <string name="list_updated_n">" · 更新于 %1$s"</string>
+    <string name="list_not_downloaded">" · 尚未下载"</string>
+    <string name="list_failed">" · 上次下载失败"</string>
+    <string name="set_update">更新过滤列表</string>
+    <string name="set_update_d">下载最新的待拦截广告和跟踪网站列表。</string>
+    <string name="set_update_fail_d">无法下载列表。请检查网络连接后重试。</string>
+    <string name="st_updating">正在更新…</string>
+    <string name="st_failed">更新失败</string>
+    <string name="st_never">尚未更新</string>
+    <string name="st_updated">更新于 %1$s</string>
+    <string name="list_luna_n">Luna 过滤规则</string>
+    <string name="list_luna_d">Luna 针对视频网站和弹出窗口的自有规则，随应用附带。</string>
+    <string name="list_abpvn_n">ABPVN</string>
+    <string name="list_abpvn_d">由 ABPVN 社区维护的越南语广告过滤列表。</string>
+    <string name="list_abpvnh_n">ABPVN – 广告域名</string>
+    <string name="list_abpvnh_d">超过 20,000 个广告、博彩和跟踪域名。</string>
+    <string name="list_easy_n">EasyList</string>
+    <string name="list_easy_d">使用最广泛的广告过滤列表，每日更新。</string>
+
+    <string name="set_seek">快进快退步长</string>
+    <string name="set_seek_d">观看视频时，按左 / 右键每次跳转的时长。</string>
+    <string name="sec_n">%1$d 秒</string>
+    <string name="info_ok">确定</string>
+    <string name="info_ok_v">显示控制栏，再按则播放 / 暂停</string>
+    <string name="info_lr">左 / 右</string>
+    <string name="info_lr_v">快退 / 快进</string>
+    <string name="info_back">返回</string>
+    <string name="info_back_v">隐藏控制栏，再按则退出全屏</string>
+    <string name="info_pp">播放 / 暂停键</string>
+    <string name="info_pp_v">播放或暂停网页上的视频</string>
+
+    <string name="set_3p">允许第三方 Cookie</string>
+    <string name="set_3p_d">部分网站需要它们才能登录或播放视频。</string>
+    <string name="set_clear_hist">清除浏览记录</string>
+    <string name="set_clear_hist_d">删除已访问网页列表及其缩略图。</string>
+    <string name="set_clear_cookies">清除 Cookie 和网站数据</string>
+    <string name="set_clear_cookies_d">您将退出各网站的登录。</string>
+    <string name="set_clear_cache">清除缓存</string>
+    <string name="set_clear_cache_d">释放存储空间。网页首次加载可能会稍慢。</string>
+
+    <string name="about_luna">Luna</string>
+    <string name="about_version">版本 %1$s</string>
+    <string name="about_engine">网页引擎</string>
+    <string name="about_unknown">未知</string>
+    <string name="about_device">设备</string>
+    <string name="about_menu">菜单</string>
+    <string name="about_menu_v">显示或隐藏工具栏</string>
+    <string name="about_hold_ok">长按“确定”</string>
+    <string name="about_hold_ok_v">在指针模式和链接模式之间切换</string>
+    <string name="about_hold_back">长按“返回”</string>
+    <string name="about_hold_back_v">打开工具栏</string>
+</resources>

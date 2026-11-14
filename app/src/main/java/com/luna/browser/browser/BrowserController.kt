@@ -25,6 +25,7 @@ import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Pause
 import androidx.compose.material.icons.rounded.PlayArrow
@@ -38,6 +39,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.webkit.WebViewCompat
 import androidx.webkit.WebViewFeature
 import com.luna.browser.AppState
+import com.luna.browser.R
 import com.luna.browser.data.AdBlocker
 import com.luna.browser.data.K
 import com.luna.browser.data.Site
@@ -53,7 +55,8 @@ import kotlin.math.min
 
 enum class ErrorKind { Offline, NotFound, Timeout, Ssl, Other }
 
-data class PageError(val kind: ErrorKind, val title: String, val message: String)
+/** A page-load error. Texts are resource ids so they follow the language chosen at display time. */
+data class PageError(val kind: ErrorKind, @StringRes val title: Int, @StringRes val message: Int)
 
 data class VideoState(
     val paused: Boolean,
@@ -162,7 +165,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
                 displayZoomControls = false
                 mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
             }
-            setDownloadListener { _, _, _, _, _ -> app.toast("Luna chưa hỗ trợ tải tệp xuống") }
+            setDownloadListener { _, _, _, _, _ -> app.toast(R.string.toast_no_downloads) }
         }
         applySettings()
         uaChanged = false
@@ -191,7 +194,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         scheduleIdleHide()
         if (!app.store.bool(K.TIP_SHOWN)) {
             app.store.put(K.TIP_SHOWN, true)
-            app.toast("Mẹo: bấm Menu để mở thanh công cụ, giữ OK để đổi giữa con trỏ và chế độ liên kết")
+            app.toast(R.string.toast_tip)
         }
     }
 
@@ -230,7 +233,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     fun toggleFavorite() {
         if (url.isEmpty()) return
         val added = app.store.toggleFavorite(Site(title.ifBlank { url }, url))
-        app.toast(if (added) "Đã thêm vào Yêu thích" else "Đã bỏ khỏi Yêu thích")
+        app.toast(if (added) R.string.toast_fav_added else R.string.toast_fav_removed)
     }
 
     fun showToolbar() {
@@ -250,7 +253,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         cursorMode = !cursorMode
         held.clear()
         webView.requestFocus()
-        app.toast(if (cursorMode) "Chế độ con trỏ: di chuyển con trỏ, bấm OK để chọn" else "Chế độ liên kết: phím mũi tên nhảy giữa các liên kết")
+        app.toast(if (cursorMode) R.string.toast_mode_pointer else R.string.toast_mode_links)
     }
 
     /** Back handling inside the browser. Returns true when consumed. */
@@ -286,7 +289,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             val target = request.url.toString()
             // Click-hijack: the page swaps itself for a known ad / betting page.
             if (app.store.bool(K.ADBLOCK) && url.startsWith("http") && app.ads.shouldBlock(target, url, Type.DOCUMENT)) {
-                notePopupBlocked("Đã chặn chuyển hướng tới trang quảng cáo")
+                notePopupBlocked(R.string.toast_blocked_redirect)
                 return true
             }
             if (app.store.bool(K.BLOCK_POPUPS)) {
@@ -295,7 +298,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
                     !PopupGuard.sameSite(target, url) && !PopupGuard.isAuth(target) &&
                     SystemClock.uptimeMillis() - pageStartedAt > 2500
                 ) {
-                    notePopupBlocked("Đã chặn trang tự chuyển sang trang khác")
+                    notePopupBlocked(R.string.toast_blocked_auto)
                     return true
                 }
             }
@@ -352,24 +355,24 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, err: SslError) {
             handler.cancel()
             loading = false
-            error = PageError(ErrorKind.Ssl, "Kết nối không an toàn", "Luna đã chặn trang này để bảo vệ thông tin của bạn. Hãy thử lại hoặc mở trang khác.")
+            error = PageError(ErrorKind.Ssl, R.string.err_ssl_t, R.string.err_ssl_blocked_m)
         }
     }
 
     private fun mapError(code: Int): PageError {
         val cm = activity.getSystemService(ConnectivityManager::class.java)
         if (cm?.activeNetwork == null) {
-            return PageError(ErrorKind.Offline, "Không có kết nối Internet", "Hãy kiểm tra TV đã kết nối Wi-Fi hoặc dây mạng, rồi thử lại.")
+            return PageError(ErrorKind.Offline, R.string.err_offline_t, R.string.err_offline_m)
         }
         return when (code) {
             WebViewClient.ERROR_HOST_LOOKUP ->
-                PageError(ErrorKind.NotFound, "Không tìm thấy trang web", "Địa chỉ có thể bị gõ sai, hoặc trang web đang tạm ngừng hoạt động.")
+                PageError(ErrorKind.NotFound, R.string.err_notfound_t, R.string.err_notfound_m)
             WebViewClient.ERROR_TIMEOUT, WebViewClient.ERROR_CONNECT, WebViewClient.ERROR_IO ->
-                PageError(ErrorKind.Timeout, "Trang web không phản hồi", "Trang mất quá nhiều thời gian để trả lời. Hãy thử lại sau giây lát.")
+                PageError(ErrorKind.Timeout, R.string.err_timeout_t, R.string.err_timeout_m)
             WebViewClient.ERROR_FAILED_SSL_HANDSHAKE ->
-                PageError(ErrorKind.Ssl, "Kết nối không an toàn", "Luna không thể tạo kết nối bảo mật tới trang web này.")
+                PageError(ErrorKind.Ssl, R.string.err_ssl_t, R.string.err_ssl_failed_m)
             else ->
-                PageError(ErrorKind.Other, "Không mở được trang", "Đã có lỗi khi mở trang. Hãy thử lại hoặc quay về màn hình chính.")
+                PageError(ErrorKind.Other, R.string.err_other_t, R.string.err_other_m)
         }
     }
 
@@ -427,7 +430,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
 
         override fun onCreateWindow(view: WebView, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message): Boolean {
             if (!isUserGesture) {
-                if (app.store.bool(K.BLOCK_POPUPS)) notePopupBlocked("Đã chặn một cửa sổ bật lên")
+                if (app.store.bool(K.BLOCK_POPUPS)) notePopupBlocked(R.string.toast_blocked_popup)
                 return false
             }
             val temp = WebView(activity)
@@ -441,7 +444,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
                     // There are no tabs on a TV: only same-site windows (or sign-in pages) may replace the page.
                     val listed = app.store.bool(K.ADBLOCK) && app.ads.blocksPopup(target, url)
                     if (!listed && (!app.store.bool(K.BLOCK_POPUPS) || PopupGuard.allowPopup(target, url))) load(target)
-                    else notePopupBlocked("Đã chặn một cửa sổ quảng cáo")
+                    else notePopupBlocked(R.string.toast_blocked_adwindow)
                 }
                 override fun shouldOverrideUrlLoading(v: WebView, request: WebResourceRequest): Boolean {
                     redirect(v, request.url.toString()); return true
@@ -477,7 +480,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     private var docStartScript = false
     private var lastPopupToast = 0L
 
-    private fun notePopupBlocked(msg: String) {
+    private fun notePopupBlocked(@StringRes msg: Int) {
         app.ads.countBlocked()
         val now = SystemClock.uptimeMillis()
         if (now - lastPopupToast > 4000) {
@@ -759,7 +762,7 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
         val (js, paused) = when (force) { true -> playJs to false; false -> pauseJs to true; null -> toggleJs to null }
         val cmd = when (force) { true -> "play"; false -> "pause"; null -> "toggle" }
         runVideo(js, cmd, 0, after = { s -> s.copy(paused = paused ?: !s.paused) }) { s ->
-            flash(if (s.paused) "Tạm dừng" else "Đang phát", if (s.paused) Icons.Rounded.Pause else Icons.Rounded.PlayArrow)
+            flash(app.s(if (s.paused) R.string.vid_paused else R.string.vid_playing), if (s.paused) Icons.Rounded.Pause else Icons.Rounded.PlayArrow)
         }
     }
 
@@ -787,8 +790,10 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
         pendingSeek += seconds
         val v = video
         seekPreview = v?.let { (it.position + pendingSeek).coerceIn(0.0, if (it.duration > 0) it.duration else Double.MAX_VALUE) }
-        val label = seekPreview?.let { "${if (pendingSeek >= 0) "Tua tới" else "Tua lùi"} ${fmtTime(it)}  (${signed(pendingSeek)})" }
-            ?: "${if (pendingSeek >= 0) "Tua tới" else "Tua lùi"} ${kotlin.math.abs(pendingSeek)} giây"
+        val forward = pendingSeek >= 0
+        val label = seekPreview?.let {
+            app.s(if (forward) R.string.vid_forward_to else R.string.vid_back_to, fmtTime(it), signed(pendingSeek))
+        } ?: app.s(if (forward) R.string.vid_forward_s else R.string.vid_back_s, kotlin.math.abs(pendingSeek))
         flash(label, null, hold = true)
         handler.removeCallbacks(commitSeek)
         handler.postDelayed(commitSeek, settleMs)

@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_history">Historial</string>
+    <string name="nav_favorites">Favoritos</string>
+    <string name="nav_settings">Ajustes</string>
+    <string name="go_home">Ir al inicio</string>
+
+    <string name="greet_morning">Buenos días</string>
+    <string name="greet_afternoon">Buenas tardes</string>
+    <string name="greet_evening">Buenas noches</string>
+    <string name="home_prompt">¿Qué quieres ver hoy?</string>
+    <string name="home_offline">El televisor no tiene conexión a Internet</string>
+    <string name="home_press_ok">Pulsa OK para abrir</string>
+    <string name="home_continue">Seguir viendo</string>
+    <string name="home_your_sites">Tus sitios</string>
+    <string name="home_favorites">Favoritos</string>
+    <string name="home_search_hint">Busca o escribe una dirección web</string>
+    <string name="home_voice">Búsqueda por voz</string>
+
+    <string name="addr_title">Busca o escribe una dirección</string>
+    <string name="addr_example">Por ejemplo: youtube.com, o dibujos animados</string>
+    <string name="addr_open">Abrir</string>
+    <string name="addr_voice">Voz</string>
+    <string name="addr_cancel">Cancelar</string>
+    <string name="voice_prompt">¿Qué quieres buscar?</string>
+    <string name="toast_no_voice">Este televisor no admite la búsqueda por voz</string>
+
+    <string name="ago_now">Ahora mismo</string>
+    <string name="ago_yesterday">Ayer</string>
+    <plurals name="ago_minutes">
+        <item quantity="one">hace %d minuto</item>
+        <item quantity="other">hace %d minutos</item>
+    </plurals>
+    <plurals name="ago_hours">
+        <item quantity="one">hace %d hora</item>
+        <item quantity="other">hace %d horas</item>
+    </plurals>
+    <plurals name="ago_days">
+        <item quantity="one">hace %d día</item>
+        <item quantity="other">hace %d días</item>
+    </plurals>
+    <plurals name="ago_weeks">
+        <item quantity="one">hace %d semana</item>
+        <item quantity="other">hace %d semanas</item>
+    </plurals>
+
+    <string name="tb_back">Atrás</string>
+    <string name="tb_forward">Adelante</string>
+    <string name="tb_refresh">Recargar</string>
+    <string name="tb_home">Inicio</string>
+    <string name="tb_save">Guardar</string>
+    <string name="tb_saved">Guardado</string>
+    <string name="tb_mode_pointer">Puntero</string>
+    <string name="tb_mode_links">Enlaces</string>
+    <string name="tb_settings">Ajustes</string>
+    <string name="tb_address_hint">Busca o escribe una dirección</string>
+    <string name="tb_edit_hint">Pulsa OK para escribir otra dirección</string>
+
+    <string name="err_retry">Reintentar</string>
+    <string name="err_change">Cambiar dirección</string>
+    <string name="err_home">Inicio</string>
+    <string name="err_offline_t">Sin conexión a Internet</string>
+    <string name="err_offline_m">Comprueba que el televisor está conectado a Wi-Fi o a Ethernet e inténtalo de nuevo.</string>
+    <string name="err_notfound_t">No se encuentra el sitio web</string>
+    <string name="err_notfound_m">Puede que la dirección esté mal escrita o que el sitio no esté disponible.</string>
+    <string name="err_timeout_t">El sitio web no responde</string>
+    <string name="err_timeout_m">La página tarda demasiado en responder. Inténtalo de nuevo en un momento.</string>
+    <string name="err_ssl_t">La conexión no es segura</string>
+    <string name="err_ssl_blocked_m">Luna ha bloqueado esta página para proteger tu información. Inténtalo de nuevo o abre otra página.</string>
+    <string name="err_ssl_failed_m">Luna no ha podido establecer una conexión segura con este sitio web.</string>
+    <string name="err_other_t">No se pudo abrir la página</string>
+    <string name="err_other_m">Algo ha fallado al abrir la página. Inténtalo de nuevo o vuelve al inicio.</string>
+
+    <string name="vid_loading">Cargando vídeo…</string>
+    <string name="vid_failed">No se puede reproducir este vídeo</string>
+    <string name="vid_failed_hint">Pulsa Atrás para salir de la pantalla completa e inténtalo de nuevo.</string>
+    <string name="vid_no_video">No se encontró ningún vídeo controlable</string>
+    <string name="vid_paused">En pausa</string>
+    <string name="vid_playing">Reproduciendo</string>
+    <string name="vid_live">En directo</string>
+    <string name="vid_hint">"Izquierda / Derecha  Saltar      OK  Reproducir / Pausa      Atrás  Ocultar controles"</string>
+    <string name="vid_skip_to">Ir a %1$s</string>
+    <string name="vid_forward_to">"Adelantar a %1$s  (%2$s)"</string>
+    <string name="vid_back_to">"Retroceder a %1$s  (%2$s)"</string>
+    <string name="vid_forward_s">Adelantar %1$d segundos</string>
+    <string name="vid_back_s">Retroceder %1$d segundos</string>
+
+    <string name="toast_no_downloads">Las descargas aún no son compatibles</string>
+    <string name="toast_tip">Consejo: pulsa Menú para ver la barra de herramientas y mantén OK para cambiar entre puntero y enlaces</string>
+    <string name="toast_fav_added">Añadido a Favoritos</string>
+    <string name="toast_fav_removed">Quitado de Favoritos</string>
+    <string name="toast_mode_pointer">Modo puntero: mueve el puntero y pulsa OK para seleccionar</string>
+    <string name="toast_mode_links">Modo enlaces: las flechas saltan entre enlaces</string>
+    <string name="toast_blocked_redirect">Se bloqueó una redirección a una página de anuncios</string>
+    <string name="toast_blocked_auto">Se bloqueó una página que intentó redirigir por sí sola</string>
+    <string name="toast_blocked_popup">Se bloqueó una ventana emergente</string>
+    <string name="toast_blocked_adwindow">Se bloqueó una ventana de anuncios</string>
+    <string name="toast_confirm">Pulsa OK otra vez para confirmar</string>
+    <string name="toast_history_cleared">Historial borrado</string>
+    <string name="toast_cookies_cleared">Cookies y datos de sitios borrados</string>
+    <string name="toast_cache_cleared">Caché borrada</string>
+    <string name="toast_filters_ok">Listas de filtros actualizadas</string>
+    <string name="toast_filters_fail">No se pudieron actualizar las listas de filtros. Inténtalo más tarde.</string>
+
+    <string name="hist_title">Historial</string>
+    <string name="hist_clear">Borrar historial</string>
+    <string name="hist_clear_confirm">Pulsa OK otra vez para borrar</string>
+    <string name="hist_empty_t">Aún no hay historial</string>
+    <string name="hist_empty_m">Las páginas y vídeos que veas aparecerán aquí con miniaturas para volver a abrirlos rápidamente.</string>
+    <string name="fav_title">Favoritos</string>
+    <string name="fav_empty_t">Aún no hay favoritos</string>
+    <string name="fav_empty_m">Mientras ves una página, pulsa Menú y elige Guardar para conservarla aquí.</string>
+    <string name="fav_remove">Quitar</string>
+
+    <string name="set_title">Ajustes</string>
+    <string name="set_cat_general">General</string>
+    <string name="set_cat_home">Inicio</string>
+    <string name="set_cat_browsing">Navegación</string>
+    <string name="set_cat_adblock">Bloqueo de anuncios</string>
+    <string name="set_cat_video">Vídeo</string>
+    <string name="set_cat_privacy">Privacidad</string>
+    <string name="set_cat_about">Acerca de</string>
+    <string name="set_on">"✓  Sí"</string>
+    <string name="set_off">No</string>
+    <string name="set_press_again">Pulsa OK otra vez</string>
+
+    <string name="set_language">Idioma</string>
+    <string name="set_language_d">El idioma de Luna. «Automático» sigue el idioma del sistema del televisor.</string>
+    <string name="lang_auto">Automático (idioma del sistema)</string>
+    <string name="set_engine">Buscador</string>
+    <string name="set_engine_d">Se usa cuando escribes palabras en lugar de una dirección web.</string>
+    <string name="set_anim_bg">Fondo animado</string>
+    <string name="set_anim_bg_d">Luz de colores que se mueve suavemente detrás de la pantalla.</string>
+    <string name="set_reduce">Reducir movimiento</string>
+    <string name="set_reduce_d">Animaciones más simples y rápidas. Útil en televisores lentos.</string>
+
+    <string name="set_launch">Al abrir Luna</string>
+    <string name="set_launch_d">Elige la primera pantalla que ves.</string>
+    <string name="launch_home">Pantalla de inicio</string>
+    <string name="launch_resume">Última página</string>
+    <string name="set_continue">Mostrar «Seguir viendo»</string>
+    <string name="set_continue_d">Muestra las páginas y vídeos que acabas de ver, con miniaturas.</string>
+
+    <string name="set_cursor_start">Empezar en modo puntero</string>
+    <string name="set_cursor_start_d">Las páginas se abren con un puntero en pantalla. Desactívalo para saltar entre enlaces con las flechas.</string>
+    <string name="set_cursor_speed">Velocidad del puntero</string>
+    <string name="set_cursor_speed_d">Lo rápido que se mueve el puntero mientras mantienes una flecha.</string>
+    <string name="level_n">Nivel %1$d</string>
+    <string name="set_desktop">Pedir sitios de escritorio</string>
+    <string name="set_desktop_d">Muestra los sitios web completos, que van mejor en una pantalla grande.</string>
+    <string name="set_zoom">Tamaño del texto de las páginas</string>
+    <string name="set_zoom_d">Amplía el texto de las páginas para leerlo bien desde el sofá.</string>
+
+    <string name="set_adblock">Bloquear anuncios y rastreadores</string>
+    <string name="set_adblock_d">No carga contenido de sitios de publicidad conocidos.</string>
+    <string name="set_popups">Bloquear ventanas emergentes</string>
+    <string name="set_popups_d">Impide que las páginas abran ventanas nuevas por sí solas.</string>
+    <string name="set_blocked">Bloqueados</string>
+    <string name="set_blocked_n">%1$d anuncios</string>
+    <string name="set_rules">Reglas en uso</string>
+    <string name="set_lists">Listas de filtros</string>
+    <string name="list_rules_n">" · %1$s reglas"</string>
+    <string name="list_updated_n">" · actualizada el %1$s"</string>
+    <string name="list_not_downloaded">" · aún sin descargar"</string>
+    <string name="list_failed">" · la última descarga falló"</string>
+    <string name="set_update">Actualizar listas de filtros</string>
+    <string name="set_update_d">Descarga las últimas listas de sitios de publicidad y rastreo que se bloquean.</string>
+    <string name="set_update_fail_d">No se pudieron descargar las listas. Comprueba tu conexión a Internet e inténtalo de nuevo.</string>
+    <string name="st_updating">Actualizando…</string>
+    <string name="st_failed">Error al actualizar</string>
+    <string name="st_never">Sin actualizar</string>
+    <string name="st_updated">Actualizada el %1$s</string>
+    <string name="list_luna_n">Filtros de Luna</string>
+    <string name="list_luna_d">Reglas propias de Luna para sitios de vídeo y ventanas emergentes. Incluidas en la aplicación.</string>
+    <string name="list_abpvn_n">ABPVN</string>
+    <string name="list_abpvn_d">Lista de filtros de anuncios en vietnamita, mantenida por la comunidad ABPVN.</string>
+    <string name="list_abpvnh_n">ABPVN – dominios de anuncios</string>
+    <string name="list_abpvnh_d">Más de 20.000 dominios de publicidad, apuestas y rastreo.</string>
+    <string name="list_easy_n">EasyList</string>
+    <string name="list_easy_d">La lista de filtros de anuncios más utilizada, actualizada a diario.</string>
+
+    <string name="set_seek">Salto al avanzar</string>
+    <string name="set_seek_d">Cuánto saltan Izquierda / Derecha al ver un vídeo.</string>
+    <string name="sec_n">%1$d segundos</string>
+    <string name="info_ok">OK</string>
+    <string name="info_ok_v">Muestra los controles y luego reproduce / pausa</string>
+    <string name="info_lr">Izquierda / Derecha</string>
+    <string name="info_lr_v">Retroceder / adelantar</string>
+    <string name="info_back">Atrás</string>
+    <string name="info_back_v">Oculta los controles y luego sale de la pantalla completa</string>
+    <string name="info_pp">Tecla Reproducir / Pausa</string>
+    <string name="info_pp_v">Reproduce o pausa el vídeo de la página</string>
+
+    <string name="set_3p">Permitir cookies de terceros</string>
+    <string name="set_3p_d">Algunos sitios las necesitan para iniciar sesión o reproducir vídeo.</string>
+    <string name="set_clear_hist">Borrar el historial de navegación</string>
+    <string name="set_clear_hist_d">Elimina la lista de páginas visitadas y sus miniaturas.</string>
+    <string name="set_clear_cookies">Borrar cookies y datos de sitios</string>
+    <string name="set_clear_cookies_d">Se cerrará tu sesión en los sitios web.</string>
+    <string name="set_clear_cache">Borrar caché</string>
+    <string name="set_clear_cache_d">Libera espacio. La primera carga de una página puede ser más lenta.</string>
+
+    <string name="about_luna">Luna</string>
+    <string name="about_version">Versión %1$s</string>
+    <string name="about_engine">Motor web</string>
+    <string name="about_unknown">Desconocido</string>
+    <string name="about_device">Dispositivo</string>
+    <string name="about_menu">Menú</string>
+    <string name="about_menu_v">Muestra u oculta la barra de herramientas</string>
+    <string name="about_hold_ok">Mantener OK</string>
+    <string name="about_hold_ok_v">Cambia entre modo puntero y modo enlaces</string>
+    <string name="about_hold_back">Mantener Atrás</string>
+    <string name="about_hold_back_v">Abre la barra de herramientas</string>
+</resources>

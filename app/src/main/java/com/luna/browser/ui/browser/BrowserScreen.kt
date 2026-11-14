@@ -45,6 +45,7 @@ import androidx.compose.material.icons.rounded.WifiOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -70,6 +71,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.luna.browser.AppState
+import com.luna.browser.R
 import com.luna.browser.Screen
 import com.luna.browser.browser.BrowserController
 import com.luna.browser.browser.ErrorKind
@@ -185,10 +187,10 @@ private fun Toolbar(app: AppState, b: BrowserController) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconLabelButton("Quay lại", Icons.AutoMirrored.Rounded.ArrowBack, { b.goBack() }, enabled = b.canGoBack)
-                IconLabelButton("Tiến", Icons.AutoMirrored.Rounded.ArrowForward, { b.goForward() }, enabled = b.canGoForward)
-                IconLabelButton("Tải lại", Icons.Rounded.Refresh, { b.reload(); b.hideToolbar() })
-                IconLabelButton("Trang chủ", Icons.Rounded.Home, { app.goHome() })
+                IconLabelButton(stringResource(R.string.tb_back), Icons.AutoMirrored.Rounded.ArrowBack, { b.goBack() }, enabled = b.canGoBack)
+                IconLabelButton(stringResource(R.string.tb_forward), Icons.AutoMirrored.Rounded.ArrowForward, { b.goForward() }, enabled = b.canGoForward)
+                IconLabelButton(stringResource(R.string.tb_refresh), Icons.Rounded.Refresh, { b.reload(); b.hideToolbar() })
+                IconLabelButton(stringResource(R.string.tb_home), Icons.Rounded.Home, { app.goHome() })
                 FocusSurface(
                     onClick = { b.hideToolbar(); app.openAddress(b.url) },
                     modifier = Modifier.weight(1f).height(66.dp).focusRequester(addressFr),
@@ -197,15 +199,15 @@ private fun Toolbar(app: AppState, b: BrowserController) {
                     Row(Modifier.padding(horizontal = 20.dp).align(Alignment.CenterStart), verticalAlignment = Alignment.CenterVertically) {
                         Icon(if (b.url.startsWith("https")) Icons.Rounded.Lock else Icons.Rounded.Search, null, tint = TextSecondary, modifier = Modifier.size(22.dp))
                         Column(Modifier.padding(start = 12.dp)) {
-                            Txt(if (b.url.isEmpty()) "Tìm kiếm hoặc nhập địa chỉ" else hostOf(b.url), T.label)
-                            Txt(b.title.ifBlank { "Bấm OK để nhập địa chỉ khác" }, T.caption)
+                            Txt(if (b.url.isEmpty()) stringResource(R.string.tb_address_hint) else hostOf(b.url), T.label)
+                            Txt(b.title.ifBlank { stringResource(R.string.tb_edit_hint) }, T.caption)
                         }
                     }
                 }
                 val fav = app.store.isFavorite(b.url)
-                IconLabelButton(if (fav) "Đã lưu" else "Lưu", if (fav) Icons.Rounded.Star else Icons.Rounded.StarBorder, { b.toggleFavorite() }, highlighted = fav)
-                IconLabelButton(if (b.cursorMode) "Con trỏ" else "Liên kết", if (b.cursorMode) Icons.Rounded.Mouse else Icons.Rounded.TouchApp, { b.toggleMode() })
-                IconLabelButton("Cài đặt", Icons.Rounded.Settings, { app.navigate(Screen.Settings) })
+                IconLabelButton(stringResource(R.string.if (fav) R.string.tb_saved else R.string.tb_save), if (fav) Icons.Rounded.Star else Icons.Rounded.StarBorder, { b.toggleFavorite() }, highlighted = fav)
+                IconLabelButton(stringResource(R.string.if (b.cursorMode) R.string.tb_mode_pointer else R.string.tb_mode_links), if (b.cursorMode) Icons.Rounded.Mouse else Icons.Rounded.TouchApp, { b.toggleMode() })
+                IconLabelButton(stringResource(R.string.tb_settings), Icons.Rounded.Settings, { app.navigate(Screen.Settings) })
             }
         }
     }
@@ -224,14 +226,14 @@ private fun ErrorPanel(app: AppState, err: PageError) {
                 Icon(if (err.kind == ErrorKind.Offline) Icons.Rounded.WifiOff else Icons.Rounded.ErrorOutline, null, tint = Danger, modifier = Modifier.size(52.dp))
             }
             Spacer(Modifier.height(20.dp))
-            Txt(err.title, T.display.copy(fontSize = 34.sp), align = TextAlign.Center)
+            Txt(stringResource(err.title), T.display.copy(fontSize = 34.sp), align = TextAlign.Center)
             Spacer(Modifier.height(8.dp))
-            Txt(err.message, T.body.copy(color = TextSecondary), maxLines = 3, align = TextAlign.Center, modifier = Modifier.width(560.dp), color = TextSecondary)
+            Txt(stringResource(err.message), T.body.copy(color = TextSecondary), maxLines = 3, align = TextAlign.Center, modifier = Modifier.width(560.dp), color = TextSecondary)
             Spacer(Modifier.height(28.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                TvButton("Thử lại", { b.retry() }, Modifier.focusRequester(fr), Icons.Rounded.Refresh, primary = true)
-                TvButton("Đổi địa chỉ", { app.openAddress(b.url) }, icon = Icons.Rounded.Search)
-                TvButton("Trang chủ", { app.goHome() }, icon = Icons.Rounded.Home)
+                TvButton(stringResource(R.string.err_retry), { b.retry() }, Modifier.focusRequester(fr), Icons.Rounded.Refresh, primary = true)
+                TvButton(stringResource(R.string.err_change), { app.openAddress(b.url) }, icon = Icons.Rounded.Search)
+                TvButton(stringResource(R.string.err_home), { app.goHome() }, icon = Icons.Rounded.Home)
             }
         }
     }
@@ -276,7 +278,7 @@ private fun BoxScope.VideoOverlay(b: BrowserController) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             CircularProgressIndicator(color = Accent, strokeWidth = 3.dp, modifier = Modifier.size(24.dp))
-            Txt("  Đang tải video…", T.label)
+            Txt("  " + stringResource(R.string.vid_loading), T.label)
         }
     }
     if (v != null && v.failed) {
@@ -285,8 +287,8 @@ private fun BoxScope.VideoOverlay(b: BrowserController) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Icon(Icons.Rounded.ErrorOutline, null, tint = Danger, modifier = Modifier.size(48.dp))
-            Txt("Không phát được video này", T.title, Modifier.padding(top = 8.dp))
-            Txt("Bấm Quay lại để thoát toàn màn hình rồi thử lại.", T.caption)
+            Txt(stringResource(R.string.vid_failed), T.title, Modifier.padding(top = 8.dp))
+            Txt(stringResource(R.string.vid_failed_hint), T.caption)
         }
     }
     // Centre flash for play / pause / seek feedback
@@ -315,15 +317,15 @@ private fun BoxScope.VideoOverlay(b: BrowserController) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Txt(
                         when {
-                            v == null -> "Không tìm thấy video để điều khiển"
-                            preview != null -> "Tua tới ${fmt(preview)}"
-                            v.paused -> "Tạm dừng"
-                            else -> "Đang phát"
+                            v == null -> stringResource(R.string.vid_no_video)
+                            preview != null -> stringResource(R.string.vid_skip_to, fmt(preview))
+                            v.paused -> stringResource(R.string.vid_paused)
+                            else -> stringResource(R.string.vid_playing)
                         },
                         T.label,
                     )
                     Spacer(Modifier.weight(1f))
-                    if (v != null) Txt("${fmt(preview ?: v.position)} / ${if (dur > 0) fmt(dur) else "Trực tiếp"}", T.label)
+                    if (v != null) Txt("${fmt(preview ?: v.position)} / ${if (dur > 0) fmt(dur) else stringResource(R.string.vid_live)}", T.label)
                 }
                 Spacer(Modifier.height(10.dp))
                 Box(Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)).background(Color(0x44FFFFFF))) {
@@ -335,7 +337,7 @@ private fun BoxScope.VideoOverlay(b: BrowserController) {
                     }
                 }
                 Spacer(Modifier.height(12.dp))
-                Txt("Trái / Phải  Tua      OK  Phát / Dừng      Quay lại  Ẩn điều khiển", T.caption, color = Color(0xCCFFFFFF))
+                Txt(stringResource(R.string.vid_hint), T.caption, color = Color(0xCCFFFFFF))
             }
         }
     }

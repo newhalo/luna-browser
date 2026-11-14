@@ -66,7 +66,7 @@ if(e.tagName==='IFRAME'){var src=e.getAttribute('src')||'';return src===''||src=
 if(parseFloat(s.opacity)<0.1)return true;var bg=s.backgroundColor;
 var clear=(bg==='transparent'||bg==='rgba(0, 0, 0, 0)')&&s.backgroundImage==='none';
 return clear&&!(e.innerText||'').trim()&&!e.querySelector('img,video,canvas,iframe');}catch(x){return false;}}
-var abRe=/(t[ắa]t|v[ôo]\s*hi[ệe]u\s*h[óo]a|g[ỡo]\s*b[ỏo])\s*(tr[ìi]nh\s*)?(ch[ặa]n\s*qu[ảa]ng\s*c[áa]o|ad\s*-?block)|disable\s+(your\s+)?ad\s*-?block|turn\s+off\s+(your\s+)?ad\s*-?block|ad\s*-?block(er)?\s+(detected|is\s+enabled)|whitelist\s+(this|our)\s+site/i;
+var abRe=/(t[ắa]t|v[ôo]\s*hi[ệe]u\s*h[óo]a|g[ỡo]\s*b[ỏo])\s*(tr[ìi]nh\s*)?(ch[ặa]n\s*qu[ảa]ng\s*c[áa]o|ad\s*-?block)|disable\s+(your\s+)?ad\s*-?block|turn\s+off\s+(your\s+)?ad\s*-?block|ad\s*-?block(er)?\s+(detected|is\s+enabled)|whitelist\s+(this|our)\s+site|desactiv\w*\s+(tu\s+|su\s+)?(bloqueador|adblock)|d[ée]sactiv\w*\s+(votre\s+)?(bloqueur|adblock)|(werbeblocker|adblocker)\s+(deaktivier|ausschalt)|desativ\w*\s+(o\s+)?(bloqueador|adblock)|(отключ|выключ)\w*\s+(блокировщик|adblock)|广告拦截|广告屏蔽|広告ブロック|광고\s*차단/i;
 function antiAdblock(){if(!document.body)return;var found=false;
 var cand=document.querySelectorAll('body > *, body > * > *, [class*=modal], [id*=modal], [class*=popup], [id*=popup], [class*=adblock], [id*=adblock]');
 for(var i=0;i<cand.length;i++){var e=cand[i];if(!e.isConnected)continue;var s=getComputedStyle(e);

@@ -3,9 +3,27 @@ updates:
   - package-ecosystem: gradle
     directory: "/"
     schedule:
-      interval: weekly
-    open-pull-requests-limit: 5
+      interval: monthly
+    open-pull-requests-limit: 3
+    groups:
+      androidx-compose:
+        patterns: ["androidx.*"]
+        update-types: [minor, patch]
+      minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # The build toolchain moves together and needs a deliberate migration (Kotlin <-> Compose compiler
+      # <-> AGP <-> Gradle). Upgrade these by hand, not through automatic PRs.
+      - dependency-name: "com.android.application"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.jetbrains.kotlin.android"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
+      - dependency-name: "androidx.compose:compose-bom"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
-      interval: weekly
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]

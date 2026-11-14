@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_history">Lịch sử</string>
+    <string name="nav_favorites">Yêu thích</string>
+    <string name="nav_settings">Cài đặt</string>
+    <string name="go_home">Về trang chủ</string>
+
+    <string name="greet_morning">Chào buổi sáng</string>
+    <string name="greet_afternoon">Chào buổi chiều</string>
+    <string name="greet_evening">Chào buổi tối</string>
+    <string name="home_prompt">Hôm nay bạn muốn xem gì?</string>
+    <string name="home_offline">TV đang mất kết nối Internet</string>
+    <string name="home_press_ok">Bấm OK để mở</string>
+    <string name="home_continue">Xem tiếp</string>
+    <string name="home_your_sites">Trang web của bạn</string>
+    <string name="home_favorites">Yêu thích</string>
+    <string name="home_search_hint">Tìm kiếm hoặc nhập địa chỉ trang web</string>
+    <string name="home_voice">Tìm bằng giọng nói</string>
+
+    <string name="addr_title">Tìm kiếm hoặc nhập địa chỉ</string>
+    <string name="addr_example">Ví dụ: youtube.com, hoặc phim hoạt hình</string>
+    <string name="addr_open">Mở</string>
+    <string name="addr_voice">Giọng nói</string>
+    <string name="addr_cancel">Hủy</string>
+    <string name="voice_prompt">Bạn muốn tìm gì?</string>
+    <string name="toast_no_voice">TV chưa hỗ trợ tìm kiếm bằng giọng nói</string>
+
+    <string name="ago_now">Vừa xong</string>
+    <string name="ago_yesterday">Hôm qua</string>
+    <plurals name="ago_minutes">
+        <item quantity="other">%d phút trước</item>
+    </plurals>
+    <plurals name="ago_hours">
+        <item quantity="other">%d giờ trước</item>
+    </plurals>
+    <plurals name="ago_days">
+        <item quantity="other">%d ngày trước</item>
+    </plurals>
+    <plurals name="ago_weeks">
+        <item quantity="other">%d tuần trước</item>
+    </plurals>
+
+    <string name="tb_back">Quay lại</string>
+    <string name="tb_forward">Tiến</string>
+    <string name="tb_refresh">Tải lại</string>
+    <string name="tb_home">Trang chủ</string>
+    <string name="tb_save">Lưu</string>
+    <string name="tb_saved">Đã lưu</string>
+    <string name="tb_mode_pointer">Con trỏ</string>
+    <string name="tb_mode_links">Liên kết</string>
+    <string name="tb_settings">Cài đặt</string>
+    <string name="tb_address_hint">Tìm kiếm hoặc nhập địa chỉ</string>
+    <string name="tb_edit_hint">Bấm OK để nhập địa chỉ khác</string>
+
+    <string name="err_retry">Thử lại</string>
+    <string name="err_change">Đổi địa chỉ</string>
+    <string name="err_home">Trang chủ</string>
+    <string name="err_offline_t">Không có kết nối Internet</string>
+    <string name="err_offline_m">Hãy kiểm tra TV đã kết nối Wi-Fi hoặc dây mạng, rồi thử lại.</string>
+    <string name="err_notfound_t">Không tìm thấy trang web</string>
+    <string name="err_notfound_m">Địa chỉ có thể bị gõ sai, hoặc trang web đang tạm ngừng hoạt động.</string>
+    <string name="err_timeout_t">Trang web không phản hồi</string>
+    <string name="err_timeout_m">Trang mất quá nhiều thời gian để trả lời. Hãy thử lại sau giây lát.</string>
+    <string name="err_ssl_t">Kết nối không an toàn</string>
+    <string name="err_ssl_blocked_m">Luna đã chặn trang này để bảo vệ thông tin của bạn. Hãy thử lại hoặc mở trang khác.</string>
+    <string name="err_ssl_failed_m">Luna không thể tạo kết nối bảo mật tới trang web này.</string>
+    <string name="err_other_t">Không mở được trang</string>
+    <string name="err_other_m">Đã có lỗi khi mở trang. Hãy thử lại hoặc quay về màn hình chính.</string>
+
+    <string name="vid_loading">Đang tải video…</string>
+    <string name="vid_failed">Không phát được video này</string>
+    <string name="vid_failed_hint">Bấm Quay lại để thoát toàn màn hình rồi thử lại.</string>
+    <string name="vid_no_video">Không tìm thấy video để điều khiển</string>
+    <string name="vid_paused">Tạm dừng</string>
+    <string name="vid_playing">Đang phát</string>
+    <string name="vid_live">Trực tiếp</string>
+    <string name="vid_hint">"Trái / Phải  Tua      OK  Phát / Dừng      Quay lại  Ẩn điều khiển"</string>
+    <string name="vid_skip_to">Tua tới %1$s</string>
+    <string name="vid_forward_to">"Tua tới %1$s  (%2$s)"</string>
+    <string name="vid_back_to">"Tua lùi về %1$s  (%2$s)"</string>
+    <string name="vid_forward_s">Tua tới %1$d giây</string>
+    <string name="vid_back_s">Tua lùi %1$d giây</string>
+
+    <string name="toast_no_downloads">Luna chưa hỗ trợ tải tệp xuống</string>
+    <string name="toast_tip">Mẹo: bấm Menu để mở thanh công cụ, giữ OK để đổi giữa con trỏ và chế độ liên kết</string>
+    <string name="toast_fav_added">Đã thêm vào Yêu thích</string>
+    <string name="toast_fav_removed">Đã bỏ khỏi Yêu thích</string>
+    <string name="toast_mode_pointer">Chế độ con trỏ: di chuyển con trỏ, bấm OK để chọn</string>
+    <string name="toast_mode_links">Chế độ liên kết: phím mũi tên nhảy giữa các liên kết</string>
+    <string name="toast_blocked_redirect">Đã chặn chuyển hướng tới trang quảng cáo</string>
+    <string name="toast_blocked_auto">Đã chặn trang tự chuyển sang trang khác</string>
+    <string name="toast_blocked_popup">Đã chặn một cửa sổ bật lên</string>
+    <string name="toast_blocked_adwindow">Đã chặn một cửa sổ quảng cáo</string>
+    <string name="toast_confirm">Bấm OK lần nữa để xác nhận</string>
+    <string name="toast_history_cleared">Đã xóa lịch sử</string>
+    <string name="toast_cookies_cleared">Đã xóa cookie và dữ liệu trang</string>
+    <string name="toast_cache_cleared">Đã xóa bộ nhớ đệm</string>
+    <string name="toast_filters_ok">Đã cập nhật danh sách chặn</string>
+    <string name="toast_filters_fail">Chưa cập nhật được danh sách chặn. Hãy thử lại sau.</string>
+
+    <string name="hist_title">Lịch sử</string>
+    <string name="hist_clear">Xóa lịch sử</string>
+    <string name="hist_clear_confirm">Bấm OK lần nữa để xóa</string>
+    <string name="hist_empty_t">Chưa có lịch sử</string>
+    <string name="hist_empty_m">Các trang và video bạn xem sẽ hiện ở đây kèm ảnh thu nhỏ để mở lại thật nhanh.</string>
+    <string name="fav_title">Yêu thích</string>
+    <string name="fav_empty_t">Chưa có trang yêu thích</string>
+    <string name="fav_empty_m">Khi đang xem một trang, bấm Menu rồi chọn Lưu để giữ trang đó ở đây.</string>
+    <string name="fav_remove">Bỏ</string>
+
+    <string name="set_title">Cài đặt</string>
+    <string name="set_cat_general">Chung</string>
+    <string name="set_cat_home">Trang chủ</string>
+    <string name="set_cat_browsing">Duyệt web</string>
+    <string name="set_cat_adblock">Chặn quảng cáo</string>
+    <string name="set_cat_video">Video</string>
+    <string name="set_cat_privacy">Quyền riêng tư</string>
+    <string name="set_cat_about">Giới thiệu</string>
+    <string name="set_on">"✓  Bật"</string>
+    <string name="set_off">Tắt</string>
+    <string name="set_press_again">Bấm OK lần nữa</string>
+
+    <string name="set_language">Ngôn ngữ</string>
+    <string name="set_language_d">Ngôn ngữ của Luna. “Tự động” theo ngôn ngữ hệ thống của TV.</string>
+    <string name="lang_auto">Tự động (ngôn ngữ hệ thống)</string>
+    <string name="set_engine">Công cụ tìm kiếm</string>
+    <string name="set_engine_d">Dùng khi bạn gõ từ khóa thay vì địa chỉ trang web.</string>
+    <string name="set_anim_bg">Hình nền chuyển động</string>
+    <string name="set_anim_bg_d">Ánh sáng màu trôi nhẹ phía sau màn hình.</string>
+    <string name="set_reduce">Giảm chuyển động</string>
+    <string name="set_reduce_d">Hiệu ứng đơn giản, nhanh hơn. Phù hợp với TV cấu hình yếu.</string>
+
+    <string name="set_launch">Khi mở Luna</string>
+    <string name="set_launch_d">Chọn màn hình đầu tiên bạn thấy.</string>
+    <string name="launch_home">Trang chủ</string>
+    <string name="launch_resume">Trang xem gần nhất</string>
+    <string name="set_continue">Hiện mục “Xem tiếp”</string>
+    <string name="set_continue_d">Hiện những trang và video bạn vừa xem kèm ảnh thu nhỏ.</string>
+
+    <string name="set_cursor_start">Bắt đầu bằng con trỏ</string>
+    <string name="set_cursor_start_d">Trang web mở ra với con trỏ trên màn hình. Tắt để dùng phím mũi tên nhảy giữa các liên kết.</string>
+    <string name="set_cursor_speed">Tốc độ con trỏ</string>
+    <string name="set_cursor_speed_d">Con trỏ chạy nhanh đến đâu khi giữ phím mũi tên.</string>
+    <string name="level_n">Mức %1$d</string>
+    <string name="set_desktop">Xem trang web bản máy tính</string>
+    <string name="set_desktop_d">Hiện trang web đầy đủ, hợp với màn hình lớn.</string>
+    <string name="set_zoom">Cỡ chữ trang web</string>
+    <string name="set_zoom_d">Phóng to chữ trên trang để đọc rõ từ ghế sofa.</string>
+
+    <string name="set_adblock">Chặn quảng cáo và theo dõi</string>
+    <string name="set_adblock_d">Không tải nội dung từ các trang quảng cáo đã biết.</string>
+    <string name="set_popups">Chặn cửa sổ bật lên</string>
+    <string name="set_popups_d">Không cho trang web tự mở cửa sổ mới.</string>
+    <string name="set_blocked">Đã chặn</string>
+    <string name="set_blocked_n">%1$d quảng cáo</string>
+    <string name="set_rules">Tổng số luật đang dùng</string>
+    <string name="set_lists">Danh sách lọc</string>
+    <string name="list_rules_n">" · %1$s luật"</string>
+    <string name="list_updated_n">" · cập nhật %1$s"</string>
+    <string name="list_not_downloaded">" · chưa tải về"</string>
+    <string name="list_failed">" · lần tải gần nhất bị lỗi"</string>
+    <string name="set_update">Cập nhật danh sách chặn</string>
+    <string name="set_update_d">Tải danh sách mới nhất các trang quảng cáo và theo dõi cần chặn.</string>
+    <string name="set_update_fail_d">Không tải được danh sách. Kiểm tra kết nối Internet rồi thử lại.</string>
+    <string name="st_updating">Đang cập nhật…</string>
+    <string name="st_failed">Cập nhật thất bại</string>
+    <string name="st_never">Chưa cập nhật</string>
+    <string name="st_updated">Cập nhật %1$s</string>
+    <string name="list_luna_n">Bộ lọc Luna</string>
+    <string name="list_luna_d">Luật riêng của Luna cho trang phim và quảng cáo bật lên. Đi kèm ứng dụng.</string>
+    <string name="list_abpvn_n">ABPVN</string>
+    <string name="list_abpvn_d">Bộ lọc quảng cáo cho người Việt, do cộng đồng ABPVN cập nhật thường xuyên.</string>
+    <string name="list_abpvnh_n">ABPVN – tên miền quảng cáo</string>
+    <string name="list_abpvnh_d">Hơn 20.000 tên miền quảng cáo, cá cược và theo dõi.</string>
+    <string name="list_easy_n">EasyList</string>
+    <string name="list_easy_d">Bộ lọc quảng cáo được dùng rộng rãi nhất, cập nhật hằng ngày.</string>
+
+    <string name="set_seek">Bước tua</string>
+    <string name="set_seek_d">Khoảng tua mỗi lần bấm Trái / Phải khi xem video.</string>
+    <string name="sec_n">%1$d giây</string>
+    <string name="info_ok">OK</string>
+    <string name="info_ok_v">Hiện điều khiển, rồi Phát / Dừng</string>
+    <string name="info_lr">Trái / Phải</string>
+    <string name="info_lr_v">Tua lùi / tua tới</string>
+    <string name="info_back">Quay lại</string>
+    <string name="info_back_v">Ẩn điều khiển, rồi thoát toàn màn hình</string>
+    <string name="info_pp">Phím Phát / Dừng</string>
+    <string name="info_pp_v">Phát hoặc dừng video trên trang</string>
+
+    <string name="set_3p">Cho phép cookie bên thứ ba</string>
+    <string name="set_3p_d">Một số trang cần để đăng nhập hoặc phát video.</string>
+    <string name="set_clear_hist">Xóa lịch sử duyệt web</string>
+    <string name="set_clear_hist_d">Xóa danh sách trang đã xem và ảnh thu nhỏ.</string>
+    <string name="set_clear_cookies">Xóa cookie và dữ liệu trang</string>
+    <string name="set_clear_cookies_d">Bạn sẽ bị đăng xuất khỏi các trang web.</string>
+    <string name="set_clear_cache">Xóa bộ nhớ đệm</string>
+    <string name="set_clear_cache_d">Giải phóng dung lượng. Lần đầu mở lại trang có thể chậm hơn.</string>
+
+    <string name="about_luna">Luna</string>
+    <string name="about_version">Phiên bản %1$s</string>
+    <string name="about_engine">Trình duyệt nền</string>
+    <string name="about_unknown">Không rõ</string>
+    <string name="about_device">Thiết bị</string>
+    <string name="about_menu">Menu</string>
+    <string name="about_menu_v">Mở hoặc đóng thanh công cụ</string>
+    <string name="about_hold_ok">Giữ OK</string>
+    <string name="about_hold_ok_v">Đổi giữa con trỏ và chế độ liên kết</string>
+    <string name="about_hold_back">Giữ Quay lại</string>
+    <string name="about_hold_back_v">Mở thanh công cụ</string>
+</resources>

@@ -30,7 +30,9 @@ import androidx.compose.material.icons.rounded.Shield
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.Videocam
 import androidx.compose.material3.Icon
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -49,10 +51,12 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.luna.browser.AppState
+import com.luna.browser.R
 import com.luna.browser.data.FilterLists
 import com.luna.browser.data.K
 import com.luna.browser.data.ListStatus
-import com.luna.browser.data.SearchEngines
+import com.luna.browser.data.Languages
+import com.luna.browser.data.searchEnginesFor
 import com.luna.browser.ui.components.Aurora
 import com.luna.browser.ui.components.FocusSurface
 import com.luna.browser.ui.components.Txt
@@ -75,17 +79,19 @@ private data class Choice(val key: String, val title: String, val desc: String, 
 private data class Action(val title: String, val desc: String, val value: String = "", val danger: Boolean = false, val confirm: Boolean = false, val run: () -> Unit) : SRow
 private data class Info(val title: String, val value: String) : SRow
 
-private class Cat(val name: String, val icon: ImageVector)
+private class Cat(@StringRes val name: Int, val icon: ImageVector)
 
 private val categories = listOf(
-    Cat("Chung", Icons.Rounded.Tune),
-    Cat("Trang chủ", Icons.Rounded.Home),
-    Cat("Duyệt web", Icons.Rounded.Mouse),
-    Cat("Chặn quảng cáo", Icons.Rounded.Shield),
-    Cat("Video", Icons.Rounded.Videocam),
-    Cat("Quyền riêng tư", Icons.Rounded.Lock),
-    Cat("Giới thiệu", Icons.Rounded.Info),
+    Cat(R.string.set_cat_general, Icons.Rounded.Tune),
+    Cat(R.string.set_cat_home, Icons.Rounded.Home),
+    Cat(R.string.set_cat_browsing, Icons.Rounded.Mouse),
+    Cat(R.string.set_cat_adblock, Icons.Rounded.Shield),
+    Cat(R.string.set_cat_video, Icons.Rounded.Videocam),
+    Cat(R.string.set_cat_privacy, Icons.Rounded.Lock),
+    Cat(R.string.set_cat_about, Icons.Rounded.Info),
 )
+
+private const val AD_BLOCKING = 3
 
 @Composable
 fun SettingsScreen(app: AppState) {
@@ -97,7 +103,7 @@ fun SettingsScreen(app: AppState) {
         Aurora(animated = app.store.bool(K.ANIMATED_BG), dim = 0.55f)
         Row(Modifier.fillMaxSize().padding(horizontal = Dim.SafeH, vertical = Dim.SafeV)) {
             Column(Modifier.width(280.dp).fillMaxHeight().verticalScroll(rememberScrollState()).padding(end = 12.dp, bottom = 12.dp)) {
-                Txt("Cài đặt", T.display.copy(fontSize = 36.sp), Modifier.padding(bottom = 10.dp))
+                Txt(stringResource(R.string.set_title), T.display.copy(fontSize = 36.sp), Modifier.padding(bottom = 10.dp))
                 categories.forEachIndexed { i, c ->
                     CategoryItem(c, i == selected, if (i == 0) Modifier.focusRequester(firstFr) else Modifier) { selected = i }
                 }
@@ -106,16 +112,19 @@ fun SettingsScreen(app: AppState) {
                 Modifier.weight(1f).fillMaxHeight().clip(RoundedCornerShape(24.dp)).background(Color(0x99121622))
                     .verticalScroll(rememberScrollState()).padding(20.dp),
             ) {
-                Txt(categories[selected].name, T.title, Modifier.padding(start = 6.dp, bottom = 14.dp))
-                val rows = rows(categories[selected].name, app)
+                Txt(stringResource(categories[selected].name), T.title, Modifier.padding(start = 6.dp, bottom = 14.dp))
+                val rows = rows(selected, app)
                 var confirming by remember(selected) { mutableStateOf<String?>(null) }
                 val scope = rememberCoroutineScope()
+                val onText = stringResource(R.string.set_on)
+                val offText = stringResource(R.string.set_off)
+                val pressAgain = stringResource(R.string.set_press_again)
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     rows.forEach { r ->
                         when (r) {
                             is Toggle -> {
                                 val on = app.store.bool(r.key)
-                                SettingRow(r.title, r.desc, if (on) "✓  Bật" else "Tắt", on) { app.store.put(r.key, !on) }
+                                SettingRow(r.title, r.desc, if (on) onText else offText, on) { app.store.put(r.key, !on) }
                             }
                             is Choice -> {
                                 val cur = r.options.indexOfFirst { it.first == app.store.str(r.key) }.coerceAtLeast(0)
@@ -125,10 +134,10 @@ fun SettingsScreen(app: AppState) {
                             }
                             is Action -> {
                                 val armed = confirming == r.title
-                                SettingRow(r.title, r.desc, if (armed) "Bấm OK lần nữa" else r.value, armed, danger = r.danger || armed) {
+                                SettingRow(r.title, r.desc, if (armed) pressAgain else r.value, armed, danger = r.danger || armed) {
                                     if (r.confirm && !armed) {
                                         confirming = r.title
-                                        app.toast("Bấm OK lần nữa để xác nhận")
+                                        app.toast(R.string.toast_confirm)
                                     } else {
                                         confirming = null
                                         r.run()
@@ -138,36 +147,37 @@ fun SettingsScreen(app: AppState) {
                             is Info -> InfoRow(r.title, r.value)
                         }
                     }
-                    if (categories[selected].name == "Chặn quảng cáo") {
+                    if (selected == AD_BLOCKING) {
                         val ads = app.ads
-                        Txt("Danh sách lọc", T.label, Modifier.padding(start = 6.dp, top = 8.dp), color = TextSecondary)
+                        Txt(stringResource(R.string.set_lists), T.label, Modifier.padding(start = 6.dp, top = 8.dp), color = TextSecondary)
                         FilterLists.forEach { l ->
                             val on = ads.isEnabled(l.id)
                             val st = ads.status[l.id] ?: ListStatus()
                             val meta = buildString {
-                                append(l.description)
-                                if (on && st.rules > 0) append(" · ${"%,d".format(st.rules).replace(',', '.')} luật")
-                                if (l.url != null && st.updatedAt > 0) append(" · cập nhật " + DateFormat.getDateInstance(DateFormat.SHORT).format(Date(st.updatedAt)))
-                                if (l.url != null && on && st.updatedAt == 0L) append(" · chưa tải về")
-                                if (st.failed) append(" · lần tải gần nhất bị lỗi")
+                                append(app.s(l.description))
+                                if (on && st.rules > 0) append(app.s(R.string.list_rules_n, "%,d".format(app.locale, st.rules)))
+                                if (l.url != null && st.updatedAt > 0) {
+                                    append(app.s(R.string.list_updated_n, DateFormat.getDateInstance(DateFormat.SHORT, app.locale).format(Date(st.updatedAt))))
+                                }
+                                if (l.url != null && on && st.updatedAt == 0L) append(app.s(R.string.list_not_downloaded))
+                                if (st.failed) append(app.s(R.string.list_failed))
                             }
-                            SettingRow(l.name, meta, if (on) "✓  Bật" else "Tắt", on, danger = st.failed) { ads.setEnabled(l.id, !on) }
+                            SettingRow(app.s(l.name), meta, if (on) onText else offText, on, danger = st.failed) { ads.setEnabled(l.id, !on) }
                         }
                         val status = when {
-                            ads.updating -> "Đang cập nhật…"
-                            ads.updateFailed -> "Cập nhật thất bại"
-                            ads.lastUpdated == 0L -> "Chưa cập nhật"
-                            else -> "Cập nhật " + DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(ads.lastUpdated))
+                            ads.updating -> app.s(R.string.st_updating)
+                            ads.updateFailed -> app.s(R.string.st_failed)
+                            ads.lastUpdated == 0L -> app.s(R.string.st_never)
+                            else -> app.s(R.string.st_updated, DateFormat.getDateInstance(DateFormat.MEDIUM, app.locale).format(Date(ads.lastUpdated)))
                         }
                         SettingRow(
-                            "Cập nhật danh sách chặn",
-                            if (ads.updateFailed) "Không tải được danh sách. Kiểm tra kết nối Internet rồi thử lại."
-                            else "Tải danh sách mới nhất các trang quảng cáo và theo dõi cần chặn.",
+                            app.s(R.string.set_update),
+                            app.s(if (ads.updateFailed) R.string.set_update_fail_d else R.string.set_update_d),
                             status, false, danger = ads.updateFailed,
                         ) {
                             scope.launch {
                                 val ok = ads.update()
-                                app.toast(if (ok) "Đã cập nhật danh sách chặn" else "Chưa cập nhật được danh sách chặn. Hãy thử lại sau.")
+                                app.toast(if (ok) R.string.toast_filters_ok else R.string.toast_filters_fail)
                             }
                         }
                     }
@@ -188,7 +198,7 @@ private fun CategoryItem(c: Cat, selected: Boolean, modifier: Modifier, onFocus:
     ) {
         Row(Modifier.padding(horizontal = 18.dp).align(Alignment.CenterStart), verticalAlignment = Alignment.CenterVertically) {
             Icon(c.icon, null, tint = if (selected) Accent else TextPrimary, modifier = Modifier.size(24.dp))
-            Txt("  " + c.name, T.label)
+            Txt("  " + stringResource(c.name), T.label)
         }
     }
 }
@@ -220,58 +230,66 @@ private fun InfoRow(title: String, value: String) {
     }
 }
 
-private fun rows(cat: String, app: AppState): List<SRow> {
+private fun rows(category: Int, app: AppState): List<SRow> {
     val s = app.store
-    return when (cat) {
-        "Chung" -> listOf(
-            Choice(K.ENGINE, "Công cụ tìm kiếm", "Dùng khi bạn gõ từ khóa thay vì địa chỉ trang web.", SearchEngines.keys.map { it to it }),
-            Toggle(K.ANIMATED_BG, "Hình nền chuyển động", "Ánh sáng màu trôi nhẹ phía sau màn hình."),
-            Toggle(K.REDUCE_MOTION, "Giảm chuyển động", "Hiệu ứng đơn giản, nhanh hơn. Phù hợp với TV cấu hình yếu."),
+    return when (category) {
+        0 -> {
+            // The stored engine is always offered, even if the current language doesn't list it.
+            val engines = (searchEnginesFor(app.lang) + s.str(K.ENGINE)).distinct()
+            listOf(
+                Choice(K.LANGUAGE, app.s(R.string.set_language), app.s(R.string.set_language_d), listOf("auto" to app.s(R.string.lang_auto)) + Languages),
+                Choice(K.ENGINE, app.s(R.string.set_engine), app.s(R.string.set_engine_d), engines.map { it to it }),
+                Toggle(K.ANIMATED_BG, app.s(R.string.set_anim_bg), app.s(R.string.set_anim_bg_d)),
+                Toggle(K.REDUCE_MOTION, app.s(R.string.set_reduce), app.s(R.string.set_reduce_d)),
+            )
+        }
+        1 -> listOf(
+            Choice(K.LAUNCH, app.s(R.string.set_launch), app.s(R.string.set_launch_d), listOf("home" to app.s(R.string.launch_home), "resume" to app.s(R.string.launch_resume))),
+            Toggle(K.SHOW_CONTINUE, app.s(R.string.set_continue), app.s(R.string.set_continue_d)),
         )
-        "Trang chủ" -> listOf(
-            Choice(K.LAUNCH, "Khi mở Luna", "Chọn màn hình đầu tiên bạn thấy.", listOf("home" to "Trang chủ", "resume" to "Trang xem gần nhất")),
-            Toggle(K.SHOW_CONTINUE, "Hiện mục “Xem tiếp”", "Hiện những trang và video bạn vừa xem kèm ảnh thu nhỏ."),
+        2 -> listOf(
+            Toggle(K.CURSOR_START, app.s(R.string.set_cursor_start), app.s(R.string.set_cursor_start_d)),
+            Choice(K.CURSOR_SPEED, app.s(R.string.set_cursor_speed), app.s(R.string.set_cursor_speed_d), (1..5).map { it.toString() to app.s(R.string.level_n, it) }),
+            Toggle(K.DESKTOP, app.s(R.string.set_desktop), app.s(R.string.set_desktop_d)),
+            Choice(K.ZOOM, app.s(R.string.set_zoom), app.s(R.string.set_zoom_d), listOf("100", "125", "150", "175").map { it to "$it%" }),
         )
-        "Duyệt web" -> listOf(
-            Toggle(K.CURSOR_START, "Bắt đầu bằng con trỏ", "Trang web mở ra với con trỏ trên màn hình. Tắt để dùng phím mũi tên nhảy giữa các liên kết."),
-            Choice(K.CURSOR_SPEED, "Tốc độ con trỏ", "Con trỏ chạy nhanh đến đâu khi giữ phím mũi tên.", (1..5).map { it.toString() to "Mức $it" }),
-            Toggle(K.DESKTOP, "Xem trang web bản máy tính", "Hiện trang web đầy đủ, hợp với màn hình lớn."),
-            Choice(K.ZOOM, "Cỡ chữ trang web", "Phóng to chữ trên trang để đọc rõ từ ghế sofa.", listOf("100", "125", "150", "175").map { it to "$it%" }),
+        AD_BLOCKING -> listOf(
+            Toggle(K.ADBLOCK, app.s(R.string.set_adblock), app.s(R.string.set_adblock_d)),
+            Toggle(K.BLOCK_POPUPS, app.s(R.string.set_popups), app.s(R.string.set_popups_d)),
+            Info(app.s(R.string.set_blocked), app.s(R.string.set_blocked_n, app.ads.blockedCount)),
+            Info(app.s(R.string.set_rules), "%,d".format(app.locale, app.ads.listSize)),
         )
-        "Chặn quảng cáo" -> listOf(
-            Toggle(K.ADBLOCK, "Chặn quảng cáo và theo dõi", "Không tải nội dung từ các trang quảng cáo đã biết."),
-            Toggle(K.BLOCK_POPUPS, "Chặn cửa sổ bật lên", "Không cho trang web tự mở cửa sổ mới."),
-            Info("Đã chặn", "${app.ads.blockedCount} quảng cáo"),
-            Info("Tổng số luật đang dùng", app.ads.listSize.toString()),
+        4 -> listOf(
+            Choice(K.SEEK_STEP, app.s(R.string.set_seek), app.s(R.string.set_seek_d), listOf("5", "10", "15", "30").map { it to app.s(R.string.sec_n, it.toInt()) }),
+            Info(app.s(R.string.info_ok), app.s(R.string.info_ok_v)),
+            Info(app.s(R.string.info_lr), app.s(R.string.info_lr_v)),
+            Info(app.s(R.string.info_back), app.s(R.string.info_back_v)),
+            Info(app.s(R.string.info_pp), app.s(R.string.info_pp_v)),
         )
-        "Video" -> listOf(
-            Choice(K.SEEK_STEP, "Bước tua", "Khoảng tua mỗi lần bấm Trái / Phải khi xem video.", listOf("5", "10", "15", "30").map { it to "$it giây" }),
-            Info("OK", "Hiện điều khiển, rồi Phát / Dừng"),
-            Info("Trái / Phải", "Tua lùi / tua tới"),
-            Info("Quay lại", "Ẩn điều khiển, rồi thoát toàn màn hình"),
-            Info("Phím Phát / Dừng", "Phát hoặc dừng video trên trang"),
-        )
-        "Quyền riêng tư" -> listOf(
-            Toggle(K.THIRD_PARTY, "Cho phép cookie bên thứ ba", "Một số trang cần để đăng nhập hoặc phát video."),
-            Action("Xóa lịch sử duyệt web", "Xóa danh sách trang đã xem và ảnh thu nhỏ.", danger = true, confirm = true) {
-                s.clearHistory(); app.toast("Đã xóa lịch sử")
+        5 -> listOf(
+            Toggle(K.THIRD_PARTY, app.s(R.string.set_3p), app.s(R.string.set_3p_d)),
+            Action(app.s(R.string.set_clear_hist), app.s(R.string.set_clear_hist_d), danger = true, confirm = true) {
+                s.clearHistory(); app.toast(R.string.toast_history_cleared)
             },
-            Action("Xóa cookie và dữ liệu trang", "Bạn sẽ bị đăng xuất khỏi các trang web.", danger = true, confirm = true) {
+            Action(app.s(R.string.set_clear_cookies), app.s(R.string.set_clear_cookies_d), danger = true, confirm = true) {
                 CookieManager.getInstance().removeAllCookies(null)
                 WebStorage.getInstance().deleteAllData()
-                app.toast("Đã xóa cookie và dữ liệu trang")
+                app.toast(R.string.toast_cookies_cleared)
             },
-            Action("Xóa bộ nhớ đệm", "Giải phóng dung lượng. Lần đầu mở lại trang có thể chậm hơn.") {
-                app.browser.webView.clearCache(true); app.toast("Đã xóa bộ nhớ đệm")
+            Action(app.s(R.string.set_clear_cache), app.s(R.string.set_clear_cache_d)) {
+                app.browser.webView.clearCache(true); app.toast(R.string.toast_cache_cleared)
             },
         )
-        else -> listOf(
-            Info("Luna", "Phiên bản 0.2.0"),
-            Info("Trình duyệt nền", runCatching { WebView.getCurrentWebViewPackage()?.versionName }.getOrNull() ?: "Không rõ"),
-            Info("Thiết bị", "${Build.MANUFACTURER} ${Build.MODEL}"),
-            Info("Menu", "Mở / đóng thanh công cụ"),
-            Info("Giữ OK", "Đổi giữa con trỏ và chế độ liên kết"),
-            Info("Giữ Quay lại", "Mở thanh công cụ"),
-        )
+        else -> {
+            val version = runCatching { app.activity.packageManager.getPackageInfo(app.activity.packageName, 0).versionName }.getOrNull() ?: "?"
+            listOf(
+                Info(app.s(R.string.about_luna), app.s(R.string.about_version, version)),
+                Info(app.s(R.string.about_engine), runCatching { WebView.getCurrentWebViewPackage()?.versionName }.getOrNull() ?: app.s(R.string.about_unknown)),
+                Info(app.s(R.string.about_device), "${Build.MANUFACTURER} ${Build.MODEL}"),
+                Info(app.s(R.string.about_menu), app.s(R.string.about_menu_v)),
+                Info(app.s(R.string.about_hold_ok), app.s(R.string.about_hold_ok_v)),
+                Info(app.s(R.string.about_hold_back), app.s(R.string.about_hold_back_v)),
+            )
+        }
     }
 }

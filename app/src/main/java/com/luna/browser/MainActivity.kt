@@ -20,8 +20,8 @@ class MainActivity : ComponentActivity() {
 
     private fun voiceIntent() = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
         .putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_WEB_SEARCH)
-        .putExtra(RecognizerIntent.EXTRA_LANGUAGE, "vi-VN")
-        .putExtra(RecognizerIntent.EXTRA_PROMPT, "Bạn muốn tìm gì?")
+        .putExtra(RecognizerIntent.EXTRA_LANGUAGE, app.locale.toLanguageTag())
+        .putExtra(RecognizerIntent.EXTRA_PROMPT, app.s(R.string.voice_prompt))
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
             try {
                 speech.launch(voiceIntent())
             } catch (e: ActivityNotFoundException) {
-                app.toast("TV chưa hỗ trợ tìm kiếm bằng giọng nói")
+                app.toast(R.string.toast_no_voice)
             }
         }
         app.registerNetwork()

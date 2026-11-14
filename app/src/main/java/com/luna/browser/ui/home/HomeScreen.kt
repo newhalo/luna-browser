@@ -30,7 +30,9 @@ import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.WifiOff
 import androidx.compose.material3.Icon
+import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -60,6 +62,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.luna.browser.AppState
+import com.luna.browser.R
 import com.luna.browser.Screen
 import com.luna.browser.data.K
 import com.luna.browser.data.MediaItem
@@ -104,13 +107,14 @@ fun HomeScreen(app: AppState) {
 
     // Rows are rebuilt only when history / favourites / artwork actually change.
     val showContinue = store.bool(K.SHOW_CONTINUE)
-    val rows = remember(store.version, showContinue) {
+    val lang = app.lang
+    val rows = remember(store.version, showContinue, lang) {
         buildList {
             val cont = if (showContinue) store.continueItems() else emptyList()
-            if (cont.isNotEmpty()) add(Triple("Xem tiếp", cont, 272.dp))
-            add(Triple("Trang web của bạn", store.siteItems(), 216.dp))
+            if (cont.isNotEmpty()) add(Triple(R.string.home_continue, cont, 272.dp))
+            add(Triple(R.string.home_your_sites, store.siteItems(lang), 216.dp))
             val favs = store.favoriteItems()
-            if (favs.isNotEmpty()) add(Triple("Yêu thích", favs, 216.dp))
+            if (favs.isNotEmpty()) add(Triple(R.string.home_favorites, favs, 216.dp))
         }
     }
     val onCardFocus = remember { { item: MediaItem -> hero.value = item } }
@@ -119,7 +123,7 @@ fun HomeScreen(app: AppState) {
         Backdrop({ hero.value?.art }, animated = store.bool(K.ANIMATED_BG))
         Column(Modifier.fillMaxSize().padding(top = Dim.SafeV)) {
             Header(app)
-            HeroInfo({ hero.value }, app.online)
+            HeroInfo(app, { hero.value }, app.online)
             SearchRow(app, searchFr, firstCardFr) { hero.value = null }
             val scroll = rememberScrollState()
             val scope = rememberCoroutineScope()
@@ -158,34 +162,34 @@ private fun Header(app: AppState) {
         Txt("  Luna", T.title.copy(fontSize = 26.sp, fontWeight = FontWeight.Bold))
         Spacer(Modifier.weight(1f))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
-            TvButton("Lịch sử", { app.navigate(Screen.History) }, Modifier.rememberFocus(app, "home", "nav:history"), Icons.Rounded.History, container = Glass)
-            TvButton("Yêu thích", { app.navigate(Screen.Favorites) }, Modifier.rememberFocus(app, "home", "nav:fav"), Icons.Rounded.Star, container = Glass)
-            TvButton("Cài đặt", { app.navigate(Screen.Settings) }, Modifier.rememberFocus(app, "home", "nav:settings"), Icons.Rounded.Settings, container = Glass)
+            TvButton(stringResource(R.string.nav_history), { app.navigate(Screen.History) }, Modifier.rememberFocus(app, "home", "nav:history"), Icons.Rounded.History, container = Glass)
+            TvButton(stringResource(R.string.nav_favorites), { app.navigate(Screen.Favorites) }, Modifier.rememberFocus(app, "home", "nav:fav"), Icons.Rounded.Star, container = Glass)
+            TvButton(stringResource(R.string.nav_settings), { app.navigate(Screen.Settings) }, Modifier.rememberFocus(app, "home", "nav:settings"), Icons.Rounded.Settings, container = Glass)
             Txt(now, T.title.copy(fontSize = 26.sp, fontWeight = FontWeight.Light), Modifier.padding(start = 14.dp))
         }
     }
 }
 
 @Composable
-private fun HeroInfo(hero: () -> MediaItem?, online: Boolean) {
+private fun HeroInfo(app: AppState, hero: () -> MediaItem?, online: Boolean) {
     Box(Modifier.fillMaxWidth().height(132.dp).padding(horizontal = Dim.SafeH), contentAlignment = Alignment.BottomStart) {
         LightCrossfade(hero(), ms(220)) { h ->
             Column(Modifier.width(640.dp)) {
                 if (h == null) {
-                    Txt(greeting(), T.display.copy(fontSize = 42.sp))
+                    Txt(greeting(app), T.display.copy(fontSize = 42.sp))
                     if (!online) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Rounded.WifiOff, null, tint = Danger, modifier = Modifier.size(22.dp))
-                            Txt("  TV đang mất kết nối Internet", T.body, color = Danger)
+                            Txt("  " + stringResource(R.string.home_offline), T.body, color = Danger)
                         }
-                    } else Txt("Hôm nay bạn muốn xem gì?", T.body.copy(fontSize = 22.sp), color = TextSecondary)
+                    } else Txt(stringResource(R.string.home_prompt), T.body.copy(fontSize = 22.sp), color = TextSecondary)
                 } else {
                     Txt(h.title, T.display.copy(fontSize = 38.sp), maxLines = 1)
                     Spacer(Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Pill(h.subtitle)
-                        if (h.time > 0) Pill(timeAgo(h.time))
-                        Txt("Bấm OK để mở", T.caption, color = TextSecondary)
+                        if (h.time > 0) Pill(timeAgo(app, h.time))
+                        Txt(stringResource(R.string.home_press_ok), T.caption, color = TextSecondary)
                     }
                 }
             }
@@ -213,12 +217,12 @@ private fun SearchRow(app: AppState, searchFr: FocusRequester, firstCardFr: Focu
         ) {
             Row(Modifier.padding(horizontal = 24.dp).align(Alignment.CenterStart), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Rounded.Search, null, tint = Accent, modifier = Modifier.size(28.dp))
-                Txt("  Tìm kiếm hoặc nhập địa chỉ trang web", T.body, color = TextSecondary)
+                Txt("  " + stringResource(R.string.home_search_hint), T.body, color = TextSecondary)
             }
         }
         if (app.voiceAvailable) {
             TvButton(
-                "Tìm bằng giọng nói", { app.startVoice() },
+                stringResource(R.string.home_voice), { app.startVoice() },
                 Modifier.height(58.dp).focusProperties { down = firstCardFr }.onFocusChanged { if (it.isFocused) onFocus() },
                 Icons.Rounded.Mic, container = Glass,
             )
@@ -229,7 +233,7 @@ private fun SearchRow(app: AppState, searchFr: FocusRequester, firstCardFr: Focu
 @Composable
 private fun MediaRow(
     app: AppState,
-    title: String,
+    @StringRes title: Int,
     items: List<MediaItem>,
     width: Dp,
     firstFr: FocusRequester?,
@@ -237,7 +241,7 @@ private fun MediaRow(
     onClick: (MediaItem) -> Unit,
 ) {
     Column {
-        Txt(title, T.title.copy(fontSize = 22.sp), Modifier.padding(start = Dim.SafeH, top = 10.dp))
+        Txt(stringResource(title), T.title.copy(fontSize = 22.sp), Modifier.padding(start = Dim.SafeH, top = 10.dp))
         Row(
             Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = Dim.SafeH, vertical = 14.dp),
             horizontalArrangement = Arrangement.spacedBy(20.dp),
@@ -278,7 +282,7 @@ fun AddressDialog(app: AppState) {
     Dialog(onDismissRequest = { app.addressOpen = false }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Box(Modifier.fillMaxSize().background(Scrim), contentAlignment = Alignment.TopCenter) {
             Column(Modifier.padding(top = 64.dp).width(760.dp)) {
-                Txt("Tìm kiếm hoặc nhập địa chỉ", T.title)
+                Txt(stringResource(R.string.addr_title), T.title)
                 Spacer(Modifier.height(16.dp))
                 Box(
                     Modifier.fillMaxWidth().height(68.dp)
@@ -296,7 +300,7 @@ fun AddressDialog(app: AppState) {
                         keyboardActions = KeyboardActions(onGo = { submit() }),
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 28.dp).focusRequester(fr),
                     )
-                    if (text.text.isEmpty()) Txt("Ví dụ: youtube.com, hoặc phim hoạt hình", T.body.copy(fontSize = 24.sp), Modifier.padding(horizontal = 28.dp), TextSecondary)
+                    if (text.text.isEmpty()) Txt(stringResource(R.string.addr_example), T.body.copy(fontSize = 24.sp), Modifier.padding(horizontal = 28.dp), TextSecondary)
                 }
                 Spacer(Modifier.height(12.dp))
                 suggestions.forEach { s ->
@@ -312,9 +316,9 @@ fun AddressDialog(app: AppState) {
                 }
                 Spacer(Modifier.height(16.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    TvButton("Mở", { submit() }, primary = true, icon = Icons.Rounded.Search)
-                    if (app.voiceAvailable) TvButton("Giọng nói", { app.addressOpen = false; app.startVoice() }, icon = Icons.Rounded.Mic)
-                    TvButton("Hủy", { app.addressOpen = false })
+                    TvButton(stringResource(R.string.addr_open), { submit() }, primary = true, icon = Icons.Rounded.Search)
+                    if (app.voiceAvailable) TvButton(stringResource(R.string.addr_voice), { app.addressOpen = false; app.startVoice() }, icon = Icons.Rounded.Mic)
+                    TvButton(stringResource(R.string.addr_cancel), { app.addressOpen = false })
                 }
             }
         }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Languages Luna's UI is translated into (Android 13+ per-app language picker).
+     Keep in sync with res/values-*/ and data/Store.kt -> Languages. LocalizationTest checks it. -->
+<locale-config xmlns:android="http://schemas.android.com/apk/res/android">
+    <locale android:name="en" />
+    <locale android:name="vi" />
+    <locale android:name="es" />
+    <locale android:name="fr" />
+    <locale android:name="de" />
+    <locale android:name="pt" />
+    <locale android:name="ru" />
+    <locale android:name="ja" />
+    <locale android:name="ko" />
+    <locale android:name="zh" />
+</locale-config>

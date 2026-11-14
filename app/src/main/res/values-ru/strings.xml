@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_history">История</string>
+    <string name="nav_favorites">Избранное</string>
+    <string name="nav_settings">Настройки</string>
+    <string name="go_home">На главную</string>
+
+    <string name="greet_morning">Доброе утро</string>
+    <string name="greet_afternoon">Добрый день</string>
+    <string name="greet_evening">Добрый вечер</string>
+    <string name="home_prompt">Что хотите посмотреть сегодня?</string>
+    <string name="home_offline">Телевизор не подключён к интернету</string>
+    <string name="home_press_ok">Нажмите OK, чтобы открыть</string>
+    <string name="home_continue">Продолжить просмотр</string>
+    <string name="home_your_sites">Ваши сайты</string>
+    <string name="home_favorites">Избранное</string>
+    <string name="home_search_hint">Введите запрос или адрес сайта</string>
+    <string name="home_voice">Голосовой поиск</string>
+
+    <string name="addr_title">Введите запрос или адрес</string>
+    <string name="addr_example">Например: youtube.com или мультфильмы</string>
+    <string name="addr_open">Открыть</string>
+    <string name="addr_voice">Голос</string>
+    <string name="addr_cancel">Отмена</string>
+    <string name="voice_prompt">Что вы хотите найти?</string>
+    <string name="toast_no_voice">Этот телевизор не поддерживает голосовой поиск</string>
+
+    <string name="ago_now">Только что</string>
+    <string name="ago_yesterday">Вчера</string>
+    <plurals name="ago_minutes">
+        <item quantity="one">%d минуту назад</item>
+        <item quantity="few">%d минуты назад</item>
+        <item quantity="many">%d минут назад</item>
+        <item quantity="other">%d минуты назад</item>
+    </plurals>
+    <plurals name="ago_hours">
+        <item quantity="one">%d час назад</item>
+        <item quantity="few">%d часа назад</item>
+        <item quantity="many">%d часов назад</item>
+        <item quantity="other">%d часа назад</item>
+    </plurals>
+    <plurals name="ago_days">
+        <item quantity="one">%d день назад</item>
+        <item quantity="few">%d дня назад</item>
+        <item quantity="many">%d дней назад</item>
+        <item quantity="other">%d дня назад</item>
+    </plurals>
+    <plurals name="ago_weeks">
+        <item quantity="one">%d неделю назад</item>
+        <item quantity="few">%d недели назад</item>
+        <item quantity="many">%d недель назад</item>
+        <item quantity="other">%d недели назад</item>
+    </plurals>
+
+    <string name="tb_back">Назад</string>
+    <string name="tb_forward">Вперёд</string>
+    <string name="tb_refresh">Обновить</string>
+    <string name="tb_home">Главная</string>
+    <string name="tb_save">Сохранить</string>
+    <string name="tb_saved">Сохранено</string>
+    <string name="tb_mode_pointer">Указатель</string>
+    <string name="tb_mode_links">Ссылки</string>
+    <string name="tb_settings">Настройки</string>
+    <string name="tb_address_hint">Введите запрос или адрес</string>
+    <string name="tb_edit_hint">Нажмите OK, чтобы ввести другой адрес</string>
+
+    <string name="err_retry">Повторить</string>
+    <string name="err_change">Изменить адрес</string>
+    <string name="err_home">Главная</string>
+    <string name="err_offline_t">Нет подключения к интернету</string>
+    <string name="err_offline_m">Проверьте, подключён ли телевизор к Wi-Fi или Ethernet, и повторите попытку.</string>
+    <string name="err_notfound_t">Сайт не найден</string>
+    <string name="err_notfound_m">Возможно, адрес введён с ошибкой или сайт временно недоступен.</string>
+    <string name="err_timeout_t">Сайт не отвечает</string>
+    <string name="err_timeout_m">Страница отвечает слишком долго. Повторите попытку через минуту.</string>
+    <string name="err_ssl_t">Небезопасное соединение</string>
+    <string name="err_ssl_blocked_m">Luna заблокировала эту страницу, чтобы защитить ваши данные. Повторите попытку или откройте другую страницу.</string>
+    <string name="err_ssl_failed_m">Luna не удалось установить безопасное соединение с этим сайтом.</string>
+    <string name="err_other_t">Не удалось открыть страницу</string>
+    <string name="err_other_m">При открытии страницы произошла ошибка. Повторите попытку или вернитесь на главную.</string>
+
+    <string name="vid_loading">Загрузка видео…</string>
+    <string name="vid_failed">Это видео не воспроизводится</string>
+    <string name="vid_failed_hint">Нажмите «Назад», чтобы выйти из полноэкранного режима, и повторите попытку.</string>
+    <string name="vid_no_video">Управляемое видео не найдено</string>
+    <string name="vid_paused">Пауза</string>
+    <string name="vid_playing">Воспроизведение</string>
+    <string name="vid_live">Прямой эфир</string>
+    <string name="vid_hint">"Влево / Вправо  Перемотка      OK  Пуск / Пауза      Назад  Скрыть управление"</string>
+    <string name="vid_skip_to">Перейти к %1$s</string>
+    <string name="vid_forward_to">"Вперёд к %1$s  (%2$s)"</string>
+    <string name="vid_back_to">"Назад к %1$s  (%2$s)"</string>
+    <string name="vid_forward_s">Вперёд на %1$d с</string>
+    <string name="vid_back_s">Назад на %1$d с</string>
+
+    <string name="toast_no_downloads">Загрузка файлов пока не поддерживается</string>
+    <string name="toast_tip">Совет: «Меню» открывает панель, удержание OK переключает указатель и режим ссылок</string>
+    <string name="toast_fav_added">Добавлено в избранное</string>
+    <string name="toast_fav_removed">Удалено из избранного</string>
+    <string name="toast_mode_pointer">Режим указателя: двигайте указатель, выбирайте кнопкой OK</string>
+    <string name="toast_mode_links">Режим ссылок: стрелки переходят от ссылки к ссылке</string>
+    <string name="toast_blocked_redirect">Заблокировано перенаправление на рекламную страницу</string>
+    <string name="toast_blocked_auto">Заблокирована страница, пытавшаяся перенаправить сама себя</string>
+    <string name="toast_blocked_popup">Заблокировано всплывающее окно</string>
+    <string name="toast_blocked_adwindow">Заблокировано рекламное окно</string>
+    <string name="toast_confirm">Нажмите OK ещё раз для подтверждения</string>
+    <string name="toast_history_cleared">История очищена</string>
+    <string name="toast_cookies_cleared">Cookie и данные сайтов удалены</string>
+    <string name="toast_cache_cleared">Кэш очищен</string>
+    <string name="toast_filters_ok">Списки фильтров обновлены</string>
+    <string name="toast_filters_fail">Не удалось обновить списки фильтров. Повторите попытку позже.</string>
+
+    <string name="hist_title">История</string>
+    <string name="hist_clear">Очистить историю</string>
+    <string name="hist_clear_confirm">Нажмите OK ещё раз, чтобы очистить</string>
+    <string name="hist_empty_t">История пока пуста</string>
+    <string name="hist_empty_m">Просмотренные страницы и видео появятся здесь с миниатюрами, чтобы их можно было быстро открыть снова.</string>
+    <string name="fav_title">Избранное</string>
+    <string name="fav_empty_t">В избранном пока ничего нет</string>
+    <string name="fav_empty_m">Во время просмотра страницы нажмите «Меню» и выберите «Сохранить», чтобы она появилась здесь.</string>
+    <string name="fav_remove">Удалить</string>
+
+    <string name="set_title">Настройки</string>
+    <string name="set_cat_general">Общие</string>
+    <string name="set_cat_home">Главная</string>
+    <string name="set_cat_browsing">Просмотр сайтов</string>
+    <string name="set_cat_adblock">Блокировка рекламы</string>
+    <string name="set_cat_video">Видео</string>
+    <string name="set_cat_privacy">Конфиденциальность</string>
+    <string name="set_cat_about">О программе</string>
+    <string name="set_on">"✓  Вкл."</string>
+    <string name="set_off">Выкл.</string>
+    <string name="set_press_again">Нажмите OK ещё раз</string>
+
+    <string name="set_language">Язык</string>
+    <string name="set_language_d">Язык Luna. «Автоматически» — язык системы телевизора.</string>
+    <string name="lang_auto">Автоматически (язык системы)</string>
+    <string name="set_engine">Поисковая система</string>
+    <string name="set_engine_d">Используется, когда вы вводите слова, а не адрес сайта.</string>
+    <string name="set_anim_bg">Анимированный фон</string>
+    <string name="set_anim_bg_d">Мягкий цветной свет, плавно движущийся за экраном.</string>
+    <string name="set_reduce">Меньше анимации</string>
+    <string name="set_reduce_d">Более простые и быстрые анимации. Подходит для медленных телевизоров.</string>
+
+    <string name="set_launch">При запуске Luna</string>
+    <string name="set_launch_d">Выберите, какой экран открывается первым.</string>
+    <string name="launch_home">Главный экран</string>
+    <string name="launch_resume">Последняя страница</string>
+    <string name="set_continue">Показывать «Продолжить просмотр»</string>
+    <string name="set_continue_d">Показывает недавно просмотренные страницы и видео с миниатюрами.</string>
+
+    <string name="set_cursor_start">Запускать в режиме указателя</string>
+    <string name="set_cursor_start_d">Страницы открываются с указателем на экране. Отключите, чтобы переходить между ссылками стрелками.</string>
+    <string name="set_cursor_speed">Скорость указателя</string>
+    <string name="set_cursor_speed_d">Как быстро движется указатель, пока вы удерживаете стрелку.</string>
+    <string name="level_n">Уровень %1$d</string>
+    <string name="set_desktop">Запрашивать полные версии сайтов</string>
+    <string name="set_desktop_d">Показывает полные сайты, которые лучше смотрятся на большом экране.</string>
+    <string name="set_zoom">Размер текста на страницах</string>
+    <string name="set_zoom_d">Увеличивает текст на страницах, чтобы его было видно с дивана.</string>
+
+    <string name="set_adblock">Блокировать рекламу и трекеры</string>
+    <string name="set_adblock_d">Не загружает содержимое с известных рекламных сайтов.</string>
+    <string name="set_popups">Блокировать всплывающие окна</string>
+    <string name="set_popups_d">Не позволяет страницам самостоятельно открывать новые окна.</string>
+    <string name="set_blocked">Заблокировано</string>
+    <string name="set_blocked_n">Реклама: %1$d</string>
+    <string name="set_rules">Используется правил</string>
+    <string name="set_lists">Списки фильтров</string>
+    <string name="list_rules_n">" · правил: %1$s"</string>
+    <string name="list_updated_n">" · обновлён %1$s"</string>
+    <string name="list_not_downloaded">" · ещё не загружен"</string>
+    <string name="list_failed">" · последняя загрузка не удалась"</string>
+    <string name="set_update">Обновить списки фильтров</string>
+    <string name="set_update_d">Загружает свежие списки рекламных сайтов и сайтов слежения для блокировки.</string>
+    <string name="set_update_fail_d">Не удалось загрузить списки. Проверьте подключение к интернету и повторите попытку.</string>
+    <string name="st_updating">Обновление…</string>
+    <string name="st_failed">Не удалось обновить</string>
+    <string name="st_never">Ещё не обновлялись</string>
+    <string name="st_updated">Обновлено %1$s</string>
+    <string name="list_luna_n">Фильтры Luna</string>
+    <string name="list_luna_d">Собственные правила Luna для видеосайтов и всплывающих окон. Входят в приложение.</string>
+    <string name="list_abpvn_n">ABPVN</string>
+    <string name="list_abpvn_d">Вьетнамский список фильтров рекламы, который поддерживает сообщество ABPVN.</string>
+    <string name="list_abpvnh_n">ABPVN – рекламные домены</string>
+    <string name="list_abpvnh_d">Более 20 000 доменов рекламы, азартных игр и слежения.</string>
+    <string name="list_easy_n">EasyList</string>
+    <string name="list_easy_d">Самый распространённый список фильтров рекламы, обновляется ежедневно.</string>
+
+    <string name="set_seek">Шаг перемотки</string>
+    <string name="set_seek_d">На сколько перематывают Влево / Вправо при просмотре видео.</string>
+    <string name="sec_n">%1$d с</string>
+    <string name="info_ok">OK</string>
+    <string name="info_ok_v">Показать управление, затем пуск / пауза</string>
+    <string name="info_lr">Влево / Вправо</string>
+    <string name="info_lr_v">Перемотка назад / вперёд</string>
+    <string name="info_back">Назад</string>
+    <string name="info_back_v">Скрыть управление, затем выйти из полноэкранного режима</string>
+    <string name="info_pp">Кнопка «Пуск / Пауза»</string>
+    <string name="info_pp_v">Запускает или ставит на паузу видео на странице</string>
+
+    <string name="set_3p">Разрешить сторонние cookie</string>
+    <string name="set_3p_d">Некоторым сайтам они нужны для входа или воспроизведения видео.</string>
+    <string name="set_clear_hist">Очистить историю просмотров</string>
+    <string name="set_clear_hist_d">Удаляет список посещённых страниц и их миниатюры.</string>
+    <string name="set_clear_cookies">Удалить cookie и данные сайтов</string>
+    <string name="set_clear_cookies_d">Вы выйдете из аккаунтов на сайтах.</string>
+    <string name="set_clear_cache">Очистить кэш</string>
+    <string name="set_clear_cache_d">Освобождает память. Первая загрузка страницы может быть медленнее.</string>
+
+    <string name="about_luna">Luna</string>
+    <string name="about_version">Версия %1$s</string>
+    <string name="about_engine">Веб-движок</string>
+    <string name="about_unknown">Неизвестно</string>
+    <string name="about_device">Устройство</string>
+    <string name="about_menu">Меню</string>
+    <string name="about_menu_v">Показать или скрыть панель инструментов</string>
+    <string name="about_hold_ok">Удержание OK</string>
+    <string name="about_hold_ok_v">Переключение между указателем и режимом ссылок</string>
+    <string name="about_hold_back">Удержание «Назад»</string>
+    <string name="about_hold_back_v">Открыть панель инструментов</string>
+</resources>

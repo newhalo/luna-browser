@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nav_history">履歴</string>
+    <string name="nav_favorites">お気に入り</string>
+    <string name="nav_settings">設定</string>
+    <string name="go_home">ホームへ</string>
+
+    <string name="greet_morning">おはようございます</string>
+    <string name="greet_afternoon">こんにちは</string>
+    <string name="greet_evening">こんばんは</string>
+    <string name="home_prompt">今日は何を見ますか？</string>
+    <string name="home_offline">テレビがインターネットに接続されていません</string>
+    <string name="home_press_ok">OKで開く</string>
+    <string name="home_continue">続きを見る</string>
+    <string name="home_your_sites">よく使うサイト</string>
+    <string name="home_favorites">お気に入り</string>
+    <string name="home_search_hint">検索またはウェブアドレスを入力</string>
+    <string name="home_voice">音声検索</string>
+
+    <string name="addr_title">検索またはアドレスを入力</string>
+    <string name="addr_example">例：youtube.com、またはアニメ</string>
+    <string name="addr_open">開く</string>
+    <string name="addr_voice">音声</string>
+    <string name="addr_cancel">キャンセル</string>
+    <string name="voice_prompt">何を検索しますか？</string>
+    <string name="toast_no_voice">このテレビは音声検索に対応していません</string>
+
+    <string name="ago_now">たった今</string>
+    <string name="ago_yesterday">昨日</string>
+    <plurals name="ago_minutes">
+        <item quantity="other">%d分前</item>
+    </plurals>
+    <plurals name="ago_hours">
+        <item quantity="other">%d時間前</item>
+    </plurals>
+    <plurals name="ago_days">
+        <item quantity="other">%d日前</item>
+    </plurals>
+    <plurals name="ago_weeks">
+        <item quantity="other">%d週間前</item>
+    </plurals>
+
+    <string name="tb_back">戻る</string>
+    <string name="tb_forward">進む</string>
+    <string name="tb_refresh">再読み込み</string>
+    <string name="tb_home">ホーム</string>
+    <string name="tb_save">保存</string>
+    <string name="tb_saved">保存済み</string>
+    <string name="tb_mode_pointer">ポインター</string>
+    <string name="tb_mode_links">リンク</string>
+    <string name="tb_settings">設定</string>
+    <string name="tb_address_hint">検索またはアドレスを入力</string>
+    <string name="tb_edit_hint">OKで別のアドレスを入力</string>
+
+    <string name="err_retry">再試行</string>
+    <string name="err_change">アドレスを変更</string>
+    <string name="err_home">ホーム</string>
+    <string name="err_offline_t">インターネットに接続されていません</string>
+    <string name="err_offline_m">テレビがWi-Fiまたは有線LANに接続されているか確認して、もう一度お試しください。</string>
+    <string name="err_notfound_t">ウェブサイトが見つかりません</string>
+    <string name="err_notfound_m">アドレスが間違っているか、ウェブサイトが停止している可能性があります。</string>
+    <string name="err_timeout_t">ウェブサイトが応答しません</string>
+    <string name="err_timeout_m">ページの応答に時間がかかっています。しばらくしてからもう一度お試しください。</string>
+    <string name="err_ssl_t">安全な接続ではありません</string>
+    <string name="err_ssl_blocked_m">お客様の情報を守るため、Lunaはこのページをブロックしました。もう一度お試しいただくか、別のページを開いてください。</string>
+    <string name="err_ssl_failed_m">Lunaはこのウェブサイトとの安全な接続を確立できませんでした。</string>
+    <string name="err_other_t">ページを開けませんでした</string>
+    <string name="err_other_m">ページを開く際に問題が発生しました。もう一度お試しいただくか、ホームに戻ってください。</string>
+
+    <string name="vid_loading">動画を読み込み中…</string>
+    <string name="vid_failed">この動画は再生できません</string>
+    <string name="vid_failed_hint">「戻る」で全画面を終了して、もう一度お試しください。</string>
+    <string name="vid_no_video">操作できる動画が見つかりません</string>
+    <string name="vid_paused">一時停止中</string>
+    <string name="vid_playing">再生中</string>
+    <string name="vid_live">ライブ</string>
+    <string name="vid_hint">"左 / 右  シーク      OK  再生 / 一時停止      戻る  操作を隠す"</string>
+    <string name="vid_skip_to">%1$sへ移動</string>
+    <string name="vid_forward_to">"%1$sへ早送り  (%2$s)"</string>
+    <string name="vid_back_to">"%1$sへ巻き戻し  (%2$s)"</string>
+    <string name="vid_forward_s">%1$d秒早送り</string>
+    <string name="vid_back_s">%1$d秒巻き戻し</string>
+
+    <string name="toast_no_downloads">ダウンロードにはまだ対応していません</string>
+    <string name="toast_tip">ヒント：メニューでツールバーを表示、OKを長押しでポインターとリンクを切り替えます</string>
+    <string name="toast_fav_added">お気に入りに追加しました</string>
+    <string name="toast_fav_removed">お気に入りから削除しました</string>
+    <string name="toast_mode_pointer">ポインターモード：ポインターを動かしてOKで選択します</string>
+    <string name="toast_mode_links">リンクモード：矢印キーでリンク間を移動します</string>
+    <string name="toast_blocked_redirect">広告ページへのリダイレクトをブロックしました</string>
+    <string name="toast_blocked_auto">自動で移動しようとしたページをブロックしました</string>
+    <string name="toast_blocked_popup">ポップアップをブロックしました</string>
+    <string name="toast_blocked_adwindow">広告ウィンドウをブロックしました</string>
+    <string name="toast_confirm">確定するにはもう一度OKを押してください</string>
+    <string name="toast_history_cleared">履歴を消去しました</string>
+    <string name="toast_cookies_cleared">Cookieとサイトデータを消去しました</string>
+    <string name="toast_cache_cleared">キャッシュを消去しました</string>
+    <string name="toast_filters_ok">フィルターリストを更新しました</string>
+    <string name="toast_filters_fail">フィルターリストを更新できませんでした。後でもう一度お試しください。</string>
+
+    <string name="hist_title">履歴</string>
+    <string name="hist_clear">履歴を消去</string>
+    <string name="hist_clear_confirm">消去するにはもう一度OKを押してください</string>
+    <string name="hist_empty_t">履歴はまだありません</string>
+    <string name="hist_empty_m">見たページや動画がサムネイル付きでここに表示され、すばやく開き直せます。</string>
+    <string name="fav_title">お気に入り</string>
+    <string name="fav_empty_t">お気に入りはまだありません</string>
+    <string name="fav_empty_m">ページを見ているときにメニューを押して「保存」を選ぶと、ここに残せます。</string>
+    <string name="fav_remove">削除</string>
+
+    <string name="set_title">設定</string>
+    <string name="set_cat_general">一般</string>
+    <string name="set_cat_home">ホーム</string>
+    <string name="set_cat_browsing">ブラウジング</string>
+    <string name="set_cat_adblock">広告ブロック</string>
+    <string name="set_cat_video">動画</string>
+    <string name="set_cat_privacy">プライバシー</string>
+    <string name="set_cat_about">このアプリについて</string>
+    <string name="set_on">"✓  オン"</string>
+    <string name="set_off">オフ</string>
+    <string name="set_press_again">もう一度OKを押す</string>
+
+    <string name="set_language">言語</string>
+    <string name="set_language_d">Lunaの言語です。「自動」ではテレビのシステム言語に従います。</string>
+    <string name="lang_auto">自動（システム言語）</string>
+    <string name="set_engine">検索エンジン</string>
+    <string name="set_engine_d">ウェブアドレスではなく言葉を入力したときに使われます。</string>
+    <string name="set_anim_bg">動く背景</string>
+    <string name="set_anim_bg_d">画面の奥でやわらかな色の光がゆっくり動きます。</string>
+    <string name="set_reduce">動きを減らす</string>
+    <string name="set_reduce_d">よりシンプルで高速なアニメーションにします。動作の遅いテレビ向けです。</string>
+
+    <string name="set_launch">Lunaを開いたとき</string>
+    <string name="set_launch_d">最初に表示する画面を選びます。</string>
+    <string name="launch_home">ホーム画面</string>
+    <string name="launch_resume">最後のページ</string>
+    <string name="set_continue">「続きを見る」を表示</string>
+    <string name="set_continue_d">最近見たページや動画をサムネイル付きで表示します。</string>
+
+    <string name="set_cursor_start">ポインターモードで開始</string>
+    <string name="set_cursor_start_d">ページを画面上のポインターで操作します。オフにすると矢印キーでリンク間を移動します。</string>
+    <string name="set_cursor_speed">ポインターの速度</string>
+    <string name="set_cursor_speed_d">矢印キーを押し続けたときのポインターの速さです。</string>
+    <string name="level_n">レベル%1$d</string>
+    <string name="set_desktop">PC版サイトを表示</string>
+    <string name="set_desktop_d">大画面に合うフル版のウェブサイトを表示します。</string>
+    <string name="set_zoom">ページの文字サイズ</string>
+    <string name="set_zoom_d">ソファからでも読めるように、ページの文字を大きくします。</string>
+
+    <string name="set_adblock">広告とトラッカーをブロック</string>
+    <string name="set_adblock_d">既知の広告サイトからのコンテンツを読み込みません。</string>
+    <string name="set_popups">ポップアップをブロック</string>
+    <string name="set_popups_d">ページが勝手に新しいウィンドウを開くのを防ぎます。</string>
+    <string name="set_blocked">ブロック数</string>
+    <string name="set_blocked_n">広告%1$d件</string>
+    <string name="set_rules">使用中のルール</string>
+    <string name="set_lists">フィルターリスト</string>
+    <string name="list_rules_n">" · ルール%1$s件"</string>
+    <string name="list_updated_n">" · %1$sに更新"</string>
+    <string name="list_not_downloaded">" · 未ダウンロード"</string>
+    <string name="list_failed">" · 前回のダウンロードに失敗"</string>
+    <string name="set_update">フィルターリストを更新</string>
+    <string name="set_update_d">ブロック対象の広告・トラッキングサイトの最新リストをダウンロードします。</string>
+    <string name="set_update_fail_d">リストをダウンロードできませんでした。インターネット接続を確認して、もう一度お試しください。</string>
+    <string name="st_updating">更新中…</string>
+    <string name="st_failed">更新に失敗しました</string>
+    <string name="st_never">未更新</string>
+    <string name="st_updated">%1$sに更新</string>
+    <string name="list_luna_n">Lunaフィルター</string>
+    <string name="list_luna_d">動画サイトとポップアップ向けのLuna独自ルールです。アプリに同梱されています。</string>
+    <string name="list_abpvn_n">ABPVN</string>
+    <string name="list_abpvn_d">ABPVNコミュニティが更新しているベトナム語の広告フィルターリストです。</string>
+    <string name="list_abpvnh_n">ABPVN – 広告ドメイン</string>
+    <string name="list_abpvnh_d">広告・ギャンブル・トラッキングのドメイン2万件以上。</string>
+    <string name="list_easy_n">EasyList</string>
+    <string name="list_easy_d">最も広く使われている広告フィルターリストで、毎日更新されます。</string>
+
+    <string name="set_seek">シークの幅</string>
+    <string name="set_seek_d">動画視聴中に左 / 右で移動する長さです。</string>
+    <string name="sec_n">%1$d秒</string>
+    <string name="info_ok">OK</string>
+    <string name="info_ok_v">操作を表示し、もう一度で再生 / 一時停止</string>
+    <string name="info_lr">左 / 右</string>
+    <string name="info_lr_v">巻き戻し / 早送り</string>
+    <string name="info_back">戻る</string>
+    <string name="info_back_v">操作を隠し、もう一度で全画面を終了</string>
+    <string name="info_pp">再生 / 一時停止キー</string>
+    <string name="info_pp_v">ページ上の動画を再生または一時停止</string>
+
+    <string name="set_3p">サードパーティCookieを許可</string>
+    <string name="set_3p_d">ログインや動画再生に必要なサイトがあります。</string>
+    <string name="set_clear_hist">閲覧履歴を消去</string>
+    <string name="set_clear_hist_d">訪問したページの一覧とサムネイルを削除します。</string>
+    <string name="set_clear_cookies">Cookieとサイトデータを消去</string>
+    <string name="set_clear_cookies_d">ウェブサイトからログアウトされます。</string>
+    <string name="set_clear_cache">キャッシュを消去</string>
+    <string name="set_clear_cache_d">容量を空けます。ページの最初の読み込みが遅くなることがあります。</string>
+
+    <string name="about_luna">Luna</string>
+    <string name="about_version">バージョン%1$s</string>
+    <string name="about_engine">ウェブエンジン</string>
+    <string name="about_unknown">不明</string>
+    <string name="about_device">デバイス</string>
+    <string name="about_menu">メニュー</string>
+    <string name="about_menu_v">ツールバーの表示 / 非表示</string>
+    <string name="about_hold_ok">OK長押し</string>
+    <string name="about_hold_ok_v">ポインターモードとリンクモードを切り替え</string>
+    <string name="about_hold_back">戻る長押し</string>
+    <string name="about_hold_back_v">ツールバーを開く</string>
+</resources>

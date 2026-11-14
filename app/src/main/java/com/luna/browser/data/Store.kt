@@ -81,16 +81,43 @@ fun youtubeThumb(url: String): String? {
     return id?.takeIf { it.isNotBlank() }?.let { "https://i.ytimg.com/vi/$it/hqdefault.jpg" }
 }
 
-val QuickSites = listOf(
+/** Sites everyone gets on Home; site names are proper nouns and are not translated. */
+private val GlobalSites = listOf(
     Site("YouTube", "https://www.youtube.com"),
     Site("Google", "https://www.google.com"),
     Site("Facebook", "https://www.facebook.com"),
-    Site("VnExpress", "https://vnexpress.net"),
-    Site("VTVgo", "https://vtvgo.vn"),
-    Site("Tuổi Trẻ", "https://tuoitre.vn"),
-    Site("Zing MP3", "https://zingmp3.vn"),
-    Site("Wikipedia", "https://vi.wikipedia.org"),
+    Site("Reddit", "https://www.reddit.com"),
+    Site("Twitch", "https://www.twitch.tv"),
 )
+
+/** Extra sites that matter in a language's home region, shown before the global ones. */
+private val RegionalSites = mapOf(
+    "vi" to listOf(
+        Site("VnExpress", "https://vnexpress.net"), Site("Tuổi Trẻ", "https://tuoitre.vn"),
+        Site("VTVgo", "https://vtvgo.vn"), Site("Zing MP3", "https://zingmp3.vn"),
+    ),
+    "es" to listOf(Site("El País", "https://elpais.com")),
+    "fr" to listOf(Site("Le Monde", "https://www.lemonde.fr")),
+    "de" to listOf(Site("Tagesschau", "https://www.tagesschau.de")),
+    "pt" to listOf(Site("g1", "https://g1.globo.com")),
+    "ru" to listOf(Site("Yandex", "https://yandex.ru"), Site("VK", "https://vk.com")),
+    "ja" to listOf(Site("Yahoo! JAPAN", "https://www.yahoo.co.jp"), Site("NHK", "https://www.nhk.or.jp")),
+    "ko" to listOf(Site("NAVER", "https://www.naver.com")),
+    "zh" to listOf(Site("Bilibili", "https://www.bilibili.com"), Site("Baidu", "https://www.baidu.com")),
+    "id" to listOf(Site("Detik", "https://www.detik.com")),
+    "tr" to listOf(Site("Hürriyet", "https://www.hurriyet.com.tr")),
+)
+
+/** Wikipedia in the viewer's own language. */
+private fun wikipedia(lang: String) = Site("Wikipedia", "https://${if (lang == "zh") "zh" else lang}.wikipedia.org")
+
+/** The quick-access sites for a UI language code ("vi", "en", …). */
+fun quickSitesFor(lang: String): List<Site> =
+    // YouTube first (what most people open a TV browser for), then the home region, then the rest.
+    (GlobalSites.take(1) + RegionalSites[lang].orEmpty() + GlobalSites.drop(1) + wikipedia(lang)).distinctBy { it.url }
+
+/** Every site Luna knows by name, whatever the language (used to label and icon history entries). */
+private val KnownSites: List<Site> = (RegionalSites.values.flatten() + GlobalSites).distinctBy { it.url }
 
 /** Brand-like gradient for a site card when no thumbnail exists yet. */
 fun brandOf(host: String): Pair<Long, Long> = when {
@@ -102,6 +129,14 @@ fun brandOf(host: String): Pair<Long, Long> = when {
     host.contains("tuoitre") -> 0xFFED1C24 to 0xFF5A0B0E
     host.contains("zingmp3") -> 0xFF8D22C3 to 0xFF35104D
     host.contains("wikipedia") -> 0xFF6B7280 to 0xFF1F2430
+    host.contains("reddit") -> 0xFFFF4500 to 0xFF5A1A00
+    host.contains("twitch") -> 0xFF9146FF to 0xFF2D1A5E
+    host.contains("yandex") -> 0xFFFC3F1D to 0xFF5A1608
+    host.contains("naver") -> 0xFF03C75A to 0xFF0A4A27
+    host.contains("bilibili") -> 0xFF00A1D6 to 0xFF0A3A55
+    host.contains("baidu") -> 0xFF2932E1 to 0xFF121660
+    host.contains("yahoo") -> 0xFF7B0099 to 0xFF2D0A3A
+    host.contains("nhk") -> 0xFFE60012 to 0xFF50040A
     else -> listOf(
         0xFF5B6CFF to 0xFF241B5E, 0xFFFF6B8A to 0xFF5A1730, 0xFF2BC0A0 to 0xFF0E3F40,
         0xFFFFA34D to 0xFF5A2A0E, 0xFFB57BFF to 0xFF3A1A5E, 0xFF38B6FF to 0xFF0E2F5A,
@@ -125,14 +160,35 @@ object K {
     const val REDUCE_MOTION = "reduceMotion"
     const val ANIMATED_BG = "animatedBg"
     const val TIP_SHOWN = "tipShown"
+    /** "auto" follows the system language; otherwise a language code from [Languages]. */
+    const val LANGUAGE = "language"
 }
+
+/** Languages the UI is translated into (code to its own name, never translated). Keep in sync with res/xml/locales_config.xml. */
+val Languages = listOf(
+    "en" to "English", "vi" to "Tiếng Việt", "es" to "Español", "fr" to "Français", "de" to "Deutsch",
+    "pt" to "Português", "ru" to "Русский", "ja" to "日本語", "ko" to "한국어", "zh" to "中文（简体）",
+)
 
 val SearchEngines = mapOf(
     "Google" to "https://www.google.com/search?q=%s",
     "Bing" to "https://www.bing.com/search?q=%s",
     "DuckDuckGo" to "https://duckduckgo.com/?q=%s",
     "Cốc Cốc" to "https://coccoc.com/search?query=%s",
+    "Yandex" to "https://yandex.com/search/?text=%s",
+    "Baidu" to "https://www.baidu.com/s?wd=%s",
+    "NAVER" to "https://search.naver.com/search.naver?query=%s",
 )
+
+/** Search engines offered for a language: the global ones plus the regional favourite. */
+fun searchEnginesFor(lang: String): List<String> =
+    listOf("Google", "Bing", "DuckDuckGo") + when (lang) {
+        "vi" -> listOf("Cốc Cốc")
+        "ru" -> listOf("Yandex")
+        "zh" -> listOf("Baidu")
+        "ko" -> listOf("NAVER")
+        else -> emptyList()
+    }
 
 /** Persistent, Compose-observable app data: settings, favorites, history, artwork. */
 class Store(ctx: Context) {
@@ -147,7 +203,7 @@ class Store(ctx: Context) {
         K.DESKTOP to "true", K.ZOOM to "125",
         K.ADBLOCK to "true", K.BLOCK_POPUPS to "true",
         K.SEEK_STEP to "10", K.THIRD_PARTY to "true",
-        K.REDUCE_MOTION to "false", K.ANIMATED_BG to "true", K.TIP_SHOWN to "false",
+        K.REDUCE_MOTION to "false", K.ANIMATED_BG to "true", K.TIP_SHOWN to "false", K.LANGUAGE to "auto",
     )
 
     val settings = mutableStateMapOf<String, String>().apply {
@@ -266,7 +322,7 @@ class Store(ctx: Context) {
     fun iconFor(host: String): Any? {
         if (host in savedIcons) return File(iconsDir, "$host.png")
         // Curated sites only: a public favicon service, never for the user's own browsing.
-        if (QuickSites.any { it.host == host }) return "https://www.google.com/s2/favicons?domain=$host&sz=128"
+        if (KnownSites.any { it.host == host }) return "https://www.google.com/s2/favicons?domain=$host&sz=128"
         return null
     }
 
@@ -276,15 +332,16 @@ class Store(ctx: Context) {
         history.firstOrNull { it.host == host && it.deep && it.image != null }?.image
             ?: history.firstOrNull { it.host == host }?.art
 
-    private fun siteName(host: String) = QuickSites.firstOrNull { it.host == host }?.title
+    private fun siteName(host: String) = KnownSites.firstOrNull { it.host == host }?.title
         ?: host.substringBefore('.').replaceFirstChar { it.uppercase() }
 
     /** Frequently used sites first, topped up with the curated quick sites. */
-    fun siteItems(limit: Int = 10): List<MediaItem> {
+    fun siteItems(lang: String, limit: Int = 10): List<MediaItem> {
+        val quickSites = quickSitesFor(lang)
         val frequent = visits.entries.sortedByDescending { it.value }.map { it.key }.take(limit)
-        val hosts = (frequent + QuickSites.map { it.host }).distinct().take(limit)
+        val hosts = (frequent + quickSites.map { it.host }).distinct().take(limit)
         return hosts.map { h ->
-            val quick = QuickSites.firstOrNull { it.host == h }
+            val quick = quickSites.firstOrNull { it.host == h } ?: KnownSites.firstOrNull { it.host == h }
             MediaItem(
                 key = "site:$h", title = siteName(h), subtitle = h,
                 url = quick?.url ?: "https://$h", art = artForHost(h), icon = iconFor(h), brand = brandOf(h),

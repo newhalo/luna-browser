@@ -10,6 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -41,6 +44,13 @@ import androidx.compose.ui.graphics.graphicsLayer
 
 @Composable
 fun LunaApp(app: AppState) {
+    // Compose reads strings through LocalContext, so providing the language-aware context here makes
+    // stringResource() follow the chosen language and switch live when it changes.
+    val lctx = app.ctx
+    CompositionLocalProvider(
+        LocalContext provides lctx,
+        LocalConfiguration provides lctx.resources.configuration,
+    ) {
     LunaTheme(reduceMotion = app.store.bool(K.REDUCE_MOTION)) {
         // No in-app splash: Android 12+ already shows the system splash while the process starts,
         // and a second timed splash only made start-up feel slower. Home fades in instead.
@@ -60,5 +70,6 @@ fun LunaApp(app: AppState) {
             if (app.addressOpen) AddressDialog(app)
             ToastHost(app, Modifier.align(Alignment.BottomCenter))
         }
+    }
     }
 }

@@ -1,11 +1,15 @@
 package com.luna.browser
 
 import android.app.Activity
+import android.content.Context
+import android.content.res.Configuration
 import android.net.ConnectivityManager
 import android.net.Network
 import android.os.Handler
 import android.os.Looper
 import android.view.KeyEvent
+import androidx.annotation.PluralsRes
+import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -15,6 +19,7 @@ import com.luna.browser.data.K
 import com.luna.browser.data.Store
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 enum class Screen { Home, Browser, Settings, History, Favorites }
 
@@ -61,6 +66,44 @@ class AppState(val activity: Activity) {
     fun toast(msg: String) {
         toastMsg = msg
     }
+
+    fun toast(@StringRes id: Int, vararg args: Any) = toast(s(id, *args))
+
+    // ---- Language ----
+    /** What the viewer chose in Settings: "auto" (follow the TV) or a code from [com.luna.browser.data.Languages]. */
+    val languageSetting: String get() = store.str(K.LANGUAGE)
+
+    private val systemLocale: Locale get() = activity.resources.configuration.locales[0]
+
+    /** The locale the UI is shown in (observable through the language setting). */
+    val locale: Locale
+        get() = languageSetting.let { if (it == "auto") systemLocale else Locale.forLanguageTag(it) }
+
+    /** Two-letter language code driving regional defaults (quick sites, search engines, filter lists). */
+    val lang: String get() = locale.language
+
+    private var ctxTag = ""
+    private var ctxCache: Context = activity
+
+    /**
+     * A context whose resources follow [locale]. Used by every string lookup, so changing the language
+     * in Settings takes effect immediately, without restarting the activity.
+     */
+    val ctx: Context
+        get() {
+            val tag = languageSetting
+            if (tag != ctxTag) {
+                ctxCache = if (tag == "auto") activity else activity.createConfigurationContext(
+                    Configuration(activity.resources.configuration).apply { setLocale(Locale.forLanguageTag(tag)) },
+                )
+                ctxTag = tag
+            }
+            return ctxCache
+        }
+
+    fun s(@StringRes id: Int, vararg args: Any): String = ctx.getString(id, *args)
+
+    fun plural(@PluralsRes id: Int, n: Int): String = ctx.resources.getQuantityString(id, n, n)
 
     // ---- Navigation ----
     fun navigate(to: Screen) {
