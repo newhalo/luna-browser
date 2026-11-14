@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-15
+
 ### Added
 - **Tabs**: up to 8 pages open at once. Each tab has its own WebView, but only 3 (2 on low-memory TVs) are live at a
   time; the others are frozen to an address and loaded again when selected, so a TV's memory is never exhausted.
@@ -104,6 +106,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - First version: Jetpack Compose TV UI on the system WebView, virtual cursor, floating toolbar, fullscreen
   video controls, host-based ad blocking, settings, history and favourites.
 
-[Unreleased]: https://github.com/newhalo/luna-browser/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/newhalo/luna-browser/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/newhalo/luna-browser/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/newhalo/luna-browser/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/newhalo/luna-browser/releases/tag/v0.3.0

@@ -21,8 +21,8 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 **Play / Pause / Left / Right**, a built-in ad and pop-up blocker, and a home screen that feels like a streaming app.
 
 > **Status:** early (0.x) but daily-driven on a real TV. Latest release:
-> [**v0.3.1**](https://github.com/newhalo/luna-browser/releases/latest) — a phone-as-remote, 10 languages that follow the
-> TV's system language ([docs/LOCALIZATION.md](docs/LOCALIZATION.md)), and a continue-where-you-left-off memory for videos.
+> [**v0.4.0**](https://github.com/newhalo/luna-browser/releases/latest) — tabs, per-site settings, a touchpad on the
+> phone remote, video positions remembered outside fullscreen, and ad-block rules that update without a release.
 
 ## Features
 
@@ -34,12 +34,17 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 - **Video first** — fullscreen controls for any HTML5 video, **even inside a player iframe from another domain**
   (where most film sites put it). Hold ← / → to seek: key repeats accumulate, accelerate (10 s → 30 s → 60 s) and
   are previewed on the progress bar, then sent as **one** seek, so the stream doesn't reload at every step.
-- **Continue where you left off** — videos of three minutes or more remember their position; open the page again,
-  go fullscreen, and Luna jumps back to where you stopped (and says so). Ads or another episode on the same page are
-  never seeked.
+- **Continue where you left off** — videos of three minutes or more remember their position, whether you watch them
+  fullscreen or inline on the page; open the page again (or pick it from Home) and Luna jumps back to where you
+  stopped, and says so. Ads or another episode on the same page are never seeked.
+- **Tabs** — up to 8 tabs with a switcher made of the same 16:9 cards as Home. Only the most recent few stay alive
+  (two on low-end TVs); the rest are frozen to save memory and reload when you return. Tabs survive restarts.
+- **Per-site settings** — the toolbar's *This site* button sets desktop mode, text size, ad blocking and pointer mode
+  for one site only.
 - **Your phone as a remote** — scan the QR code in *Settings → Phone remote* and your phone becomes a full remote
-  (D-pad with hold-to-repeat, OK, Back, Home, Menu, media keys, volume) and a keyboard for addresses, searches and
-  text fields — no app to install, it is a web page served by the TV on your Wi-Fi (details [below](#phone-remote)).
+  (D-pad with hold-to-repeat, OK, Back, Home, Menu, media keys, volume), a **touchpad** (drag to move the pointer,
+  two fingers to scroll, tap to click) and a keyboard for addresses, searches and text fields — no app to install, it
+  is a web page served by the TV on your Wi-Fi (details [below](#phone-remote)).
 - **Ad, tracker and pop-up blocking** — a standards-based filter engine (Adblock Plus / uBlock Origin syntax)
   with the community [EasyList](https://easylist.to) and [ABPVN](https://abpvn.com) lists refreshed daily, a built-in list, generic pop-up and
   redirect protection, removal of invisible click-catching overlays and "disable your ad blocker" nags.
@@ -48,7 +53,7 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
   [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
 - **Remote-only UX** — every control reachable with the D-pad, visible focus, no touch-only UI, safe-area margins,
   large type, *Reduce motion* setting.
-- Floating toolbar (Back, Forward, Refresh, Home, address, Save, pointer mode, Settings), History, Favourites,
+- Floating two-row toolbar (address; Back, Forward, Refresh, Home, Tabs, Save, pointer mode, This site, Settings), History, Favourites,
   clear error screens (offline, DNS, timeout, TLS), settings in seven plain-language groups.
 - **Speaks your language** — English, Tiếng Việt, Español, Français, Deutsch, Português, Русский, 日本語, 한국어, 中文.
   Follows the TV's system language automatically; switch any time in Settings → General → Language.
@@ -74,8 +79,8 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 
 ### Your phone as a remote
 
-Scan the QR code on the TV (*Settings → Phone remote*): the page opens already paired. **Remote** is the D-pad and keys,
-**Type** sends addresses, searches and text.
+Scan the QR code on the TV (*Settings → Phone remote*): the page opens already paired. **Remote** is the D-pad and keys
+(switch it to **Touchpad** to steer the pointer by dragging), **Type** sends addresses, searches and text.
 
 ![The phone page: Remote tab with a D-pad, OK, Back / Home / Menu, media keys and volume; Type tab with the text box and actions](docs/screenshots/11-phone-remote.jpg)
 
@@ -185,7 +190,7 @@ Luna has no accounts, no analytics and no telemetry. The only network traffic be
 
 | Request | When | Why |
 |---|---|---|
-| Filter lists: EasyList (`easylist.to`) or, for Vietnamese, ABPVN (`raw.githubusercontent.com`, `abpvn.com`) | first run, then daily | ad-blocking rules (each list can be switched off in Settings) |
+| Filter lists: EasyList (`easylist.to`) or, for Vietnamese, ABPVN (`raw.githubusercontent.com`, `abpvn.com`), plus Luna's own `luna.txt` from this repository (`raw.githubusercontent.com`) | first run, then daily | ad-blocking rules (each list can be switched off in Settings) |
 | `google.com/s2/favicons` | home screen, only for the built-in quick sites | their icons |
 | Thumbnails (`i.ytimg.com` or the page's own `og:image`) | home / history cards | artwork for pages you visited |
 | Incoming: your phone → the TV on port 8765 (LAN only, PIN-protected) | only while Luna is on screen and *Phone remote* is on | the phone remote |
@@ -198,16 +203,15 @@ Pages are rendered by the Android System WebView and get **no** JavaScript bridg
 **Next**
 - [ ] Native-speaker review of the translations, then more languages ([how](docs/LOCALIZATION.md)).
 - [ ] Compatibility reports from more TVs and Android versions ([how](docs/COMPATIBILITY.md#reporting-a-device)).
-- [ ] Remember the position of videos watched outside fullscreen too.
-- [ ] Phone remote *touchpad*: drag on the phone to move the pointer, two-finger drag to scroll.
+- [ ] Tab thumbnails that update live (today a card shows the page's last saved thumbnail).
 
 **Later**
-- [ ] Tabs (switch quickly between two or three pages).
 - [ ] Profiles: separate history and favourites per family member.
-- [ ] Per-site settings (desktop / mobile, zoom, pointer mode).
-- [ ] Filter-rule updates without a release: fetch `luna.txt` from this repository's raw file once a day (no server needed).
 - [ ] Emulator-based UI tests for D-pad navigation.
-- [ ] Toolchain upgrades (Android Gradle Plugin 8.13+, Gradle 9, Kotlin 2, newer Compose), one CI-checked step at a time.
+- [ ] Gradle 9 and the newest Compose, once the plugins catch up.
+
+**Done in 0.4.0:** tabs, per-site settings, phone touchpad, inline video positions, filter-rule updates without a
+release, and the toolchain upgrade (Android Gradle Plugin 8.13, Gradle 8.14, Kotlin 2.1, Compose BOM 2024.12).
 
 **Not planned**
 - A download manager: a TV browser is for watching; use a phone or computer for files.
