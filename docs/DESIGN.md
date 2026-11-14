@@ -31,7 +31,7 @@ Type scale (sp): display 44 · title 28 · body 20 · label 18 · caption 16.
 ## Focus
 
 Every interactive element is a `FocusSurface` (`ui/components/Tv.kt`): scale 1.06 in 160 ms, elevation shadow,
-a 3 dp white ring and a lighter fill. Scroll containers keep inner padding so a scaled item is never clipped.
+a 3 dp white ring and a lighter fill. Scroll containers keep inner padding so a scaled item is never clipped. On Home the rows are not scroll containers at all: the focused row is slid to the top with a translation and a focused card is revealed keeping a 48 dp margin at both ends, because the framework's automatic scroll-into-view fought those animations (see `ui/home/HomeScreen.kt`).
 `rememberFocus` restores the last focused item when you come back to a screen.
 
 ## Motion

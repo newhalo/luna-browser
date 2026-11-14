@@ -7,6 +7,7 @@
 **A web browser built for the living-room TV — designed for the remote, readable from the sofa, smooth on weak TV hardware.**
 
 [![CI](https://github.com/newhalo/luna-browser/actions/workflows/build.yml/badge.svg)](https://github.com/newhalo/luna-browser/actions/workflows/build.yml)
+[![Release](https://img.shields.io/github/v/release/newhalo/luna-browser?display_name=tag&color=8aa4ff)](https://github.com/newhalo/luna-browser/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Android TV](https://img.shields.io/badge/Android%20TV-8.0%2B%20(API%2026)-3DDC84?logo=android&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/Kotlin-Jetpack%20Compose-7F52FF?logo=kotlin&logoColor=white)
@@ -19,23 +20,26 @@ Most Android TV browsers are phone browsers stretched onto a big screen. Luna st
 an on-screen pointer you steer with the D-pad, one-press access to everything, video controls made for
 **Play / Pause / Left / Right**, a built-in ad and pop-up blocker, and a home screen that feels like a streaming app.
 
-> **Status:** early (0.x) but daily-driven on a real TV. The UI is available in **10 languages** and follows the TV's
-> system language — see [docs/LOCALIZATION.md](docs/LOCALIZATION.md).
+> **Status:** early (0.x) but daily-driven on a real TV. Latest release:
+> [**v0.3.1**](https://github.com/newhalo/luna-browser/releases/latest) — a phone-as-remote, 10 languages that follow the
+> TV's system language ([docs/LOCALIZATION.md](docs/LOCALIZATION.md)), and a continue-where-you-left-off memory for videos.
 
 ## Features
 
 - **Streaming-style home screen** — animated background, a backdrop that follows the focused card, 16:9 cards with
-  real thumbnails of the videos and pages you opened, "continue watching", your most-used sites, favourites,
-  clock and voice search.
+  real thumbnails of the videos and pages you opened, "continue watching" with progress bars, your most-used sites,
+  favourites, clock and voice search.
 - **Virtual cursor** — accelerates while you hold an arrow, hides itself when idle, scrolls at the screen edge,
   clicks with **OK**. Hold **OK** to switch to link-to-link focus navigation.
 - **Video first** — fullscreen controls for any HTML5 video, **even inside a player iframe from another domain**
   (where most film sites put it). Hold ← / → to seek: key repeats accumulate, accelerate (10 s → 30 s → 60 s) and
   are previewed on the progress bar, then sent as **one** seek, so the stream doesn't reload at every step.
-- **Continue where you left off** — long videos remember their position; the next time you open the page Luna jumps
-  back to it and the card on Home shows a progress bar.
-- **Phone remote** — type an address, a search, or text for a form field on your phone instead of with the remote:
-  open the address shown in *Settings → Phone remote* on a phone on the same Wi-Fi (details [below](#phone-remote)).
+- **Continue where you left off** — videos of three minutes or more remember their position; open the page again,
+  go fullscreen, and Luna jumps back to where you stopped (and says so). Ads or another episode on the same page are
+  never seeked.
+- **Your phone as a remote** — scan the QR code in *Settings → Phone remote* and your phone becomes a full remote
+  (D-pad with hold-to-repeat, OK, Back, Home, Menu, media keys, volume) and a keyboard for addresses, searches and
+  text fields — no app to install, it is a web page served by the TV on your Wi-Fi (details [below](#phone-remote)).
 - **Ad, tracker and pop-up blocking** — a standards-based filter engine (Adblock Plus / uBlock Origin syntax)
   with the community [EasyList](https://easylist.to) and [ABPVN](https://abpvn.com) lists refreshed daily, a built-in list, generic pop-up and
   redirect protection, removal of invisible click-catching overlays and "disable your ad blocker" nags.
@@ -68,6 +72,13 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 | ![Browsing settings](docs/screenshots/08-settings-browsing.jpg) | ![Error screen](docs/screenshots/09-error-state.jpg) |
 | Pointer speed, desktop sites, page text size | Clear errors with one-press recovery |
 
+### Your phone as a remote
+
+Scan the QR code on the TV (*Settings → Phone remote*): the page opens already paired. **Remote** is the D-pad and keys,
+**Type** sends addresses, searches and text.
+
+![The phone page: Remote tab with a D-pad, OK, Back / Home / Menu, media keys and volume; Type tab with the text box and actions](docs/screenshots/11-phone-remote.jpg)
+
 ### Ten languages, live
 
 The UI follows the TV's system language; this is Settings in every translation (switching needs no restart):
@@ -81,8 +92,8 @@ any CPU architecture and any TV resolution (720p to 4K); entry-level TVs get a l
 Details and known limits: [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md). Tested so far on a Xiaomi TV S Pro 65"
 — reports from other TVs are welcome.
 
-1. Download `luna-browser-vX.Y.Z.apk` from the [Releases](https://github.com/newhalo/luna-browser/releases) page
-   (or the `luna-browser-release` artifact of a CI run).
+1. Download `luna-browser-vX.Y.Z.apk` from the [latest release](https://github.com/newhalo/luna-browser/releases/latest)
+   (the page lists its SHA-256 checksum).
 2. On the TV enable **Developer options → USB debugging / network debugging**
    (Settings → Device Preferences → About → press *Build* seven times).
 3. From a computer on the same network:
@@ -95,7 +106,12 @@ Details and known limits: [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md). Tested
    Accept the *Allow USB debugging?* prompt on the TV the first time. Without a computer you can use a
    "send files to TV" app and a file manager instead.
 
-Luna appears in the TV launcher as **Luna Browser**.
+Luna appears in the TV launcher as **Luna Browser**. Updating is the same `adb install -r` with the newer APK; your
+history and favourites are kept.
+
+> **Switching between release and source builds:** official releases are signed with the project's private key, builds
+> from source with the public development key, and Android won't install one over the other — uninstall first
+> (`adb uninstall com.luna.browser`; this clears Luna's data).
 
 ## Controls
 
@@ -110,6 +126,7 @@ Luna appears in the TV launcher as **Luna Browser**.
 | Play/Pause, ⏪ ⏩ | control the page's video | same |
 
 Home, volume and power keys are never intercepted. Full table: [docs/DESIGN.md](docs/DESIGN.md#remote-map).
+No Menu key, or want to type faster? Use [your phone as the remote](#phone-remote).
 
 ## Build from source
 
@@ -124,7 +141,8 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 Use `:app:assembleRelease` for the optimised build (R8 + baseline profiles) — that is the one to run on a TV.
 Debug and release builds are signed with the same public development key, so they install over each other.
-Official releases use a private key; see [docs/RELEASING.md](docs/RELEASING.md).
+Official releases use a private key (so uninstall before switching between the two); see
+[docs/RELEASING.md](docs/RELEASING.md).
 
 ## Project layout
 
@@ -132,11 +150,12 @@ Official releases use a private key; see [docs/RELEASING.md](docs/RELEASING.md).
 app/src/main/java/com/luna/browser/
   MainActivity.kt, AppState.kt        entry point, navigation, global key handling, language
   browser/                            WebView controller (cursor, video, popups), PopupGuard
-  data/                               Store (settings, history), AdBlocker, filter/ (list parser + engine)
+  data/                               Store (settings, history), AdBlocker, filter/ (list parser + engine), Resume (video positions)
+  remote/                             PhoneRemote: the LAN web server + page behind "your phone as a remote"
   ui/                                 Compose screens, TV components, theme
 app/src/main/res/values*/strings.xml  UI strings: English default + 9 translations
 app/src/main/assets/filters/luna.txt  Luna's own filter rules (Adblock Plus syntax)
-app/src/test/                         unit tests (filter engine)
+app/src/test/                         unit tests (filter engine, localisation, device compatibility, resume rules, phone remote)
 tools/sitecheck/                      on-TV ad-blocking report (Chrome DevTools + adb)
 tools/perf/                           on-TV frame timing
 docs/                                 architecture, design, ad blocking, performance, localization, compatibility, releasing
@@ -146,8 +165,8 @@ Start with [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Phone remote
 
-Typing with a TV remote is slow. With *Settings → Phone remote* on (the default), Luna listens on your home network
-while it is on screen:
+Typing with a TV remote is slow, and not every remote has a Menu key. With *Settings → Phone remote* on (the default),
+Luna listens on your home network while it is on screen:
 
 1. On the TV open **Settings → Phone remote**: it shows a QR code, the address (such as `http://192.168.1.20:8765`)
    and a 6-digit PIN.
@@ -158,9 +177,13 @@ while it is on screen:
    tap **Open on TV** or **Search on TV**; to fill a text box on a page (a film site's search, a login) put the pointer
    on the box, press OK, then tap **Type into the page** (or **Type and press Enter**).
 
-Several phones can be paired and used at the same time (they share the PIN; wrong guesses are counted per phone, so one stale page can't lock the others out). It can only open web pages, search, press the remote's keys inside Luna, change the volume, and type into the focused field. Every request needs the PIN, five wrong
-PINs lock it for 30 seconds, and it stops listening when Luna is not on screen. The traffic is plain HTTP on your
-local network, so turn it off on networks you don't trust. *New PIN* unpairs all phones.
+Several phones can be paired and used at the same time; they share the PIN, and wrong guesses are counted per phone,
+so one stale page can't lock the others out.
+
+**Safety.** Every request needs the PIN; five wrong PINs lock that phone for 30 seconds; it only opens web pages,
+searches, presses the remote keys inside Luna, changes the volume and types into the focused field; and it stops
+listening when Luna is not on screen. The traffic is plain HTTP on your local network, so turn it off (the same
+settings page) on networks you don't trust. *New PIN* unpairs all phones. Details: [SECURITY.md](SECURITY.md).
 
 ## Privacy
 
@@ -181,6 +204,7 @@ Pages are rendered by the Android System WebView and get **no** JavaScript bridg
 - [ ] More languages and native-speaker review of the existing translations ([how](docs/LOCALIZATION.md)).
 - [ ] Tabs.
 - [ ] Resume position for videos watched outside fullscreen.
+- [ ] Phone remote: reach the address dialog (today use the *Type* tab) and swipe-pad scrolling.
 - [ ] Downloads handling.
 - [ ] Per-site settings (desktop / mobile, zoom, pointer mode).
 - [ ] Optional hosting of `luna.txt` for rule updates without a release.
