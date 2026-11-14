@@ -255,4 +255,7 @@
     <string name="set_sites_reset">Đặt lại cài đặt mọi trang</string>
     <string name="set_sites_reset_d">Trở về mặc định trên tất cả các trang</string>
     <string name="toast_sites_reset">Đã đặt lại cài đặt mọi trang</string>
+    <string name="ph_pad_dpad">Nút</string>
+    <string name="ph_pad_touch">Touchpad</string>
+    <string name="ph_pad_hint">Vuốt để di chuyển · chạm để bấm · hai ngón để cuộn</string>
 </resources>

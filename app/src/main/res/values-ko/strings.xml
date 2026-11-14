@@ -255,4 +255,7 @@
     <string name="set_sites_reset">모든 사이트 설정 초기화</string>
     <string name="set_sites_reset_d">모든 사이트를 기본값으로 되돌립니다</string>
     <string name="toast_sites_reset">모든 사이트 설정을 초기화했습니다</string>
+    <string name="ph_pad_dpad">방향키</string>
+    <string name="ph_pad_touch">터치패드</string>
+    <string name="ph_pad_hint">드래그로 이동 · 탭으로 클릭 · 두 손가락으로 스크롤</string>
 </resources>

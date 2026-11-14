@@ -259,4 +259,7 @@
     <string name="set_sites_reset">Repor definições dos sites</string>
     <string name="set_sites_reset_d">Volta às predefinições em todos os sites</string>
     <string name="toast_sites_reset">Definições de todos os sites repostas</string>
+    <string name="ph_pad_dpad">Setas</string>
+    <string name="ph_pad_touch">Touchpad</string>
+    <string name="ph_pad_hint">Arraste para mover · toque para clicar · dois dedos para deslocar</string>
 </resources>

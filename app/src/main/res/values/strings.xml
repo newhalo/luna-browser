@@ -280,4 +280,7 @@
     <string name="set_sites_reset">Reset all site settings</string>
     <string name="set_sites_reset_d">Go back to the defaults on every site</string>
     <string name="toast_sites_reset">All site settings reset</string>
+    <string name="ph_pad_dpad">D-pad</string>
+    <string name="ph_pad_touch">Touchpad</string>
+    <string name="ph_pad_hint">Drag to move · tap to click · two fingers to scroll</string>
 </resources>

@@ -255,4 +255,7 @@
     <string name="set_sites_reset">サイト別設定をすべてリセット</string>
     <string name="set_sites_reset_d">すべてのサイトを標準に戻します</string>
     <string name="toast_sites_reset">すべてのサイト設定をリセットしました</string>
+    <string name="ph_pad_dpad">十字キー</string>
+    <string name="ph_pad_touch">タッチパッド</string>
+    <string name="ph_pad_hint">ドラッグで移動 · タップでクリック · 2本指でスクロール</string>
 </resources>

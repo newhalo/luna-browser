@@ -259,4 +259,7 @@
     <string name="set_sites_reset">Restablecer ajustes de sitios</string>
     <string name="set_sites_reset_d">Vuelve a los valores predeterminados en todos los sitios</string>
     <string name="toast_sites_reset">Ajustes de todos los sitios restablecidos</string>
+    <string name="ph_pad_dpad">Cruceta</string>
+    <string name="ph_pad_touch">Panel táctil</string>
+    <string name="ph_pad_hint">Arrastra para mover · toca para hacer clic · dos dedos para desplazar</string>
 </resources>

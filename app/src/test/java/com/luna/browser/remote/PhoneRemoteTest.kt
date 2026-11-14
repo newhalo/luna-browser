@@ -14,7 +14,7 @@ class PhoneRemoteTest {
     // Every label the page uses (AppState.labels provides the same ones).
     private val PAGE_KEYS = listOf(
         "ph_title", "ph_pin", "ph_pair", "ph_hint", "ph_open", "ph_search", "ph_type", "ph_enter",
-        "ph_sent", "ph_bad_pin", "ph_locked", "ph_nofield", "ph_tab_remote", "ph_tab_type",
+        "ph_sent", "ph_bad_pin", "ph_locked", "ph_nofield", "ph_tab_remote", "ph_tab_type", "ph_pad_dpad", "ph_pad_touch", "ph_pad_hint",
     )
     private val calls = CopyOnWriteArrayList<Pair<RemoteAction, String>>()
     private lateinit var remote: PhoneRemote
@@ -25,6 +25,7 @@ class PhoneRemoteTest {
             labels = { PAGE_KEYS.associateWith { "text-$it" } + mapOf("ph_title" to "Luna <remote>", "ph_hint" to "Address \"or\" search") },
             perform = { a, t, done -> calls += a to t; done(a != RemoteAction.Type) },
             budgetMs = 500,
+            idleMs = 1500,
         )
         remote.start()
         val end = System.currentTimeMillis() + 3000
@@ -114,6 +115,57 @@ class PhoneRemoteTest {
             ),
             calls.toList(),
         )
+    }
+
+    @Test fun touchpadActionsReachTheApp() {
+        assertEquals(200, post("pin=4321&act=mv&text=12%2C-7").first)
+        assertEquals(200, post("pin=4321&act=sc&text=0%2C40").first)
+        assertEquals(200, post("pin=4321&act=tap").first)          // a tap needs no text
+        assertEquals(
+            listOf(RemoteAction.Move to "12,-7", RemoteAction.Scroll to "0,40", RemoteAction.Tap to ""),
+            calls.toList(),
+        )
+        assertEquals(401, post("pin=1&act=mv&text=1%2C1").first)
+    }
+
+    @Test fun oneConnectionServesManyRequests() {
+        // A phone keeps its connection open, so each touchpad movement doesn't pay for a new TCP handshake.
+        java.net.Socket("127.0.0.1", remote.port).use { sock ->
+            sock.soTimeout = 3000
+            val out = sock.getOutputStream()
+            val inp = sock.getInputStream().bufferedReader(Charsets.ISO_8859_1)
+            repeat(5) { n ->
+                val body = "pin=4321&act=mv&text=$n%2C0"
+                out.write(("POST /api HTTP/1.1\r\nHost: x\r\nContent-Length: ${body.length}\r\n\r\n$body").toByteArray())
+                out.flush()
+                val status = inp.readLine()
+                assertTrue("request $n: $status", status.startsWith("HTTP/1.1 200"))
+                var length = 0
+                while (true) {
+                    val h = inp.readLine()
+                    if (h.isEmpty()) break
+                    if (h.startsWith("Content-Length:", ignoreCase = true)) length = h.substringAfter(':').trim().toInt()
+                }
+                inp.skip(length.toLong())
+            }
+        }
+        assertEquals(5, calls.size)
+    }
+
+    @Test fun idleConnectionsAreClosedAndStoppingClosesThemAll() {
+        val idle = java.net.Socket("127.0.0.1", remote.port)
+        idle.soTimeout = 4000
+        idle.getOutputStream().write("GET / HTTP/1.1\r\nHost: x\r\n\r\n".toByteArray())
+        val inp = idle.getInputStream()
+        while (inp.available() == 0) Thread.sleep(10)          // the page arrived: the connection is now idle
+        remote.stop()                                           // ...and stopping the remote must end it too
+        var closed = false
+        val end = System.currentTimeMillis() + 3000
+        while (!closed && System.currentTimeMillis() < end) {
+            try { closed = inp.read() == -1 } catch (e: java.net.SocketException) { closed = true } catch (e: java.net.SocketTimeoutException) { }
+        }
+        assertTrue("connection stayed open after stop()", closed)
+        idle.close()
     }
 
     @Test fun padKeysNeedThePin() {

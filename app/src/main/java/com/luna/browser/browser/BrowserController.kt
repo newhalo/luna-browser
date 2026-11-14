@@ -750,6 +750,28 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         return true
     }
 
+    // ---- Phone touchpad ----
+    /** True when the pointer is what a touchpad should move: pointer mode with nothing on top of the page. */
+    val pointerInteractive: Boolean
+        get() = cursorMode && customView == null && !toolbarVisible && !sitePanel && error == null
+
+    /** Moves the pointer by fractions of the view size (so a phone of any size feels alike), honouring the speed setting. */
+    fun moveCursorBy(dx: Float, dy: Float) {
+        if (viewW == 0) return
+        val gain = 0.55f + 0.2f * app.store.int(K.CURSOR_SPEED)
+        moveCursor(dx * viewW * gain, dy * viewH * gain)
+    }
+
+    /** Scrolls the page under the pointer; [dy] is a fraction of the view height, positive = content moves down. */
+    fun scrollByFraction(dy: Float) {
+        if (viewH == 0) return
+        cursorActive = true
+        scheduleIdleHide()
+        scrollWheel(-dy * viewH * 1.6f)
+    }
+
+    fun clickAtPointer() = clickAtCursor()
+
     private fun moveCursor(dx: Float, dy: Float) {
         if (viewW == 0) return
         cursorX = (cursorX + dx).coerceIn(0f, viewW - 1f)

@@ -267,4 +267,7 @@
     <string name="set_sites_reset">Сбросить настройки сайтов</string>
     <string name="set_sites_reset_d">Вернуть значения по умолчанию на всех сайтах</string>
     <string name="toast_sites_reset">Настройки всех сайтов сброшены</string>
+    <string name="ph_pad_dpad">Крестовина</string>
+    <string name="ph_pad_touch">Тачпад</string>
+    <string name="ph_pad_hint">Проведите — переместить · коснитесь — щелчок · два пальца — прокрутка</string>
 </resources>

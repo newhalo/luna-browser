@@ -19,8 +19,10 @@ import com.luna.browser.browser.BrowserController
 import com.luna.browser.data.AdBlocker
 import com.luna.browser.data.K
 import com.luna.browser.data.Store
+import com.luna.browser.remote.PadGestures
 import com.luna.browser.remote.PhoneRemote
 import com.luna.browser.remote.RemoteAction
+import com.luna.browser.remote.SwipeSteps
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
@@ -72,6 +74,7 @@ class AppState(val activity: Activity) {
                 "ph_type" to s(R.string.ph_type), "ph_enter" to s(R.string.ph_enter), "ph_sent" to s(R.string.ph_sent),
                 "ph_bad_pin" to s(R.string.ph_bad_pin), "ph_locked" to s(R.string.ph_locked), "ph_nofield" to s(R.string.ph_nofield),
                 "ph_tab_remote" to s(R.string.ph_tab_remote), "ph_tab_type" to s(R.string.ph_tab_type),
+                "ph_pad_dpad" to s(R.string.ph_pad_dpad), "ph_pad_touch" to s(R.string.ph_pad_touch), "ph_pad_hint" to s(R.string.ph_pad_hint),
             )
         },
         perform = { action, text, done -> main.post { performRemote(action, text, done) } },
@@ -108,6 +111,22 @@ class AppState(val activity: Activity) {
             }
             RemoteAction.Volume -> done(adjustVolume(text))
             RemoteAction.Home -> { goHome(); done(true) }
+            RemoteAction.Move -> {
+                val m = PadGestures.parse(text)
+                if (m == null) done(false) else { padMove(m.first, m.second); done(true) }
+            }
+            RemoteAction.Scroll -> {
+                val m = PadGestures.parse(text)
+                if (m == null) done(false) else {
+                    if (screen == Screen.Browser && browser.customView == null) browser.scrollByFraction(m.second / 1000f)
+                    done(true)
+                }
+            }
+            RemoteAction.Tap -> {
+                swipe.reset()
+                if (padPointer()) browser.clickAtPointer() else injectKey(KeyEvent.KEYCODE_DPAD_CENTER, RemoteAction.Key)
+                done(true)
+            }
         }
     }
 
@@ -142,6 +161,29 @@ class AppState(val activity: Activity) {
                 sendKey(code, KeyEvent.ACTION_UP, 0, held.first)
             }
             else -> Unit
+        }
+    }
+
+    // ---- Touchpad ----
+    private val swipe = SwipeSteps()
+
+    /** True when the page's pointer is what the touchpad should move (browser, pointer mode, nothing on top). */
+    private fun padPointer() = screen == Screen.Browser && browser.pointerInteractive
+
+    private fun padMove(dx: Int, dy: Int) {
+        if (padPointer()) {
+            browser.moveCursorBy(dx / 1000f, dy / 1000f)
+        } else {
+            // Menus, home, link mode, video controls: swipes become D-pad presses.
+            swipe.feed(dx, dy).forEach { d ->
+                val code = when (d) {
+                    'L' -> KeyEvent.KEYCODE_DPAD_LEFT
+                    'R' -> KeyEvent.KEYCODE_DPAD_RIGHT
+                    'U' -> KeyEvent.KEYCODE_DPAD_UP
+                    else -> KeyEvent.KEYCODE_DPAD_DOWN
+                }
+                injectKey(code, RemoteAction.Key)
+            }
         }
     }
 

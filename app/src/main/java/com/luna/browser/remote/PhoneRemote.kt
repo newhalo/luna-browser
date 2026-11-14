@@ -22,6 +22,8 @@ enum class RemoteAction {
     /** A remote key: pressed once, or held ([KeyDown] repeated, then [KeyUp]). */
     Key, KeyDown, KeyUp,
     Volume, Home,
+    /** Touchpad: pointer movement and scroll in per-mille of the pad ("dx,dy"), and a tap (click). */
+    Move, Scroll, Tap,
 }
 
 /**
@@ -39,17 +41,20 @@ class PhoneRemote(
     private val labels: () -> Map<String, String>,
     /** Runs the action on the UI thread and reports success through the callback. */
     private val perform: (RemoteAction, String, (Boolean) -> Unit) -> Unit,
-    /** Total time one connection may take; a client that trickles bytes can't hold a worker longer. */
+    /** Time one request may take from its first byte; a client that trickles bytes can't hold a worker longer. */
     private val budgetMs: Long = 5000,
+    /** How long a connection may sit idle between two requests (keep-alive) before it is closed. */
+    private val idleMs: Long = 8000,
 ) {
     /** The port in use, or 0 when stopped. Observable, so Settings shows the live address. */
     var port by mutableIntStateOf(0)
         private set
 
     @Volatile private var server: ServerSocket? = null
-    // Three workers and a short queue: when busy, new connections are dropped rather than piling up.
+    // A few workers and a short queue: when busy, new connections are dropped rather than piling up. A phone
+    // keeps its connection open between requests (smooth touchpad), so each paired phone holds one worker.
     private val pool = ThreadPoolExecutor(
-        3, 3, 0L, TimeUnit.MILLISECONDS, ArrayBlockingQueue(16),
+        8, 8, 0L, TimeUnit.MILLISECONDS, ArrayBlockingQueue(16),
         { r -> Thread(r, "luna-remote").apply { isDaemon = true } }, ThreadPoolExecutor.AbortPolicy(),
     )
 
@@ -62,6 +67,7 @@ class PhoneRemote(
     private var globalUntil = 0L
 
     private var wanted = false
+    private val open = java.util.Collections.synchronizedSet(HashSet<Socket>())
 
     @Synchronized
     fun start() {
@@ -84,6 +90,8 @@ class PhoneRemote(
     @Synchronized
     fun stop() {
         wanted = false
+        // Open keep-alive connections must not outlive "Luna is on screen".
+        synchronized(open) { open.toList() }.forEach { runCatching { it.close() } }
         server?.let { runCatching { it.close() } }
         server = null
         port = 0
@@ -99,47 +107,59 @@ class PhoneRemote(
     }
 
     // ---- HTTP ----
-    private class Request(val head: String, val body: String)
+    private class Request(val head: String, val body: String, val keepAlive: Boolean)
 
     private fun serve(c: Socket) {
+        open.add(c)
         c.use {
             try {
                 // Only devices on the local network may talk to the TV, even if a router forwards the port.
                 val peer = it.inetAddress
                 if (!(peer.isLoopbackAddress || peer.isSiteLocalAddress || peer.isLinkLocalAddress)) return
+                it.tcpNoDelay = true
                 val out = it.getOutputStream()
-                val req = readRequest(it) ?: return
-                val lines = req.head.split("\r\n")
-                val (method, path) = lines[0].split(' ').let { p -> (p.getOrNull(0) ?: "") to (p.getOrNull(1) ?: "/") }
-                when {
-                    method == "GET" && (path == "/" || path.startsWith("/?")) -> respond(out, 200, "text/html; charset=utf-8", page())
-                    method == "POST" && path == "/api" -> {
-                        val (code, json) = api(parseForm(req.body), it.inetAddress?.hostAddress ?: "")
-                        respond(out, code, "application/json; charset=utf-8", json)
+                var served = 0
+                while (served < MAX_PER_CONNECTION && wanted) {
+                    // The first request must arrive promptly; later ones may wait (the phone is just idle).
+                    val req = readRequest(it, if (served == 0) budgetMs else idleMs) ?: return
+                    served++
+                    val keep = req.keepAlive && served < MAX_PER_CONNECTION
+                    val lines = req.head.split("\r\n")
+                    val (method, path) = lines[0].split(' ').let { p -> (p.getOrNull(0) ?: "") to (p.getOrNull(1) ?: "/") }
+                    when {
+                        method == "GET" && (path == "/" || path.startsWith("/?")) -> respond(out, 200, "text/html; charset=utf-8", page(), keep)
+                        method == "POST" && path == "/api" -> {
+                            val (code, json) = api(parseForm(req.body), it.inetAddress?.hostAddress ?: "")
+                            respond(out, code, "application/json; charset=utf-8", json, keep)
+                        }
+                        else -> respond(out, 404, "text/plain; charset=utf-8", "Not found", keep)
                     }
-                    else -> respond(out, 404, "text/plain; charset=utf-8", "Not found")
+                    if (!keep) return
                 }
             } catch (e: Exception) { /* a dropped, slow or malformed connection: nothing to do */ }
+            finally { open.remove(c) }
         }
     }
 
     /**
-     * Reads one request within [budgetMs] in total (not per read), refusing heads over [MAX_HEAD] and
-     * bodies over [MAX_BODY]. Returns null for anything that doesn't fit.
+     * Reads one request: the first byte may take up to [firstWait]; after that the whole request must arrive
+     * within [budgetMs], with a head under [MAX_HEAD] and a body under [MAX_BODY]. Returns null for anything
+     * that doesn't fit, or when the client went quiet / closed.
      */
-    private fun readRequest(c: Socket): Request? {
-        val deadline = System.currentTimeMillis() + budgetMs
+    private fun readRequest(c: Socket, firstWait: Long): Request? {
         val input = c.getInputStream()
         val data = ByteArrayOutputStream()
         val chunk = ByteArray(2048)
+        var deadline = 0L
         var headEnd = -1
         var length = 0
         while (true) {
-            val left = deadline - System.currentTimeMillis()
+            val left = if (deadline == 0L) firstWait else deadline - System.currentTimeMillis()
             if (left <= 0) return null
             c.soTimeout = left.toInt()
-            val n = input.read(chunk)
+            val n = try { input.read(chunk) } catch (e: java.net.SocketTimeoutException) { return null }
             if (n < 0) return null
+            if (deadline == 0L) deadline = System.currentTimeMillis() + budgetMs
             data.write(chunk, 0, n)
             if (data.size() > MAX_HEAD + MAX_BODY) return null
             val b = data.toByteArray()
@@ -154,11 +174,13 @@ class PhoneRemote(
                 length = head.split("\r\n").drop(1)
                     .firstOrNull { l -> l.startsWith("content-length:", ignoreCase = true) }
                     ?.substringAfter(':')?.trim()?.toIntOrNull() ?: 0
-                if (length !in 0..MAX_BODY) return Request(head, "")
+                if (length !in 0..MAX_BODY) return Request(head, "", false)
             }
             if (b.size - (headEnd + 4) >= length) {
                 val head = String(b, 0, headEnd, Charsets.ISO_8859_1)
-                return Request(head, String(b, headEnd + 4, length, Charsets.UTF_8))
+                val extra = b.size - (headEnd + 4) - length     // bytes of a pipelined next request: not supported
+                val close = head.split("\r\n").drop(1).any { l -> l.startsWith("connection:", ignoreCase = true) && l.contains("close", ignoreCase = true) }
+                return Request(head, String(b, headEnd + 4, length, Charsets.UTF_8), keepAlive = extra == 0 && !close)
             }
         }
     }
@@ -175,12 +197,12 @@ class PhoneRemote(
         if (i < 0) null else URLDecoder.decode(it.substring(0, i), "UTF-8") to URLDecoder.decode(it.substring(i + 1), "UTF-8")
     }.toMap()
 
-    private fun respond(out: java.io.OutputStream, code: Int, type: String, body: String) {
+    private fun respond(out: java.io.OutputStream, code: Int, type: String, body: String, keepAlive: Boolean) {
         val bytes = body.toByteArray(Charsets.UTF_8)
         val head = "HTTP/1.1 $code ${if (code == 200) "OK" else "Error"}\r\nContent-Type: $type\r\nContent-Length: ${bytes.size}\r\n" +
             "Cache-Control: no-store\r\nX-Content-Type-Options: nosniff\r\nReferrer-Policy: no-referrer\r\nX-Frame-Options: DENY\r\n" +
             "Content-Security-Policy: default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'\r\n" +
-            "Connection: close\r\n\r\n"
+            (if (keepAlive) "Connection: keep-alive\r\nKeep-Alive: timeout=${idleMs / 1000}\r\n\r\n" else "Connection: close\r\n\r\n")
         out.write(head.toByteArray(Charsets.ISO_8859_1))
         out.write(bytes)
         out.flush()
@@ -217,10 +239,13 @@ class PhoneRemote(
             "ku" -> RemoteAction.KeyUp
             "vol" -> RemoteAction.Volume
             "home" -> RemoteAction.Home
+            "mv" -> RemoteAction.Move
+            "sc" -> RemoteAction.Scroll
+            "tap" -> RemoteAction.Tap
             else -> return 400 to reply(false, "act")
         }
         val text = (form["text"] ?: "").take(MAX_TEXT)
-        if (action != RemoteAction.Ping && action != RemoteAction.Home && text.isBlank()) return 400 to reply(false, "text")
+        if (action != RemoteAction.Ping && action != RemoteAction.Home && action != RemoteAction.Tap && text.isBlank()) return 400 to reply(false, "text")
         val latch = CountDownLatch(1)
         var success = false
         perform(action, text) { success = it; latch.countDown() }
@@ -244,6 +269,7 @@ class PhoneRemote(
         private const val MAX_HEAD = 8 * 1024
         private const val MAX_BODY = 8 * 1024
         private const val MAX_TEXT = 2000
+        private const val MAX_PER_CONNECTION = 5000
         private const val MAX_FAILURES = 5
         private const val LOCK_MS = 30_000L
         private const val GLOBAL_FAILURES = 40
@@ -292,6 +318,15 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
 .vol{display:flex;align-items:center;justify-content:space-between;max-width:290px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px}
 .vol .rb{width:60px;height:52px;border-radius:999px;background:transparent;border:0}
 .vol .rb:active{background:var(--acc)}
+/* d-pad / touchpad switch + touchpad */
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:5px;width:min(80vw,310px);margin:0 auto 16px}
+.seg button{display:flex;align-items:center;justify-content:center;gap:8px;height:42px;border-radius:12px;background:transparent;color:var(--mute);font-weight:600;font-size:15px}
+.seg button .ic{width:20px;height:20px}.seg button.on{background:var(--panel2);color:#fff;box-shadow:inset 0 0 0 1px var(--line)}
+.tpad{position:relative;width:min(80vw,310px);height:min(62vw,240px);margin:0 auto 12px;border-radius:26px;background:radial-gradient(circle at 50% 30%,#262c4d 0%,#161a2e 75%);border:1px solid var(--line);overflow:hidden;touch-action:none;box-shadow:0 18px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06)}
+.thint{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:26px;color:#7f87aa;font-size:14px;line-height:1.5;pointer-events:none}
+.tglow{position:absolute;left:0;top:0;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle,rgba(138,164,255,.6),rgba(138,164,255,0) 70%);opacity:0;transition:opacity .15s;pointer-events:none}
+.clickbar{display:block;width:min(80vw,310px);height:54px;margin:0 auto 18px;border-radius:18px;background:var(--panel2);border:1px solid var(--line);font-weight:700;font-size:18px;color:#e8ecff}
+.clickbar:active{background:var(--acc);color:#0b0d12}
 /* tabs */
 .tabbar{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:6px;margin-top:8px}
 .tabbar button{display:flex;align-items:center;justify-content:center;gap:8px;height:50px;border-radius:15px;background:transparent;color:var(--mute);font-weight:600}
@@ -310,7 +345,7 @@ textarea{min-height:128px;resize:none}textarea:focus,input:focus{outline:2px sol
 .pairc input{text-align:center;font-size:28px;letter-spacing:8px;padding:14px 8px}
 .toast{position:fixed;left:50%;top:max(14px,env(safe-area-inset-top));transform:translate(-50%,-90px);background:#1f2540;border:1px solid var(--line);color:var(--ink);padding:11px 18px;border-radius:999px;font-weight:600;max-width:90vw;text-align:center;transition:transform .22s;z-index:9;box-shadow:0 8px 24px rgba(0,0,0,.5)}
 .toast.show{transform:translate(-50%,0)}.toast.err{background:#47202a;border-color:#7a3340}
-@media (max-height:640px){.dpad{width:min(62vw,250px);margin-bottom:14px}.rb{width:56px;height:56px}.rb.big{width:66px;height:66px}.row{margin-bottom:12px}}
+@media (max-height:760px){.dpad{width:min(62vw,250px);margin-bottom:14px}.tpad{height:min(46vw,185px)}.rb{width:56px;height:56px}.rb.big{width:66px;height:66px}.row{margin-bottom:12px}.seg{margin-bottom:10px}.clickbar{height:46px;margin-bottom:12px}.vol .rb{height:44px}header{padding-top:0}}
 </style></head><body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
 <linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8aa4ff"/><stop offset="1" stop-color="#be8cff"/></linearGradient>
@@ -331,6 +366,8 @@ textarea{min-height:128px;resize:none}textarea:focus,input:focus{outline:2px sol
 <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
 <symbol id="i-type" viewBox="0 0 24 24"><path d="M4.5 6.5h4M6.5 6.5v11M4.5 17.5h4"/><path d="M14 8.5h3.5a2.5 2.5 0 012.5 2.5v2a2.5 2.5 0 01-2.5 2.5H14"/></symbol>
 <symbol id="i-enter" viewBox="0 0 24 24"><path d="M20 5v8a3 3 0 01-3 3H5"/><path d="M9 12l-4 4 4 4"/></symbol>
+<symbol id="i-dpad" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><path d="M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></symbol>
+<symbol id="i-touch" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="3.5"/><path d="M3 14.5h18M12 14.5v5"/></symbol>
 <symbol id="i-remote" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="3.5"/><circle cx="12" cy="8.5" r="2.2"/><path d="M10 14.5h4M10 18h4"/></symbol>
 <symbol id="i-kbd" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="3"/><path d="M6.5 10h.01M10 10h.01M14 10h.01M17.5 10h.01M8 14h8"/></symbol>
 </defs></svg>
@@ -340,12 +377,19 @@ textarea{min-height:128px;resize:none}textarea:focus,input:focus{outline:2px sol
 <section id="pair" class="card pairc" hidden><p>{{ph_pin}}</p><input id="pin" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"><button id="go" class="btn pri">{{ph_pair}}</button></section>
 <section id="app" hidden>
 <div id="remote">
+<div class="seg"><button id="segD" class="on"><svg class="ic"><use href="#i-dpad"/></svg>{{ph_pad_dpad}}</button><button id="segT"><svg class="ic"><use href="#i-touch"/></svg>{{ph_pad_touch}}</button></div>
+<div id="dpadwrap">
 <div class="dpad">
 <button class="w up hold" data-k="DPAD_UP" aria-label="Up"><svg class="ic"><use href="#i-up"/></svg></button>
 <button class="w down hold" data-k="DPAD_DOWN" aria-label="Down"><svg class="ic"><use href="#i-down"/></svg></button>
 <button class="w left hold" data-k="DPAD_LEFT" aria-label="Left"><svg class="ic"><use href="#i-left"/></svg></button>
 <button class="w right hold" data-k="DPAD_RIGHT" aria-label="Right"><svg class="ic"><use href="#i-right"/></svg></button>
 <button class="ok tap" data-a="key" data-k="DPAD_CENTER">OK</button>
+</div>
+</div>
+<div id="touchwrap" hidden>
+<div class="tpad" id="tpad"><div class="tglow" id="tglow"></div><div class="thint">{{ph_pad_hint}}</div></div>
+<button class="clickbar tap" data-a="tap" data-k="1">OK</button>
 </div>
 <div class="row">
 <button class="rb tap" data-a="key" data-k="BACK" aria-label="Back"><svg class="ic"><use href="#i-back"/></svg></button>
@@ -404,6 +448,28 @@ el.addEventListener('pointerdown',function(e){e.preventDefault();press(el)});
 el.addEventListener('contextmenu',function(e){e.preventDefault()})});
 Array.prototype.forEach.call(document.querySelectorAll('.tap'),function(el){el.addEventListener('click',function(){buzz();key(el.dataset.a,el.dataset.k)});
 el.addEventListener('contextmenu',function(e){e.preventDefault()})});
+/* touchpad */
+var padmode='dpad';try{padmode=localStorage.getItem('luna.pad')||'dpad'}catch(e){}
+function setPad(m){padmode=m;try{localStorage.setItem('luna.pad',m)}catch(e){}$('dpadwrap').hidden=m!=='dpad';$('touchwrap').hidden=m!=='touch';$('segD').className=m==='dpad'?'on':'';$('segT').className=m==='touch'?'on':''}
+$('segD').onclick=function(){setPad('dpad')};$('segT').onclick=function(){setPad('touch')};setPad(padmode);
+var tp=$('tpad'),ptrs={},t0=0,moved=0,acc={x:0,y:0,sy:0},busy=false;
+function pend(){return acc.x||acc.y||acc.sy}
+function flush(){if(busy)return;var r=tp.getBoundingClientRect(),w=Math.max(1,r.width),h=Math.max(1,r.height);
+if(acc.x||acc.y){var dx=Math.round(acc.x/w*1000),dy=Math.round(acc.y/h*1000);acc.x=acc.y=0;if(dx||dy){busy=true;post('mv',dx+','+dy).then(sent).catch(sent);return}}
+if(acc.sy){var sy=Math.round(acc.sy/h*1000);acc.sy=0;if(sy){busy=true;post('sc','0,'+sy).then(sent).catch(sent)}}}
+function sent(j){busy=false;if(j&&j.status){if(!j.ok&&(j.error==='pin'||j.error==='locked'))result(j);else live(!!j.ok)}else live(false);if(pend())flush()}
+function glow(e,on){var g=$('tglow'),r=tp.getBoundingClientRect();g.style.opacity=on?1:0;g.style.transform='translate('+(e.clientX-r.left-30)+'px,'+(e.clientY-r.top-30)+'px)'}
+tp.addEventListener('pointerdown',function(e){e.preventDefault();try{tp.setPointerCapture(e.pointerId)}catch(x){}
+ptrs[e.pointerId]={x:e.clientX,y:e.clientY,t:e.timeStamp};if(Object.keys(ptrs).length===1){t0=e.timeStamp;moved=0}glow(e,true)});
+tp.addEventListener('pointermove',function(e){var p=ptrs[e.pointerId];if(!p)return;
+var dx=e.clientX-p.x,dy=e.clientY-p.y,dt=Math.max(1,e.timeStamp-p.t);p.x=e.clientX;p.y=e.clientY;p.t=e.timeStamp;moved+=Math.abs(dx)+Math.abs(dy);
+var n=Object.keys(ptrs).length;
+if(n>=2){acc.sy+=dy/n}else{var v=Math.hypot(dx,dy)/dt,g=1+Math.min(2.2,v*1.1);acc.x+=dx*g;acc.y+=dy*g}
+glow(e,true);flush()});
+function lift(e){if(!ptrs[e.pointerId])return;delete ptrs[e.pointerId];glow(e,false);
+if(Object.keys(ptrs).length===0&&moved<10&&e.timeStamp-t0<260){buzz();key('tap','1')}}
+tp.addEventListener('pointerup',lift);tp.addEventListener('pointercancel',lift);
+tp.addEventListener('contextmenu',function(e){e.preventDefault()});
 document.addEventListener('visibilitychange',function(){if(document.hidden)Object.keys(holds).forEach(function(k){var el=document.querySelector('.hold[data-k="'+k+'"]');if(el)release(el)})});
 if(pin){post('ping','').then(function(j){if(j.ok){try{localStorage.setItem('luna.pin',pin)}catch(e){}show(true);live(true)}else{show(false);result(j)}}).catch(function(){show(false)})}else show(false);
 </script></body></html>""".replace("__LABELS__", "{{labels}}")

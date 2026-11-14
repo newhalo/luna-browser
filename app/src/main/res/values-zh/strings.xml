@@ -255,4 +255,7 @@
     <string name="set_sites_reset">重置所有网站设置</string>
     <string name="set_sites_reset_d">所有网站恢复默认</string>
     <string name="toast_sites_reset">已重置所有网站设置</string>
+    <string name="ph_pad_dpad">方向键</string>
+    <string name="ph_pad_touch">触控板</string>
+    <string name="ph_pad_hint">拖动移动 · 轻点点击 · 双指滚动</string>
 </resources>

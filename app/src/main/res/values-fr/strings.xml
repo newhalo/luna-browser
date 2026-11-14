@@ -259,4 +259,7 @@
     <string name="set_sites_reset">Réinitialiser les réglages des sites</string>
     <string name="set_sites_reset_d">Retour aux valeurs par défaut sur tous les sites</string>
     <string name="toast_sites_reset">Réglages de tous les sites réinitialisés</string>
+    <string name="ph_pad_dpad">Croix</string>
+    <string name="ph_pad_touch">Pavé tactile</string>
+    <string name="ph_pad_hint">Glissez pour déplacer · touchez pour cliquer · deux doigts pour faire défiler</string>
 </resources>

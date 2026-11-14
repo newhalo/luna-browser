@@ -259,4 +259,7 @@
     <string name="set_sites_reset">Alle Seiteneinstellungen zurücksetzen</string>
     <string name="set_sites_reset_d">Auf allen Seiten zurück zum Standard</string>
     <string name="toast_sites_reset">Alle Seiteneinstellungen zurückgesetzt</string>
+    <string name="ph_pad_dpad">Steuerkreuz</string>
+    <string name="ph_pad_touch">Touchpad</string>
+    <string name="ph_pad_hint">Ziehen zum Bewegen · Tippen zum Klicken · zwei Finger zum Scrollen</string>
 </resources>
