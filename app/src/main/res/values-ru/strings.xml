@@ -242,4 +242,5 @@
     <string name="ph_bad_pin">Неверный PIN-код</string>
     <string name="ph_locked">Слишком много попыток. Подождите полминуты.</string>
     <string name="ph_nofield">На телевизоре не выбрано текстовое поле. Наведите на него курсор и нажмите OK.</string>
+    <string name="set_phone_qr">Отсканируйте камерой телефона, чтобы открыть пульт уже подключённым.</string>
 </resources>

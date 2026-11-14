@@ -234,4 +234,5 @@
     <string name="ph_bad_pin">PIN incorrecto</string>
     <string name="ph_locked">Demasiados intentos. Espera medio minuto.</string>
     <string name="ph_nofield">No hay ningún campo de texto seleccionado en la tele. Mueve el puntero sobre él y pulsa OK.</string>
+    <string name="set_phone_qr">Escanea con la cámara del móvil para abrir el mando ya emparejado.</string>
 </resources>

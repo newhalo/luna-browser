@@ -230,4 +230,5 @@
     <string name="ph_bad_pin">PIN 码错误</string>
     <string name="ph_locked">尝试次数过多，请等待半分钟。</string>
     <string name="ph_nofield">电视上没有选中输入框。请先将指针移到输入框上并按确定键。</string>
+    <string name="set_phone_qr">用手机相机扫描，即可直接打开已配对的遥控页面。</string>
 </resources>
