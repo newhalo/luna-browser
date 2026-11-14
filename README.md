@@ -55,10 +55,16 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 | **Hold → to seek:** target time and bar preview, one seek on release | **OK** shows controls; OK again plays / pauses |
 | ![Floating browser toolbar](docs/screenshots/02-browser-toolbar.jpg) | ![Virtual cursor on a web page](docs/screenshots/03-web-cursor.jpg) |
 | **Menu** opens the floating toolbar | The on-screen pointer; **OK** clicks |
-| ![Ad-blocking settings](docs/screenshots/07-settings-ad-blocking.jpg) | ![Browsing settings](docs/screenshots/08-settings-browsing.jpg) |
-| Filter lists with rule counts and update dates | Pointer speed, desktop sites, page size |
-| ![Error screen](docs/screenshots/09-error-state.jpg) | |
-| Clear errors with one-press recovery | |
+| ![General settings with the language picker](docs/screenshots/06-settings-general.jpg) | ![Ad-blocking settings](docs/screenshots/07-settings-ad-blocking.jpg) |
+| Language picker (Automatic follows the TV), search engine, background | Filter lists with rule counts and update dates |
+| ![Browsing settings](docs/screenshots/08-settings-browsing.jpg) | ![Error screen](docs/screenshots/09-error-state.jpg) |
+| Pointer speed, desktop sites, page text size | Clear errors with one-press recovery |
+
+### Ten languages, live
+
+The UI follows the TV's system language; this is Settings in every translation (switching needs no restart):
+
+![Settings in English, Vietnamese, Spanish, French, German, Portuguese, Russian, Japanese, Korean and Chinese](docs/screenshots/10-languages.jpg)
 
 ## Install
 
