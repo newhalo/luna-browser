@@ -258,4 +258,13 @@
     <string name="ph_pad_dpad">방향키</string>
     <string name="ph_pad_touch">터치패드</string>
     <string name="ph_pad_hint">드래그로 이동 · 탭으로 클릭 · 두 손가락으로 스크롤</string>
+    <string name="tb_tabs">탭</string>
+    <string name="tabs_title">탭</string>
+    <string name="tabs_new">새 탭</string>
+    <string name="tabs_close">탭 닫기</string>
+    <string name="tabs_close_others">다른 탭 닫기</string>
+    <string name="tabs_current">현재 탭</string>
+    <string name="toast_tab_limit">탭은 최대 %d개입니다</string>
+    <string name="toast_tab_closed">탭을 닫았습니다</string>
+    <string name="tabs_hint">OK로 열기 · 아래로 작업</string>
 </resources>

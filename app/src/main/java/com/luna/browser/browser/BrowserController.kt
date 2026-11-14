@@ -277,7 +277,9 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     }
 
     fun destroy() {
+        active = false
         handler.removeCallbacksAndMessages(null)
+        (webView.parent as? android.view.ViewGroup)?.removeView(webView)
         webView.destroy()
     }
 
@@ -596,6 +598,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     private val artTask = Runnable { captureArt(artUrl) }
 
     private fun onVisited(pageUrl: String, pageTitle: String) {
+        app.tabs.saveSoon()
         app.store.recordVisit(pageTitle, pageUrl)
         artUrl = pageUrl
         handler.removeCallbacks(artTask)

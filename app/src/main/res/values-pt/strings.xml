@@ -262,4 +262,13 @@
     <string name="ph_pad_dpad">Setas</string>
     <string name="ph_pad_touch">Touchpad</string>
     <string name="ph_pad_hint">Arraste para mover · toque para clicar · dois dedos para deslocar</string>
+    <string name="tb_tabs">Abas</string>
+    <string name="tabs_title">Abas</string>
+    <string name="tabs_new">Nova aba</string>
+    <string name="tabs_close">Fechar aba</string>
+    <string name="tabs_close_others">Fechar as outras</string>
+    <string name="tabs_current">Aba atual</string>
+    <string name="toast_tab_limit">No máximo %d abas</string>
+    <string name="toast_tab_closed">Aba fechada</string>
+    <string name="tabs_hint">OK abre · Baixo para ações</string>
 </resources>

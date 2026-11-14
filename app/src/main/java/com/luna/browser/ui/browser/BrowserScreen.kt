@@ -43,6 +43,7 @@ import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.StarBorder
+import androidx.compose.material.icons.rounded.Tab as TabIcon
 import androidx.compose.material.icons.rounded.TouchApp
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.WifiOff
@@ -108,6 +109,12 @@ import kotlinx.coroutines.delay
 @Composable
 fun BrowserScreen(app: AppState) {
     val b = app.browser
+    // Each tab has its own controller and WebView: start from scratch when the tab changes.
+    androidx.compose.runtime.key(b) { BrowserContent(app, b) }
+}
+
+@Composable
+private fun BrowserContent(app: AppState, b: BrowserController) {
     LaunchedEffect(b.toolbarVisible, b.error, b.sitePanel) {
         if (!b.toolbarVisible && b.error == null && !b.sitePanel) b.webView.requestFocus()
     }
@@ -224,6 +231,7 @@ private fun Toolbar(app: AppState, b: BrowserController) {
                     IconLabelButton(stringResource(R.string.tb_forward), Icons.AutoMirrored.Rounded.ArrowForward, { b.goForward() }, enabled = b.canGoForward)
                     IconLabelButton(stringResource(R.string.tb_refresh), Icons.Rounded.Refresh, { b.reload(); b.hideToolbar() })
                     IconLabelButton(stringResource(R.string.tb_home), Icons.Rounded.Home, { app.goHome() })
+                    IconLabelButton(stringResource(R.string.tb_tabs), Icons.Rounded.TabIcon, { b.hideToolbar(); app.navigate(Screen.Tabs) }, highlighted = app.tabs.count > 1)
                     val fav = app.store.isFavorite(b.url)
                     IconLabelButton(stringResource(if (fav) R.string.tb_saved else R.string.tb_save), if (fav) Icons.Rounded.Star else Icons.Rounded.StarBorder, { b.toggleFavorite() }, highlighted = fav)
                     IconLabelButton(stringResource(if (b.cursorMode) R.string.tb_mode_pointer else R.string.tb_mode_links), if (b.cursorMode) Icons.Rounded.Mouse else Icons.Rounded.TouchApp, { b.toggleMode() })

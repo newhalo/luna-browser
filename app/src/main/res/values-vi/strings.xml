@@ -258,4 +258,13 @@
     <string name="ph_pad_dpad">Nút</string>
     <string name="ph_pad_touch">Touchpad</string>
     <string name="ph_pad_hint">Vuốt để di chuyển · chạm để bấm · hai ngón để cuộn</string>
+    <string name="tb_tabs">Tab</string>
+    <string name="tabs_title">Tab</string>
+    <string name="tabs_new">Tab mới</string>
+    <string name="tabs_close">Đóng tab</string>
+    <string name="tabs_close_others">Đóng các tab khác</string>
+    <string name="tabs_current">Tab hiện tại</string>
+    <string name="toast_tab_limit">Tối đa %d tab</string>
+    <string name="toast_tab_closed">Đã đóng tab</string>
+    <string name="tabs_hint">OK để mở · Xuống để chọn thao tác</string>
 </resources>

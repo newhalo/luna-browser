@@ -270,4 +270,13 @@
     <string name="ph_pad_dpad">Крестовина</string>
     <string name="ph_pad_touch">Тачпад</string>
     <string name="ph_pad_hint">Проведите — переместить · коснитесь — щелчок · два пальца — прокрутка</string>
+    <string name="tb_tabs">Вкладки</string>
+    <string name="tabs_title">Вкладки</string>
+    <string name="tabs_new">Новая вкладка</string>
+    <string name="tabs_close">Закрыть вкладку</string>
+    <string name="tabs_close_others">Закрыть остальные</string>
+    <string name="tabs_current">Текущая вкладка</string>
+    <string name="toast_tab_limit">Не более %d вкладок</string>
+    <string name="toast_tab_closed">Вкладка закрыта</string>
+    <string name="tabs_hint">OK — открыть · Вниз — действия</string>
 </resources>

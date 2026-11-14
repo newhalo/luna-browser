@@ -258,4 +258,13 @@
     <string name="ph_pad_dpad">十字キー</string>
     <string name="ph_pad_touch">タッチパッド</string>
     <string name="ph_pad_hint">ドラッグで移動 · タップでクリック · 2本指でスクロール</string>
+    <string name="tb_tabs">タブ</string>
+    <string name="tabs_title">タブ</string>
+    <string name="tabs_new">新しいタブ</string>
+    <string name="tabs_close">タブを閉じる</string>
+    <string name="tabs_close_others">他のタブを閉じる</string>
+    <string name="tabs_current">現在のタブ</string>
+    <string name="toast_tab_limit">タブは最大%d個です</string>
+    <string name="toast_tab_closed">タブを閉じました</string>
+    <string name="tabs_hint">OKで開く · 下で操作</string>
 </resources>

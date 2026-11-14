@@ -262,4 +262,13 @@
     <string name="ph_pad_dpad">Cruceta</string>
     <string name="ph_pad_touch">Panel táctil</string>
     <string name="ph_pad_hint">Arrastra para mover · toca para hacer clic · dos dedos para desplazar</string>
+    <string name="tb_tabs">Pestañas</string>
+    <string name="tabs_title">Pestañas</string>
+    <string name="tabs_new">Pestaña nueva</string>
+    <string name="tabs_close">Cerrar pestaña</string>
+    <string name="tabs_close_others">Cerrar las demás</string>
+    <string name="tabs_current">Pestaña actual</string>
+    <string name="toast_tab_limit">Máximo %d pestañas</string>
+    <string name="toast_tab_closed">Pestaña cerrada</string>
+    <string name="tabs_hint">OK abre · Abajo para acciones</string>
 </resources>

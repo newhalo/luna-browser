@@ -15,6 +15,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.luna.browser.browser.TabManager
+import com.luna.browser.browser.TabPolicy
 import com.luna.browser.browser.BrowserController
 import com.luna.browser.data.AdBlocker
 import com.luna.browser.data.K
@@ -28,7 +30,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-enum class Screen { Home, Browser, Settings, History, Favorites }
+enum class Screen { Home, Browser, Settings, History, Favorites, Tabs }
 
 /** The keys the phone pad may press (anything else is refused). */
 private val REMOTE_KEYS = mapOf(
@@ -43,7 +45,11 @@ private val REMOTE_KEYS = mapOf(
 class AppState(val activity: Activity) {
     val store = Store(activity)
     val ads = AdBlocker(activity)
-    val browser: BrowserController by lazy { BrowserController(activity, this) }
+    val tabs = TabManager(this)
+
+    /** The page being shown: the current tab's controller (its WebView is created on first use). */
+    val browser: BrowserController get() = tabs.controller()
+    private var shownBrowser: BrowserController? = null
 
     var screen by mutableStateOf(Screen.Home)
         private set
@@ -277,9 +283,10 @@ class AppState(val activity: Activity) {
     }
 
     private fun show(to: Screen) {
-        if (screen == Screen.Browser) browser.onLeave()
+        // The controller that was shown is the one to leave, even if the current tab changed meanwhile.
+        if (screen == Screen.Browser) { shownBrowser?.onLeave(); shownBrowser = null }
         screen = to
-        if (to == Screen.Browser) browser.onEnter()
+        if (to == Screen.Browser) { val b = browser; shownBrowser = b; b.onEnter() }
     }
 
     /** Opens a URL or search query in the browser. */
@@ -290,9 +297,36 @@ class AppState(val activity: Activity) {
         if (screen != Screen.Browser) navigate(Screen.Browser)
     }
 
-    /** Re-shows the page that is already loaded, or loads it if the browser is empty. */
+    /** Goes back to the tab that already shows [url], or opens it in the current tab. */
     fun resume(url: String) {
-        if (browser.webView.url == url) navigate(Screen.Browser) else openUrl(url)
+        val i = tabs.indexOfUrl(url)
+        if (i >= 0) openTab(i) else openUrl(url)
+    }
+
+    /** Shows tab [i]; an empty tab has nothing to show, so it opens Home to pick something. */
+    fun openTab(i: Int) {
+        tabs.select(i)
+        stack.clear()
+        if (tabs.current.isEmpty) { show(Screen.Home); return }
+        stack.addLast(Screen.Home)   // Back from a tab goes Home, as for any page opened from there
+        show(Screen.Browser)
+    }
+
+    /** A new, empty tab; Home opens so something can be chosen for it. */
+    fun newTab() {
+        if (!tabs.add()) { toast(R.string.toast_tab_limit, TabPolicy.MAX_TABS); return }
+        stack.clear()
+        show(Screen.Home)
+    }
+
+    fun closeTab(i: Int) {
+        tabs.close(i)
+        if (tabs.count == 1 && tabs.current.isEmpty) goHome() else toast(R.string.toast_tab_closed)
+    }
+
+    fun closeOtherTabs(keep: Int) {
+        tabs.closeOthers(keep)
+        toast(R.string.toast_tab_closed)
     }
 
     fun openAddress(initial: String = "") {
@@ -354,7 +388,7 @@ class AppState(val activity: Activity) {
     fun destroy() {
         remote.stop()
         netCallback?.let { runCatching { activity.getSystemService(ConnectivityManager::class.java)?.unregisterNetworkCallback(it) } }
-        browser.destroy()
+        tabs.destroyAll()
         scope.cancel()
     }
 }

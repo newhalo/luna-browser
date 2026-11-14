@@ -258,4 +258,13 @@
     <string name="ph_pad_dpad">方向键</string>
     <string name="ph_pad_touch">触控板</string>
     <string name="ph_pad_hint">拖动移动 · 轻点点击 · 双指滚动</string>
+    <string name="tb_tabs">标签页</string>
+    <string name="tabs_title">标签页</string>
+    <string name="tabs_new">新标签页</string>
+    <string name="tabs_close">关闭标签页</string>
+    <string name="tabs_close_others">关闭其他标签页</string>
+    <string name="tabs_current">当前标签页</string>
+    <string name="toast_tab_limit">最多 %d 个标签页</string>
+    <string name="toast_tab_closed">已关闭标签页</string>
+    <string name="tabs_hint">确定键打开 · 向下选择操作</string>
 </resources>

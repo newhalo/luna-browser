@@ -262,4 +262,13 @@
     <string name="ph_pad_dpad">Steuerkreuz</string>
     <string name="ph_pad_touch">Touchpad</string>
     <string name="ph_pad_hint">Ziehen zum Bewegen · Tippen zum Klicken · zwei Finger zum Scrollen</string>
+    <string name="tb_tabs">Tabs</string>
+    <string name="tabs_title">Tabs</string>
+    <string name="tabs_new">Neuer Tab</string>
+    <string name="tabs_close">Tab schließen</string>
+    <string name="tabs_close_others">Andere Tabs schließen</string>
+    <string name="tabs_current">Aktueller Tab</string>
+    <string name="toast_tab_limit">Höchstens %d Tabs</string>
+    <string name="toast_tab_closed">Tab geschlossen</string>
+    <string name="tabs_hint">OK öffnet · Unten für Aktionen</string>
 </resources>

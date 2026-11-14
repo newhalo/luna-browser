@@ -292,6 +292,13 @@ class Store(ctx: Context) {
         }
     }
 
+    // ---- Open tabs (restored, frozen, after the app is closed) ----
+    fun readTabs(): String? = sp.getString("tabs", null)
+
+    fun writeTabs(json: String) {
+        io.execute { sp.edit().putString("tabs", json).apply() }
+    }
+
     // ---- Per-site settings (each field falls back to the global setting when the site has no opinion) ----
     private val siteOverrides = mutableStateMapOf<String, SiteOverride>().apply {
         putAll(SiteSettings.parseAll(sp.getString("sites", "{}")!!))

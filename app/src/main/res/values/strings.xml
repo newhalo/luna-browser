@@ -283,4 +283,13 @@
     <string name="ph_pad_dpad">D-pad</string>
     <string name="ph_pad_touch">Touchpad</string>
     <string name="ph_pad_hint">Drag to move · tap to click · two fingers to scroll</string>
+    <string name="tb_tabs">Tabs</string>
+    <string name="tabs_title">Tabs</string>
+    <string name="tabs_new">New tab</string>
+    <string name="tabs_close">Close tab</string>
+    <string name="tabs_close_others">Close other tabs</string>
+    <string name="tabs_current">Current tab</string>
+    <string name="toast_tab_limit">Up to %d tabs</string>
+    <string name="toast_tab_closed">Tab closed</string>
+    <string name="tabs_hint">OK opens · Down for actions</string>
 </resources>

@@ -38,6 +38,7 @@ import com.luna.browser.ui.home.HomeScreen
 import com.luna.browser.ui.library.FavoritesScreen
 import com.luna.browser.ui.library.HistoryScreen
 import com.luna.browser.ui.settings.SettingsScreen
+import com.luna.browser.ui.tabs.TabsScreen
 import com.luna.browser.ui.theme.Bg
 import com.luna.browser.ui.theme.LunaTheme
 import com.luna.browser.ui.theme.T
@@ -74,6 +75,7 @@ fun LunaApp(app: AppState) {
                 Screen.Settings -> SettingsScreen(app)
                 Screen.History -> HistoryScreen(app)
                 Screen.Favorites -> FavoritesScreen(app)
+                Screen.Tabs -> TabsScreen(app)
             }
             if (app.addressOpen) AddressDialog(app)
             ToastHost(app, Modifier.align(Alignment.BottomCenter))

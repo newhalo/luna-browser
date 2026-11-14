@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Tab as TabIcon
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material.icons.rounded.WifiOff
@@ -72,6 +73,7 @@ import com.luna.browser.data.K
 import com.luna.browser.data.MediaItem
 import com.luna.browser.data.hostOf
 import com.luna.browser.ui.components.Backdrop
+import com.luna.browser.ui.components.CardRow
 import com.luna.browser.ui.components.LightCrossfade
 import com.luna.browser.ui.components.FocusSurface
 import com.luna.browser.ui.components.MediaCard
@@ -160,7 +162,7 @@ fun HomeScreen(app: AppState) {
                                     if (f.hasFocus) scope.launch { pivot.animateTo((rowY[r] ?: 0).toFloat(), tween(pivotMs)) }
                                 },
                         ) {
-                            MediaRow(app, title, items, width, requesters[r], requesters.getOrNull(r - 1), onFocus = onCardFocus) { app.openUrl(it.url) }
+                            CardRow(app, stringResource(title), items, width, requesters[r], requesters.getOrNull(r - 1), onFocus = onCardFocus) { app.resume(it.url) }
                         }
                     }
                 }
@@ -184,6 +186,9 @@ private fun Header(app: AppState) {
         Txt("  Luna", T.title.copy(fontSize = 26.sp, fontWeight = FontWeight.Bold))
         Spacer(Modifier.weight(1f))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (app.tabs.hasContent) {
+                TvButton(stringResource(R.string.tb_tabs), { app.navigate(Screen.Tabs) }, Modifier.rememberFocus(app, "home", "nav:tabs"), Icons.Rounded.TabIcon, container = Glass)
+            }
             TvButton(stringResource(R.string.nav_history), { app.navigate(Screen.History) }, Modifier.rememberFocus(app, "home", "nav:history"), Icons.Rounded.History, container = Glass)
             TvButton(stringResource(R.string.nav_favorites), { app.navigate(Screen.Favorites) }, Modifier.rememberFocus(app, "home", "nav:fav"), Icons.Rounded.Star, container = Glass)
             TvButton(stringResource(R.string.nav_settings), { app.navigate(Screen.Settings) }, Modifier.rememberFocus(app, "home", "nav:settings"), Icons.Rounded.Settings, container = Glass)
@@ -248,71 +253,6 @@ private fun SearchRow(app: AppState, searchFr: FocusRequester, firstCardFr: Focu
                 Modifier.height(58.dp).focusProperties { down = firstCardFr }.onFocusChanged { if (it.isFocused) onFocus() },
                 Icons.Rounded.Mic, container = Glass,
             )
-        }
-    }
-}
-
-@Composable
-private fun MediaRow(
-    app: AppState,
-    @StringRes title: Int,
-    items: List<MediaItem>,
-    width: Dp,
-    mine: List<FocusRequester>,
-    above: List<FocusRequester>?,
-    onFocus: (MediaItem) -> Unit,
-    onClick: (MediaItem) -> Unit,
-) {
-    val density = LocalDensity.current
-    val margin = with(density) { Dim.SafeH.toPx() }
-    val cardW = with(density) { width.toPx() }
-    val gap = with(density) { 20.dp.toPx() }
-    var viewW by remember { mutableStateOf(0) }
-    val offset = remember { Animatable(0f) }
-    val slideMs = ms(220)
-    val scope = rememberCoroutineScope()
-
-    // Cards are all the same width, so their positions are known without measuring: card i starts at
-    // margin + i * (width + gap) in the row's own coordinates.
-    fun reveal(i: Int) {
-        val total = 2 * margin + items.size * cardW + (items.size - 1).coerceAtLeast(0) * gap
-        val maxOffset = (total - viewW).coerceAtLeast(0f)
-        val left = margin + i * (cardW + gap) - offset.value
-        val right = left + cardW
-        val delta = when {
-            left < margin -> left - margin                      // keep the left margin (also for the first card)
-            right > viewW - margin -> right - (viewW - margin)  // and a margin before the right edge
-            else -> 0f
-        }
-        if (delta != 0f && viewW > 0) {
-            scope.launch { offset.animateTo((offset.value + delta).coerceIn(0f, maxOffset), tween(slideMs)) }
-        }
-    }
-
-    Column {
-        Txt(stringResource(title), T.title.copy(fontSize = 22.sp), Modifier.padding(start = Dim.SafeH, top = 10.dp))
-        Box(Modifier.fillMaxWidth().clipToBounds().onSizeChanged { viewW = it.width }) {
-            Row(
-                Modifier.wrapContentWidth(align = Alignment.Start, unbounded = true)
-                    .graphicsLayer { translationX = -offset.value }
-                    .padding(horizontal = Dim.SafeH, vertical = 14.dp),
-                horizontalArrangement = Arrangement.spacedBy(20.dp),
-            ) {
-                items.forEachIndexed { i, item ->
-                    MediaCard(
-                        item, width, onFocus, { onClick(item) },
-                        Modifier.rememberFocus(app, "home", item.key)
-                            .onFocusChanged { if (it.isFocused) reveal(i) }
-                            .focusRequester(mine[i])
-                            .then(
-                                if (above != null && above.isNotEmpty()) {
-                                    val target = above[minOf(i, above.size - 1)]
-                                    Modifier.focusProperties { up = target }
-                                } else Modifier,
-                            ),
-                    )
-                }
-            }
         }
     }
 }
