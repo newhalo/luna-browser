@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
 import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -75,10 +77,19 @@ fun Art(model: Any?, modifier: Modifier = Modifier, scale: ContentScale = Conten
 @Composable
 fun Aurora(modifier: Modifier = Modifier, animated: Boolean = true) {
     val still = LocalReduceMotion.current || !animated
-    val t: State<Float> = if (still) remember { mutableFloatStateOf(0.5f) } else
-        rememberInfiniteTransition(label = "aurora").animateFloat(
-            0f, 1f, infiniteRepeatable(tween(22_000, easing = LinearEasing), RepeatMode.Reverse), label = "t",
-        )
+    // The drift is so slow (22 s per sweep) that ~15 updates a second look identical to 60, while
+    // leaving the TV's UI thread and GPU idle most of the time.
+    val t = remember { mutableFloatStateOf(0.5f) }
+    if (!still) {
+        LaunchedEffect(Unit) {
+            val start = System.nanoTime()
+            while (true) {
+                val phase = ((System.nanoTime() - start) / 1_000_000L % 44_000L) / 22_000f
+                t.floatValue = if (phase <= 1f) phase else 2f - phase
+                delay(66)
+            }
+        }
+    }
     Box(modifier.fillMaxSize().background(Bg)) {
         Blob(Color(0xFF4F63E8), 780.dp, -180.dp, -280.dp, 260.dp, 140.dp, t)
         Blob(Color(0xFF9B3DB5), 640.dp, 560.dp, 60.dp, -200.dp, 120.dp, t)
@@ -103,10 +114,10 @@ private fun Blob(color: Color, size: Dp, x: Dp, y: Dp, dx: Dp, dy: Dp, t: State<
 
 /** Full-screen backdrop: the focused item's artwork over the aurora, with cinematic scrims. */
 @Composable
-fun Backdrop(art: Any?, animated: Boolean = true) {
+fun Backdrop(art: () -> Any?, animated: Boolean = true) {
     Box(Modifier.fillMaxSize()) {
         Aurora(animated = animated)
-        Crossfade(targetState = art, animationSpec = tween(ms(450)), label = "backdrop") { a ->
+        Crossfade(targetState = art(), animationSpec = tween(ms(450)), label = "backdrop") { a ->
             if (a != null) Art(a, Modifier.fillMaxSize().alpha(0.62f))
         }
         Box(

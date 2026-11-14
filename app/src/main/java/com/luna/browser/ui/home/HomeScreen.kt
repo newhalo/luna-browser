@@ -93,27 +93,33 @@ import java.util.Locale
 @Composable
 fun HomeScreen(app: AppState) {
     val store = app.store
-    var hero by remember { mutableStateOf<MediaItem?>(null) }
+    // Read only inside Backdrop / HeroInfo, so moving focus doesn't recompose the whole screen.
+    val hero = remember { mutableStateOf<MediaItem?>(null) }
     val searchFr = remember { FocusRequester() }
     val firstCardFr = remember { FocusRequester() }
     LaunchedEffect(Unit) {
         if (app.focusMemory["home"] == null || app.focusMemory["home"] == "search") runCatching { searchFr.requestFocus() }
     }
 
-    val rows = buildList {
-        val cont = if (store.bool(K.SHOW_CONTINUE)) store.continueItems() else emptyList()
-        if (cont.isNotEmpty()) add(Triple("Xem tiếp", cont, 272.dp))
-        add(Triple("Trang web của bạn", store.siteItems(), 216.dp))
-        val favs = store.favoriteItems()
-        if (favs.isNotEmpty()) add(Triple("Yêu thích", favs, 216.dp))
+    // Rows are rebuilt only when history / favourites / artwork actually change.
+    val showContinue = store.bool(K.SHOW_CONTINUE)
+    val rows = remember(store.version, showContinue) {
+        buildList {
+            val cont = if (showContinue) store.continueItems() else emptyList()
+            if (cont.isNotEmpty()) add(Triple("Xem tiếp", cont, 272.dp))
+            add(Triple("Trang web của bạn", store.siteItems(), 216.dp))
+            val favs = store.favoriteItems()
+            if (favs.isNotEmpty()) add(Triple("Yêu thích", favs, 216.dp))
+        }
     }
+    val onCardFocus = remember { { item: MediaItem -> hero.value = item } }
 
     Box(Modifier.fillMaxSize()) {
-        Backdrop(hero?.art, animated = store.bool(K.ANIMATED_BG))
+        Backdrop({ hero.value?.art }, animated = store.bool(K.ANIMATED_BG))
         Column(Modifier.fillMaxSize().padding(top = Dim.SafeV)) {
             Header(app)
-            HeroInfo(hero, app.online)
-            SearchRow(app, searchFr, firstCardFr) { hero = null }
+            HeroInfo({ hero.value }, app.online)
+            SearchRow(app, searchFr, firstCardFr) { hero.value = null }
             val scroll = rememberScrollState()
             val scope = rememberCoroutineScope()
             val rowY = remember { mutableMapOf<Int, Int>() }
@@ -128,7 +134,7 @@ fun HomeScreen(app: AppState) {
                             .onGloballyPositioned { rowY[r] = it.positionInParent().y.toInt() }
                             .onFocusChanged { f -> if (f.hasFocus) scope.launch { scroll.animateScrollTo(rowY[r] ?: 0) } },
                     ) {
-                        MediaRow(app, title, items, width, if (r == 0) firstCardFr else null, onFocus = { hero = it }) { app.openUrl(it.url) }
+                        MediaRow(app, title, items, width, if (r == 0) firstCardFr else null, onFocus = onCardFocus) { app.openUrl(it.url) }
                     }
                 }
             }
@@ -160,9 +166,9 @@ private fun Header(app: AppState) {
 }
 
 @Composable
-private fun HeroInfo(hero: MediaItem?, online: Boolean) {
+private fun HeroInfo(hero: () -> MediaItem?, online: Boolean) {
     Box(Modifier.fillMaxWidth().height(132.dp).padding(horizontal = Dim.SafeH), contentAlignment = Alignment.BottomStart) {
-        Crossfade(targetState = hero, animationSpec = tween(ms(220)), label = "hero") { h ->
+        Crossfade(targetState = hero(), animationSpec = tween(ms(220)), label = "hero") { h ->
             Column(Modifier.width(640.dp)) {
                 if (h == null) {
                     Txt(greeting(), T.display.copy(fontSize = 42.sp))

@@ -3,6 +3,7 @@ package com.luna.browser.data
 import android.content.Context
 import android.net.Uri
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -25,19 +26,18 @@ data class HistoryEntry(
     /** Local screenshot of the page. */
     val snap: String? = null,
 ) {
-    val host: String get() = hostOf(url)
+    val host: String by lazy { hostOf(url) }
 
     /** True for an article / video rather than a site's front page. */
-    val deep: Boolean
-        get() = Uri.parse(url).let { (it.path?.length ?: 0) > 1 || it.query != null }
+    val deep: Boolean by lazy { Uri.parse(url).let { (it.path?.length ?: 0) > 1 || it.query != null } }
 
-    /** Best artwork for cards: a video/article thumbnail first, otherwise the page screenshot. */
-    val art: Any?
-        get() {
-            if (deep && image != null) return image
-            snap?.let { File(it) }?.takeIf { it.exists() }?.let { return it }
-            return image
-        }
+    /**
+     * Best artwork for cards: a video/article thumbnail first, otherwise the page screenshot.
+     * Computed once per entry (entries are immutable) — never touch the disk during composition.
+     */
+    val art: Any? by lazy {
+        if (deep && image != null) image else snap?.let { File(it) } ?: image
+    }
 }
 
 /** One card on the home screen. */
@@ -174,6 +174,13 @@ class Store(ctx: Context) {
     var lastSession by mutableStateOf(readSites("last").firstOrNull())
         private set
 
+    /** Bumped on every change to history, favourites or artwork; screens memoise their rows on it. */
+    var version by mutableIntStateOf(0)
+        private set
+
+    /** Disk writes happen off the UI thread, in order. */
+    private val io = java.util.concurrent.Executors.newSingleThreadExecutor()
+
     // ---- Favorites ----
     fun isFavorite(url: String) = favorites.any { it.url == url }
 
@@ -182,12 +189,14 @@ class Store(ctx: Context) {
         val existing = favorites.indexOfFirst { it.url == site.url }
         val added = existing < 0
         if (added) favorites.add(0, site) else favorites.removeAt(existing)
+        version++
         writeSites("favorites", favorites)
         return added
     }
 
     fun removeFavorite(site: Site) {
         favorites.remove(site)
+        version++
         writeSites("favorites", favorites)
     }
 
@@ -205,6 +214,7 @@ class Store(ctx: Context) {
             sp.edit().putString("visits", JSONObject(visits.toMap()).toString()).apply()
         }
         lastSession = Site(t, url)
+        version++
         writeHistory()
         writeSites("last", listOf(Site(t, url)))
     }
@@ -215,6 +225,7 @@ class Store(ctx: Context) {
         val i = history.indexOfFirst { it.url == url }
         if (i < 0 || history[i].title == title) return
         history[i] = history[i].copy(title = title)
+        version++
         if (lastSession?.url == url) {
             lastSession = Site(title, url)
             writeSites("last", listOf(Site(title, url)))
@@ -227,6 +238,7 @@ class Store(ctx: Context) {
         if (i < 0) return
         val e = history[i]
         history[i] = e.copy(image = image ?: e.image, snap = snap ?: e.snap)
+        version++
         writeHistory()
     }
 
@@ -234,16 +246,25 @@ class Store(ctx: Context) {
         history.clear()
         visits.clear()
         lastSession = null
-        thumbsDir.listFiles()?.forEach { it.delete() }
+        version++
+        io.execute { thumbsDir.listFiles()?.forEach { it.delete() } }
         sp.edit().putString("visits", "{}").apply()
         writeHistory()
         writeSites("last", emptyList())
     }
 
     // ---- Artwork lookups ----
+    /** Favicons on disk, listed once at start-up instead of a File.exists() per card per frame. */
+    private val savedIcons: MutableSet<String> = java.util.Collections.synchronizedSet(
+        HashSet(iconsDir.list()?.map { it.removeSuffix(".png") } ?: emptyList()),
+    )
+
+    fun iconSaved(host: String) {
+        if (savedIcons.add(host)) version++
+    }
+
     fun iconFor(host: String): Any? {
-        val f = File(iconsDir, "$host.png")
-        if (f.exists()) return f
+        if (host in savedIcons) return File(iconsDir, "$host.png")
         // Curated sites only: a public favicon service, never for the user's own browsing.
         if (QuickSites.any { it.host == host }) return "https://www.google.com/s2/favicons?domain=$host&sz=128"
         return null
@@ -299,9 +320,12 @@ class Store(ctx: Context) {
     }
 
     private fun writeSites(key: String, list: List<Site>) {
-        val arr = JSONArray()
-        list.forEach { arr.put(JSONObject().put("t", it.title).put("u", it.url)) }
-        sp.edit().putString(key, arr.toString()).apply()
+        val copy = list.toList()
+        io.execute {
+            val arr = JSONArray()
+            copy.forEach { arr.put(JSONObject().put("t", it.title).put("u", it.url)) }
+            sp.edit().putString(key, arr.toString()).apply()
+        }
     }
 
     private fun readHistory(): List<HistoryEntry> = try {
@@ -319,8 +343,13 @@ class Store(ctx: Context) {
     }
 
     private fun writeHistory() {
+        val copy = history.toList()
+        io.execute { writeHistoryNow(copy) }
+    }
+
+    private fun writeHistoryNow(list: List<HistoryEntry>) {
         val arr = JSONArray()
-        history.forEach {
+        list.forEach {
             arr.put(
                 JSONObject().put("t", it.title).put("u", it.url).put("ts", it.time)
                     .put("img", it.image ?: "").put("snap", it.snap ?: ""),

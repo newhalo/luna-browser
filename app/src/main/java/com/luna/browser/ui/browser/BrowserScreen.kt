@@ -306,15 +306,33 @@ private fun BoxScope.VideoOverlay(b: BrowserController) {
                 Modifier.fillMaxWidth().background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xCC000000))))
                     .padding(start = 48.dp, end = 48.dp, top = 56.dp, bottom = 32.dp),
             ) {
-                val frac = if (v != null && v.duration > 0) (v.position / v.duration).toFloat().coerceIn(0f, 1f) else 0f
+                // While choosing a seek target, the bar shows the target (bright) ahead of / behind
+                // the real position (dim); the video is only told once the viewer stops pressing.
+                val preview = b.seekPreview
+                val dur = v?.duration ?: 0.0
+                val frac = if (v != null && dur > 0) (v.position / dur).toFloat().coerceIn(0f, 1f) else 0f
+                val target = if (preview != null && dur > 0) (preview / dur).toFloat().coerceIn(0f, 1f) else null
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Txt(if (v == null) "Không tìm thấy video để điều khiển" else if (v.paused) "Tạm dừng" else "Đang phát", T.label)
+                    Txt(
+                        when {
+                            v == null -> "Không tìm thấy video để điều khiển"
+                            preview != null -> "Tua tới ${fmt(preview)}"
+                            v.paused -> "Tạm dừng"
+                            else -> "Đang phát"
+                        },
+                        T.label,
+                    )
                     Spacer(Modifier.weight(1f))
-                    if (v != null) Txt("${fmt(v.position)} / ${if (v.duration > 0) fmt(v.duration) else "Trực tiếp"}", T.label)
+                    if (v != null) Txt("${fmt(preview ?: v.position)} / ${if (dur > 0) fmt(dur) else "Trực tiếp"}", T.label)
                 }
                 Spacer(Modifier.height(10.dp))
                 Box(Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)).background(Color(0x44FFFFFF))) {
-                    Box(Modifier.fillMaxWidth(frac).fillMaxHeight().background(Accent))
+                    if (target != null) {
+                        Box(Modifier.fillMaxWidth(frac).fillMaxHeight().background(Accent.copy(alpha = 0.45f)))
+                        Box(Modifier.fillMaxWidth(target).fillMaxHeight().background(Accent))
+                    } else {
+                        Box(Modifier.fillMaxWidth(frac).fillMaxHeight().background(Accent))
+                    }
                 }
                 Spacer(Modifier.height(12.dp))
                 Txt("Trái / Phải  Tua      OK  Phát / Dừng      Quay lại  Ẩn điều khiển", T.caption, color = Color(0xCCFFFFFF))

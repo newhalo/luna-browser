@@ -37,17 +37,17 @@ import com.luna.browser.ui.theme.LunaTheme
 import com.luna.browser.ui.theme.T
 import com.luna.browser.ui.theme.TextSecondary
 import com.luna.browser.ui.theme.ms
-import kotlinx.coroutines.delay
+import androidx.compose.ui.graphics.graphicsLayer
 
 @Composable
 fun LunaApp(app: AppState) {
     LunaTheme(reduceMotion = app.store.bool(K.REDUCE_MOTION)) {
-        var splash by remember { mutableStateOf(true) }
-        LaunchedEffect(Unit) {
-            delay(900)
-            splash = false
-        }
-        Box(Modifier.fillMaxSize().background(Bg)) {
+        // No in-app splash: Android 12+ already shows the system splash while the process starts,
+        // and a second timed splash only made start-up feel slower. Home fades in instead.
+        var shown by remember { mutableStateOf(false) }
+        LaunchedEffect(Unit) { shown = true }
+        val alpha by androidx.compose.animation.core.animateFloatAsState(if (shown) 1f else 0f, tween(ms(220)), label = "enter")
+        Box(Modifier.fillMaxSize().background(Bg).graphicsLayer { this.alpha = alpha }) {
             when (app.screen) {
                 Screen.Home -> HomeScreen(app)
                 Screen.Browser -> BrowserScreen(app)
@@ -57,16 +57,6 @@ fun LunaApp(app: AppState) {
             }
             if (app.addressOpen) AddressDialog(app)
             ToastHost(app, Modifier.align(Alignment.BottomCenter))
-            AnimatedVisibility(visible = splash, exit = fadeOut(tween(ms(250)))) {
-                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    Aurora()
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        MoonLogo(Modifier.size(104.dp))
-                        Txt("Luna", T.display.copy(fontSize = 56.sp), Modifier.padding(top = 18.dp))
-                        Txt("Lướt web thoải mái trên TV", T.body, color = TextSecondary)
-                    }
-                }
-            }
         }
     }
 }

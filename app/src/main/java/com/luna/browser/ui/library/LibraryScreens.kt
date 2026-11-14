@@ -5,7 +5,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -87,7 +90,7 @@ private fun ThumbRow(item: MediaItem, meta: String, modifier: Modifier, onClick:
 
 @Composable
 fun HistoryScreen(app: AppState) {
-    val items = app.store.continueItems(300)
+    val items = remember(app.store.version) { app.store.continueItems(300) }
     val homeFr = remember { FocusRequester() }
     var confirm by remember { mutableStateOf(false) }
     LaunchedEffect(items.isEmpty()) { if (items.isEmpty()) runCatching { homeFr.requestFocus() } }
@@ -108,8 +111,13 @@ fun HistoryScreen(app: AppState) {
                 "Về trang chủ", { app.goHome() }, Modifier.weight(1f), homeFr,
             )
         } else {
-            Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                items.forEachIndexed { i, it ->
+            // Lazy: up to 300 entries, only the visible rows are composed.
+            LazyColumn(
+                Modifier.weight(1f),
+                contentPadding = PaddingValues(vertical = 14.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                itemsIndexed(items, key = { _, it -> it.key }) { i, it ->
                     ThumbRow(it, "${it.subtitle} · ${timeAgo(it.time)}", Modifier.padding(horizontal = 6.dp).rememberFocus(app, "history", "h$i")) { app.openUrl(it.url) }
                 }
             }
@@ -119,7 +127,7 @@ fun HistoryScreen(app: AppState) {
 
 @Composable
 fun FavoritesScreen(app: AppState) {
-    val items = app.store.favoriteItems()
+    val items = remember(app.store.version) { app.store.favoriteItems() }
     val homeFr = remember { FocusRequester() }
     LaunchedEffect(items.isEmpty()) { if (items.isEmpty()) runCatching { homeFr.requestFocus() } }
 

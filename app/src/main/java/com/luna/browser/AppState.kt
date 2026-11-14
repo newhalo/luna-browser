@@ -41,8 +41,19 @@ class AppState(val activity: Activity) {
     val scope = kotlinx.coroutines.MainScope()
 
     init {
-        // Filter lists refresh in the background: on first run, then once a day.
-        if (ads.needsUpdate()) scope.launch { ads.update() }
+        // Filter lists refresh in the background (first run, then daily) — but not during start-up,
+        // when download + recompile would compete with the first frames.
+        scope.launch {
+            kotlinx.coroutines.delay(20_000)
+            if (ads.needsUpdate()) ads.update()
+        }
+        // Load the WebView (Chromium) provider off the UI thread, so opening the first page later
+        // doesn't freeze the home screen. getDefaultUserAgent() is documented as thread-safe.
+        Thread {
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND)
+            Thread.sleep(1500)
+            runCatching { android.webkit.WebSettings.getDefaultUserAgent(activity) }
+        }.start()
     }
     private var backLong = false
     private var netCallback: ConnectivityManager.NetworkCallback? = null

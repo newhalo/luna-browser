@@ -393,7 +393,11 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             val u = view.url ?: return
             if (icon == null || icon.width < 32) return
             val f = File(app.store.iconsDir, hostOf(u) + ".png")
-            Thread { runCatching { f.outputStream().use { icon.compress(Bitmap.CompressFormat.PNG, 100, it) } } }.start()
+            val host = hostOf(u)
+            Thread {
+                runCatching { f.outputStream().use { icon.compress(Bitmap.CompressFormat.PNG, 100, it) } }
+                    .onSuccess { handler.post { app.store.iconSaved(host) } }
+            }.start()
         }
 
         override fun getDefaultVideoPoster(): Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
@@ -745,10 +749,10 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
     private val pauseJs = "if(!b.paused)b.pause();"
     private val toggleJs = "if(b.paused){var p=b.play();if(p&&p.catch)p.catch(function(){});}else{b.pause();}"
 
-    private fun flash(label: String, icon: ImageVector? = null) {
+    private fun flash(label: String, icon: ImageVector? = null, hold: Boolean = false) {
         val o = Osd(label, icon, SystemClock.uptimeMillis())
         osd = o
-        handler.postDelayed({ if (osd?.id == o.id) osd = null }, 900)
+        handler.postDelayed({ if (osd?.id == o.id) osd = null }, if (hold) 1500 else 900)
     }
 
     private fun togglePlay(force: Boolean? = null) {
@@ -759,9 +763,63 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
         }
     }
 
-    private fun seek(seconds: Int) {
-        val js = "b.currentTime=Math.max(0,Math.min(isFinite(b.duration)?b.duration:1e9,b.currentTime+($seconds)));"
-        runVideo(js, "seek", seconds) { flash(if (seconds > 0) "Tua tới ${seconds} giây" else "Tua lùi ${-seconds} giây") }
+    // ---- Seeking: presses and key-repeats are accumulated, previewed, then sent as ONE seek ----
+    /** Target position (seconds) while the viewer is still choosing; null when not seeking. */
+    var seekPreview by mutableStateOf<Double?>(null)
+        private set
+    private var pendingSeek = 0
+    private val commitSeek = Runnable {
+        val s = pendingSeek
+        pendingSeek = 0
+        if (s == 0) { seekPreview = null; return@Runnable }
+        val js = "b.currentTime=Math.max(0,Math.min(isFinite(b.duration)?b.duration:1e9,b.currentTime+($s)));"
+        runVideo(js, "seek", s) { seekPreview = null }
+        // If the page has no reachable video, still clear the preview.
+        handler.postDelayed({ if (pendingSeek == 0) seekPreview = null }, 800)
+    }
+
+    /**
+     * Adds [seconds] to the pending seek and shows where it will land. The video itself is only
+     * told once the viewer stops pressing, so holding the arrow no longer reloads the stream
+     * (and stalls) at every step.
+     */
+    private fun queueSeek(seconds: Int, settleMs: Long = 650) {
+        pendingSeek += seconds
+        val v = video
+        seekPreview = v?.let { (it.position + pendingSeek).coerceIn(0.0, if (it.duration > 0) it.duration else Double.MAX_VALUE) }
+        val label = seekPreview?.let { "${if (pendingSeek >= 0) "Tua tới" else "Tua lùi"} ${fmtTime(it)}  (${signed(pendingSeek)})" }
+            ?: "${if (pendingSeek >= 0) "Tua tới" else "Tua lùi"} ${kotlin.math.abs(pendingSeek)} giây"
+        flash(label, null, hold = true)
+        handler.removeCallbacks(commitSeek)
+        handler.postDelayed(commitSeek, settleMs)
+    }
+
+    /** Key released: commit soon instead of waiting the full settle time. */
+    private fun settleSeek() {
+        if (pendingSeek == 0) return
+        handler.removeCallbacks(commitSeek)
+        handler.postDelayed(commitSeek, 250)
+    }
+
+    /** Step for one press or key-repeat: grows the longer the arrow is held (10 s → 30 s → 60 s). */
+    private fun seekStep(repeat: Int): Int {
+        val base = app.store.int(K.SEEK_STEP)
+        return when {
+            repeat < 12 -> base
+            repeat < 30 -> base * 3
+            else -> base * 6
+        }
+    }
+
+    private fun signed(s: Int): String {
+        val a = kotlin.math.abs(s)
+        val t = if (a >= 60) "${a / 60}:${"%02d".format(a % 60)}" else "${a}s"
+        return (if (s >= 0) "+" else "−") + t
+    }
+
+    private fun fmtTime(sec: Double): String {
+        val t = sec.toLong().coerceAtLeast(0)
+        return if (t >= 3600) "%d:%02d:%02d".format(t / 3600, (t % 3600) / 60, t % 60) else "%d:%02d".format(t / 60, t % 60)
     }
 
     private fun mediaKey(code: Int) {
@@ -770,8 +828,8 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
             KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE -> togglePlay()
             KeyEvent.KEYCODE_MEDIA_PLAY -> togglePlay(true)
             KeyEvent.KEYCODE_MEDIA_PAUSE -> togglePlay(false)
-            KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> seek(step * 3)
-            KeyEvent.KEYCODE_MEDIA_REWIND -> seek(-step * 3)
+            KeyEvent.KEYCODE_MEDIA_FAST_FORWARD -> queueSeek(step * 3)
+            KeyEvent.KEYCODE_MEDIA_REWIND -> queueSeek(-step * 3)
         }
         if (customView != null) showControls()
     }
@@ -790,10 +848,11 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
                 return true
             }
             KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                if (down && (rc == 0 || rc % 5 == 0)) {
-                    val sign = if (e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) 1 else -1
-                    seek(sign * app.store.int(K.SEEK_STEP) * (1 + min(rc / 10, 3)))
-                    showControls()
+                val sign = if (e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) 1 else -1
+                when {
+                    !down -> settleSeek()
+                    // Every press counts; while held, every 3rd repeat (~8 steps/s) with a growing step.
+                    rc == 0 || rc % 3 == 0 -> { queueSeek(sign * seekStep(rc)); showControls() }
                 }
                 return true
             }

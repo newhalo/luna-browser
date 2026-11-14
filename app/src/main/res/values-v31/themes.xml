@@ -1,0 +1,12 @@
+<resources>
+    <!-- Android 12+: the system splash shows Luna's moon on the app background while the process
+         starts, so the app needs no second, timed splash of its own. -->
+    <style name="Theme.Luna" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/luna_bg</item>
+        <item name="android:colorBackground">@color/luna_bg</item>
+        <item name="android:statusBarColor">@color/luna_bg</item>
+        <item name="android:navigationBarColor">@color/luna_bg</item>
+        <item name="android:windowSplashScreenBackground">@color/luna_bg</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/ic_launcher</item>
+    </style>
+</resources>

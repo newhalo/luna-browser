@@ -81,15 +81,21 @@ class AdBlocker(private val ctx: Context) {
 
     init {
         FilterLists.forEach { status[it.id] = ListStatus(updatedAt = prefs.getLong("at.${it.id}", 0L)) }
-        Thread { compile() }.start()
+        // Low priority: compiling ~20k rules must not steal CPU from the first frames on a weak TV SoC.
+        background { compile() }
     }
+
+    private fun background(work: () -> Unit) = Thread {
+        android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND)
+        work()
+    }.start()
 
     fun isEnabled(id: String) = enabled[id] == true
 
     fun setEnabled(id: String, on: Boolean) {
         enabled[id] = on
         prefs.edit().putBoolean("on.${id}", on).apply()
-        Thread { compile() }.start()
+        background { compile() }
     }
 
     private fun fileOf(l: FilterList) = File(dir, "${l.id}.txt")
