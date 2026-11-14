@@ -665,9 +665,19 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         scheduleIdleHide()
         clickPulse++
         webView.requestFocus()
+        // Clicks are delivered as a finger tap: Chromium ignores synthetic mouse-button events,
+        // while taps work on every page and inside cross-site player iframes.
         val t = SystemClock.uptimeMillis()
-        sendMouse(MotionEvent.ACTION_DOWN, MotionEvent.BUTTON_PRIMARY, t)
-        handler.postDelayed({ sendMouse(MotionEvent.ACTION_UP, 0, t) }, 45)
+        sendTap(MotionEvent.ACTION_DOWN, t)
+        handler.postDelayed({ sendTap(MotionEvent.ACTION_UP, t) }, 50)
+    }
+
+    private fun sendTap(action: Int, downTime: Long) {
+        val props = arrayOf(MotionEvent.PointerProperties().apply { id = 0; toolType = MotionEvent.TOOL_TYPE_FINGER })
+        val coords = arrayOf(MotionEvent.PointerCoords().apply { x = cursorX; y = cursorY; pressure = 1f; size = 1f })
+        val ev = MotionEvent.obtain(downTime, SystemClock.uptimeMillis(), action, 1, props, coords, 0, 0, 1f, 1f, 0, 0, InputDevice.SOURCE_TOUCHSCREEN, 0)
+        webView.dispatchTouchEvent(ev)
+        ev.recycle()
     }
 
     // ---- Video ----
