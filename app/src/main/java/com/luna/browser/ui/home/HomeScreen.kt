@@ -3,11 +3,8 @@ package com.luna.browser.ui.home
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.border
-import androidx.compose.foundation.gestures.BringIntoViewSpec
-import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,15 +13,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Mic
@@ -35,7 +32,6 @@ import androidx.compose.material.icons.rounded.WifiOff
 import androidx.compose.material3.Icon
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.res.stringResource
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -54,6 +50,9 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.TextRange
@@ -99,34 +98,6 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-/**
- * The rows area scrolls only by our own "pivot" (the focused row snaps to the top). Compose's default
- * scroll-the-focused-child-into-view competes with it and cancels the animation half way, which left
- * the previous row peeking under the search bar and the new row cut off at the bottom.
- */
-@OptIn(ExperimentalFoundationApi::class)
-private object NoAutoScroll : BringIntoViewSpec {
-    override fun calculateScrollDistance(offset: Float, size: Float, containerSize: Float) = 0f
-}
-
-/**
- * For a row of cards: keeps [margin] pixels free at both ends, so the first card never slides to the
- * screen edge (losing the left padding) and the last one isn't glued to the right edge either.
- */
-@OptIn(ExperimentalFoundationApi::class)
-private class RowMargin(private val margin: Float) : BringIntoViewSpec {
-    override fun calculateScrollDistance(offset: Float, size: Float, containerSize: Float): Float {
-        val end = offset + size
-        return when {
-            size > containerSize - 2 * margin -> offset - margin
-            offset < margin -> offset - margin
-            end > containerSize - margin -> end - (containerSize - margin)
-            else -> 0f
-        }
-    }
-}
-
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun HomeScreen(app: AppState) {
     val store = app.store
@@ -158,12 +129,18 @@ fun HomeScreen(app: AppState) {
             Header(app)
             HeroInfo(app, { hero.value }, app.online)
             SearchRow(app, searchFr, firstCardFr) { hero.value = null }
-            val scroll = rememberScrollState()
             val scope = rememberCoroutineScope()
             val rowY = remember { mutableMapOf<Int, Int>() }
-            CompositionLocalProvider(LocalBringIntoViewSpec provides NoAutoScroll) {
+            // The rows are not in a scroll container: Compose's "scroll the focused child into view" would
+            // fight the row snap below and leave rows half-scrolled. Instead the focused row is slid to the
+            // top of this area with a plain translation (focus search still sees the real layout).
+            val pivot = remember { Animatable(0f) }
+            val pivotMs = ms(260)
+            Box(Modifier.weight(1f).fillMaxWidth().clipToBounds()) {
                 Column(
-                    Modifier.weight(1f).fillMaxWidth().verticalScroll(scroll).padding(top = 6.dp, bottom = 260.dp),
+                    Modifier.fillMaxWidth().wrapContentHeight(align = Alignment.Top, unbounded = true)
+                        .graphicsLayer { translationY = -pivot.value }
+                        .padding(top = 6.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                 ) {
                     rows.forEachIndexed { r, (title, items, width) ->
@@ -171,7 +148,9 @@ fun HomeScreen(app: AppState) {
                         Box(
                             Modifier
                                 .onGloballyPositioned { rowY[r] = it.positionInParent().y.toInt() }
-                                .onFocusChanged { f -> if (f.hasFocus) scope.launch { scroll.animateScrollTo(rowY[r] ?: 0) } },
+                                .onFocusChanged { f ->
+                                    if (f.hasFocus) scope.launch { pivot.animateTo((rowY[r] ?: 0).toFloat(), tween(pivotMs)) }
+                                },
                         ) {
                             MediaRow(app, title, items, width, if (r == 0) firstCardFr else null, onFocus = onCardFocus) { app.openUrl(it.url) }
                         }
@@ -265,7 +244,6 @@ private fun SearchRow(app: AppState, searchFr: FocusRequester, firstCardFr: Focu
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun MediaRow(
     app: AppState,
@@ -276,19 +254,46 @@ private fun MediaRow(
     onFocus: (MediaItem) -> Unit,
     onClick: (MediaItem) -> Unit,
 ) {
-    val margin = with(LocalDensity.current) { Dim.SafeH.toPx() }
-    val spec = remember(margin) { RowMargin(margin) }
+    val density = LocalDensity.current
+    val margin = with(density) { Dim.SafeH.toPx() }
+    val cardW = with(density) { width.toPx() }
+    val gap = with(density) { 20.dp.toPx() }
+    var viewW by remember { mutableStateOf(0) }
+    val offset = remember { Animatable(0f) }
+    val slideMs = ms(220)
+    val scope = rememberCoroutineScope()
+
+    // Cards are all the same width, so their positions are known without measuring: card i starts at
+    // margin + i * (width + gap) in the row's own coordinates.
+    fun reveal(i: Int) {
+        val total = 2 * margin + items.size * cardW + (items.size - 1).coerceAtLeast(0) * gap
+        val maxOffset = (total - viewW).coerceAtLeast(0f)
+        val left = margin + i * (cardW + gap) - offset.value
+        val right = left + cardW
+        val delta = when {
+            left < margin -> left - margin                      // keep the left margin (also for the first card)
+            right > viewW - margin -> right - (viewW - margin)  // and a margin before the right edge
+            else -> 0f
+        }
+        if (delta != 0f && viewW > 0) {
+            scope.launch { offset.animateTo((offset.value + delta).coerceIn(0f, maxOffset), tween(slideMs)) }
+        }
+    }
+
     Column {
         Txt(stringResource(title), T.title.copy(fontSize = 22.sp), Modifier.padding(start = Dim.SafeH, top = 10.dp))
-        CompositionLocalProvider(LocalBringIntoViewSpec provides spec) {
+        Box(Modifier.fillMaxWidth().clipToBounds().onSizeChanged { viewW = it.width }) {
             Row(
-                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = Dim.SafeH, vertical = 14.dp),
+                Modifier.wrapContentWidth(align = Alignment.Start, unbounded = true)
+                    .graphicsLayer { translationX = -offset.value }
+                    .padding(horizontal = Dim.SafeH, vertical = 14.dp),
                 horizontalArrangement = Arrangement.spacedBy(20.dp),
             ) {
                 items.forEachIndexed { i, item ->
                     MediaCard(
                         item, width, onFocus, { onClick(item) },
                         Modifier.rememberFocus(app, "home", item.key)
+                            .onFocusChanged { if (it.isFocused) reveal(i) }
                             .then(if (i == 0 && firstFr != null) Modifier.focusRequester(firstFr) else Modifier),
                     )
                 }
