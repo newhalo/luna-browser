@@ -1,0 +1,8 @@
+# Trang dùng để kiểm tra chặn quảng cáo / popup (một URL mỗi dòng, dòng bắt đầu bằng # bị bỏ qua).
+# Thêm những trang gia đình hay xem. Các trang phim miễn phí đổi tên miền thường xuyên:
+# khi một dòng báo "Không mở được", hãy thay bằng địa chỉ mới.
+https://www.vn2d.my/xem/phim-thuong-cong-chua-tap-24-vietsub-4830
+# Trang có nhiều quảng cáo hiển thị thông thường, để đối chiếu
+https://vnexpress.net/
+https://www.24h.com.vn/
+https://dantri.com.vn/

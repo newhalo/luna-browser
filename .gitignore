@@ -9,4 +9,5 @@ captures/
 *.apk
 *.aab
 dist/
-tools/
+tools/platform-tools/
+tools/sitecheck/out/

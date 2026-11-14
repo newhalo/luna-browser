@@ -13,6 +13,8 @@ import com.luna.browser.browser.BrowserController
 import com.luna.browser.data.AdBlocker
 import com.luna.browser.data.K
 import com.luna.browser.data.Store
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 
 enum class Screen { Home, Browser, Settings, History, Favorites }
 
@@ -36,6 +38,12 @@ class AppState(val activity: Activity) {
     var startVoice: () -> Unit = {}
 
     private val main = Handler(Looper.getMainLooper())
+    val scope = kotlinx.coroutines.MainScope()
+
+    init {
+        // Filter lists refresh in the background: on first run, then once a day.
+        if (ads.needsUpdate()) scope.launch { ads.update() }
+    }
     private var backLong = false
     private var netCallback: ConnectivityManager.NetworkCallback? = null
 
@@ -133,5 +141,6 @@ class AppState(val activity: Activity) {
     fun destroy() {
         netCallback?.let { runCatching { activity.getSystemService(ConnectivityManager::class.java)?.unregisterNetworkCallback(it) } }
         browser.destroy()
+        scope.cancel()
     }
 }

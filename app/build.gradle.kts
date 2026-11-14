@@ -58,4 +58,6 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     implementation("io.coil-kt:coil-compose:2.6.0")
     implementation("androidx.webkit:webkit:1.11.0")
+
+    testImplementation("junit:junit:4.13.2")
 }

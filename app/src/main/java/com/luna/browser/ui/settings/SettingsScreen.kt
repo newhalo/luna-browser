@@ -49,7 +49,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.luna.browser.AppState
+import com.luna.browser.data.FilterLists
 import com.luna.browser.data.K
+import com.luna.browser.data.ListStatus
 import com.luna.browser.data.SearchEngines
 import com.luna.browser.ui.components.Aurora
 import com.luna.browser.ui.components.FocusSurface
@@ -139,10 +141,23 @@ fun SettingsScreen(app: AppState) {
                     }
                     if (categories[selected].name == "Chặn quảng cáo") {
                         val ads = app.ads
+                        Txt("Danh sách lọc", T.label, Modifier.padding(start = 6.dp, top = 8.dp), color = TextSecondary)
+                        FilterLists.forEach { l ->
+                            val on = ads.isEnabled(l.id)
+                            val st = ads.status[l.id] ?: ListStatus()
+                            val meta = buildString {
+                                append(l.description)
+                                if (on && st.rules > 0) append(" · ${"%,d".format(st.rules).replace(',', '.')} luật")
+                                if (l.url != null && st.updatedAt > 0) append(" · cập nhật " + DateFormat.getDateInstance(DateFormat.SHORT).format(Date(st.updatedAt)))
+                                if (l.url != null && on && st.updatedAt == 0L) append(" · chưa tải về")
+                                if (st.failed) append(" · lần tải gần nhất bị lỗi")
+                            }
+                            SettingRow(l.name, meta, if (on) "✓  Bật" else "Tắt", on, danger = st.failed) { ads.setEnabled(l.id, !on) }
+                        }
                         val status = when {
                             ads.updating -> "Đang cập nhật…"
                             ads.updateFailed -> "Cập nhật thất bại"
-                            ads.lastUpdated == 0L -> "Danh sách có sẵn"
+                            ads.lastUpdated == 0L -> "Chưa cập nhật"
                             else -> "Cập nhật " + DateFormat.getDateInstance(DateFormat.MEDIUM).format(Date(ads.lastUpdated))
                         }
                         SettingRow(
@@ -228,7 +243,7 @@ private fun rows(cat: String, app: AppState): List<SRow> {
             Toggle(K.ADBLOCK, "Chặn quảng cáo và theo dõi", "Không tải nội dung từ các trang quảng cáo đã biết."),
             Toggle(K.BLOCK_POPUPS, "Chặn cửa sổ bật lên", "Không cho trang web tự mở cửa sổ mới."),
             Info("Đã chặn", "${app.ads.blockedCount} quảng cáo"),
-            Info("Số trang trong danh sách", app.ads.listSize.toString()),
+            Info("Tổng số luật đang dùng", app.ads.listSize.toString()),
         )
         "Video" -> listOf(
             Choice(K.SEEK_STEP, "Bước tua", "Khoảng tua mỗi lần bấm Trái / Phải khi xem video.", listOf("5", "10", "15", "30").map { it to "$it giây" }),

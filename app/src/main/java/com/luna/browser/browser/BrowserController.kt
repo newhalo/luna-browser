@@ -45,6 +45,8 @@ import com.luna.browser.data.hostOf
 import com.luna.browser.data.youtubeThumb
 import java.io.File
 import org.json.JSONArray
+import org.json.JSONObject
+import com.luna.browser.data.filter.Type
 import java.io.ByteArrayInputStream
 import kotlin.math.max
 import kotlin.math.min
@@ -206,6 +208,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     fun load(target: String) {
         error = null
         url = target
+        filterPageUrl = target
         webView.loadUrl(target)
     }
 
@@ -278,13 +281,14 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
             val scheme = request.url.scheme ?: return false
             if (scheme != "http" && scheme != "https" && scheme != "about" && scheme != "file" && scheme != "data" && scheme != "blob") return true
-            if (request.isForMainFrame && app.store.bool(K.BLOCK_POPUPS)) {
-                val target = request.url.toString()
-                // Click-hijack: the page swaps itself for an ad network.
-                if (app.store.bool(K.ADBLOCK) && app.ads.shouldBlock(request.url)) {
-                    notePopupBlocked("Đã chặn chuyển hướng tới trang quảng cáo")
-                    return true
-                }
+            if (!request.isForMainFrame) return false
+            val target = request.url.toString()
+            // Click-hijack: the page swaps itself for a known ad / betting page.
+            if (app.store.bool(K.ADBLOCK) && url.startsWith("http") && app.ads.shouldBlock(target, url, Type.DOCUMENT)) {
+                notePopupBlocked("Đã chặn chuyển hướng tới trang quảng cáo")
+                return true
+            }
+            if (app.store.bool(K.BLOCK_POPUPS)) {
                 // A page that sends itself to another site on its own, without the viewer pressing anything.
                 if (!request.hasGesture() && !request.isRedirect && url.startsWith("http") &&
                     !PopupGuard.sameSite(target, url) && !PopupGuard.isAuth(target) &&
@@ -298,7 +302,9 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         }
 
         override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
-            if (app.store.bool(K.ADBLOCK) && !request.isForMainFrame && app.ads.shouldBlock(request.url)) {
+            if (app.store.bool(K.ADBLOCK) && !request.isForMainFrame &&
+                app.ads.shouldBlock(request.url.toString(), filterPageUrl, AdBlocker.typeOf(request))
+            ) {
                 return WebResourceResponse("text/plain", "utf-8", 204, "No Content", emptyMap(), ByteArrayInputStream(ByteArray(0)))
             }
             return null
@@ -310,7 +316,8 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             error = null
             loading = true
             progress = 0.05f
-            pageUrl?.let { url = it }
+            pageUrl?.let { url = it; filterPageUrl = it }
+            injectCosmetics(view)
             syncNav()
             scheduleIdleHide()
         }
@@ -322,12 +329,12 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             title = view.title ?: ""
             syncNav()
             if (error == null && pageUrl != null) onVisited(pageUrl, title)
-            if (app.store.bool(K.ADBLOCK)) view.evaluateJavascript(AdBlocker.COSMETIC_JS, null)
+            injectCosmetics(view)
             if (app.store.bool(K.BLOCK_POPUPS)) view.evaluateJavascript(PopupGuard.OVERLAY_JS, null)
         }
 
         override fun doUpdateVisitedHistory(view: WebView, pageUrl: String?, isReload: Boolean) {
-            pageUrl?.let { url = it }
+            pageUrl?.let { url = it; filterPageUrl = it }
             syncNav()
             // Single-page sites (YouTube) change videos without a new page load.
             if (!isReload && !loading && error == null && pageUrl != null) onVisited(pageUrl, "")
@@ -427,7 +434,8 @@ class BrowserController(private val activity: Activity, private val app: AppStat
                     v.stopLoading()
                     handler.post { v.destroy() }
                     // There are no tabs on a TV: only same-site windows (or sign-in pages) may replace the page.
-                    if (!app.store.bool(K.BLOCK_POPUPS) || PopupGuard.allowPopup(target, url)) load(target)
+                    val listed = app.store.bool(K.ADBLOCK) && app.ads.blocksPopup(target, url)
+                    if (!listed && (!app.store.bool(K.BLOCK_POPUPS) || PopupGuard.allowPopup(target, url))) load(target)
                     else notePopupBlocked("Đã chặn một cửa sổ quảng cáo")
                 }
                 override fun shouldOverrideUrlLoading(v: WebView, request: WebResourceRequest): Boolean {
@@ -439,6 +447,24 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             resultMsg.sendToTarget()
             return true
         }
+    }
+
+    // ---- Ad filtering ----
+    /** Page URL for filter decisions; read from WebView's network threads. */
+    @Volatile
+    private var filterPageUrl = ""
+
+    /** Hides ad elements with the filter lists' cosmetic rules for this page. */
+    private fun injectCosmetics(view: WebView) {
+        if (!app.store.bool(K.ADBLOCK)) return
+        val page = filterPageUrl.ifEmpty { return }
+        val css = app.ads.cosmeticCss(page)
+        if (css.isEmpty()) return
+        view.evaluateJavascript(
+            "(function(c){var s=document.getElementById('__luna_cos');if(!s){s=document.createElement('style');s.id='__luna_cos';" +
+                "(document.head||document.documentElement).appendChild(s);}s.textContent=c;})(${JSONObject.quote(css)})",
+            null,
+        )
     }
 
     // ---- Pop-up guard ----
