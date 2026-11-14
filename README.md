@@ -195,14 +195,23 @@ Pages are rendered by the Android System WebView and get **no** JavaScript bridg
 
 ## Roadmap
 
-- [ ] More languages and native-speaker review of the existing translations ([how](docs/LOCALIZATION.md)).
-- [ ] Tabs.
-- [ ] Resume position for videos watched outside fullscreen.
-- [ ] Phone remote: reach the address dialog (today use the *Type* tab) and swipe-pad scrolling.
-- [ ] Downloads handling.
+**Next**
+- [ ] Native-speaker review of the translations, then more languages ([how](docs/LOCALIZATION.md)).
+- [ ] Compatibility reports from more TVs and Android versions ([how](docs/COMPATIBILITY.md#reporting-a-device)).
+- [ ] Remember the position of videos watched outside fullscreen too.
+- [ ] Phone remote *touchpad*: drag on the phone to move the pointer, two-finger drag to scroll.
+
+**Later**
+- [ ] Tabs (switch quickly between two or three pages).
+- [ ] Profiles: separate history and favourites per family member.
 - [ ] Per-site settings (desktop / mobile, zoom, pointer mode).
-- [ ] Optional hosting of `luna.txt` for rule updates without a release.
+- [ ] Filter-rule updates without a release: fetch `luna.txt` from this repository's raw file once a day (no server needed).
 - [ ] Emulator-based UI tests for D-pad navigation.
+- [ ] Toolchain upgrades (Android Gradle Plugin 8.13+, Gradle 9, Kotlin 2, newer Compose), one CI-checked step at a time.
+
+**Not planned**
+- A download manager: a TV browser is for watching; use a phone or computer for files.
+- DRM streaming services (Netflix, Disney+, …): a WebView can't provide the hardware DRM they need; use their own apps.
 
 Ideas and bug reports are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 
