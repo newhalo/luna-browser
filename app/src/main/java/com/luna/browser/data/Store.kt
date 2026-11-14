@@ -52,7 +52,21 @@ data class MediaItem(
     val time: Long = 0L,
 )
 
-fun hostOf(url: String): String = Uri.parse(url).host?.removePrefix("www.")?.removePrefix("m.") ?: url
+/**
+ * Makes page titles card-friendly: drops "(3) " notification counters and a trailing
+ * " - YouTube"-style site suffix, and rejects titles that are really just the URL.
+ */
+fun cleanTitle(raw: String, url: String): String {
+    var t = raw.trim().replace(Regex("^\\(\\d+\\)\\s*"), "")
+    val host = hostOf(url)
+    if (t.isEmpty() || t.contains("://") || t.startsWith(host) || t.startsWith("www.")) return ""
+    val name = host.substringBefore('.')
+    val cut = listOf(" - ", " | ", " – ", " — ").maxOf { t.lastIndexOf(it) }
+    if (cut > 0 && t.substring(cut).replace(" ", "").contains(name, ignoreCase = true)) t = t.substring(0, cut).trim()
+    return t
+}
+
+fun hostOf(url: String): String =Uri.parse(url).host?.removePrefix("www.")?.removePrefix("m.") ?: url
 
 /** YouTube video thumbnail for watch / shorts / youtu.be links. */
 fun youtubeThumb(url: String): String? {
@@ -180,8 +194,8 @@ class Store(ctx: Context) {
     // ---- History ----
     fun recordVisit(title: String, url: String) {
         if (!url.startsWith("http")) return
-        val t = title.ifBlank { hostOf(url) }
         val old = history.firstOrNull { it.url == url }
+        val t = cleanTitle(title, url).ifBlank { old?.title ?: hostOf(url) }
         history.removeAll { it.url == url }
         history.add(0, HistoryEntry(t, url, System.currentTimeMillis(), old?.image ?: youtubeThumb(url), old?.snap))
         while (history.size > MAX_HISTORY) history.removeAt(history.size - 1)
@@ -195,7 +209,8 @@ class Store(ctx: Context) {
         writeSites("last", listOf(Site(t, url)))
     }
 
-    fun updateTitle(url: String, title: String) {
+    fun updateTitle(url: String, rawTitle: String) {
+        val title = cleanTitle(rawTitle, url)
         if (title.isBlank()) return
         val i = history.indexOfFirst { it.url == url }
         if (i < 0 || history[i].title == title) return
@@ -257,7 +272,7 @@ class Store(ctx: Context) {
     }
 
     fun continueItems(limit: Int = 12): List<MediaItem> = history.take(limit).map {
-        MediaItem("h:${it.url}", it.title, it.host, it.url, it.art, iconFor(it.host), brandOf(it.host), it.time)
+        MediaItem("h:${it.url}", cleanTitle(it.title, it.url).ifBlank { it.title }, it.host, it.url, it.art, iconFor(it.host), brandOf(it.host), it.time)
     }
 
     fun favoriteItems(): List<MediaItem> = favorites.map {

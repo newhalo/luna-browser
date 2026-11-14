@@ -95,8 +95,8 @@ fun SettingsScreen(app: AppState) {
         Aurora(animated = app.store.bool(K.ANIMATED_BG))
         Box(Modifier.fillMaxSize().background(Bg.copy(alpha = 0.55f)))
         Row(Modifier.fillMaxSize().padding(horizontal = Dim.SafeH, vertical = Dim.SafeV)) {
-            Column(Modifier.width(280.dp).fillMaxHeight().padding(end = 12.dp)) {
-                Txt("Cài đặt", T.display.copy(fontSize = 38.sp), Modifier.padding(bottom = 18.dp))
+            Column(Modifier.width(280.dp).fillMaxHeight().verticalScroll(rememberScrollState()).padding(end = 12.dp, bottom = 12.dp)) {
+                Txt("Cài đặt", T.display.copy(fontSize = 36.sp), Modifier.padding(bottom = 10.dp))
                 categories.forEachIndexed { i, c ->
                     CategoryItem(c, i == selected, if (i == 0) Modifier.focusRequester(firstFr) else Modifier) { selected = i }
                 }
@@ -168,7 +168,7 @@ private fun CategoryItem(c: Cat, selected: Boolean, modifier: Modifier, onFocus:
     // Moving focus onto a category shows its settings immediately — no extra click.
     FocusSurface(
         onClick = onFocus,
-        modifier = modifier.fillMaxWidth().padding(vertical = 4.dp).height(58.dp).onFocusChanged { if (it.isFocused) onFocus() },
+        modifier = modifier.fillMaxWidth().padding(vertical = 3.dp).height(52.dp).onFocusChanged { if (it.isFocused) onFocus() },
         container = if (selected) Accent.copy(alpha = 0.22f) else Glass,
         focusScale = 1.03f,
     ) {

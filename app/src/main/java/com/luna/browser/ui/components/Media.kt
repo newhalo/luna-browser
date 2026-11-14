@@ -57,13 +57,14 @@ import java.util.Calendar
 
 /** Image with crossfade; draws nothing when [model] is null or fails. */
 @Composable
-fun Art(model: Any?, modifier: Modifier = Modifier, scale: ContentScale = ContentScale.Crop) {
+fun Art(model: Any?, modifier: Modifier = Modifier, scale: ContentScale = ContentScale.Crop, onLoaded: () -> Unit = {}) {
     if (model == null) return
     AsyncImage(
         model = ImageRequest.Builder(LocalContext.current).data(model).crossfade(250).build(),
         contentDescription = null,
         contentScale = scale,
         modifier = modifier,
+        onSuccess = { onLoaded() },
     )
 }
 
@@ -124,11 +125,16 @@ fun Backdrop(art: Any?, animated: Boolean = true) {
 /** Site icon: favicon when we have one, otherwise a lettered tile. */
 @Composable
 fun SiteIcon(title: String, icon: Any?, size: Dp, modifier: Modifier = Modifier) {
+    // The letter tile stays visible until the favicon has actually loaded — no blank white squares.
+    var loaded by remember(icon) { mutableStateOf(false) }
     Box(modifier.size(size)) {
         LetterTile(title, size)
         if (icon != null) {
-            Box(Modifier.size(size).clip(RoundedCornerShape(size / 4)).background(Color.White), contentAlignment = Alignment.Center) {
-                Art(icon, Modifier.size(size * 0.72f), ContentScale.Fit)
+            Box(
+                Modifier.size(size).clip(RoundedCornerShape(size / 4)).background(if (loaded) Color.White else Color.Transparent),
+                contentAlignment = Alignment.Center,
+            ) {
+                Art(icon, Modifier.size(size * 0.72f), ContentScale.Fit) { loaded = true }
             }
         }
     }
