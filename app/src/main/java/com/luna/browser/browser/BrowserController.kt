@@ -11,6 +11,7 @@ import android.os.Looper
 import android.os.Message
 import android.os.SystemClock
 import android.view.InputDevice
+import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.PixelCopy
@@ -931,6 +932,7 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
             resumeTried = key
             val saved = app.store.resumeFor(u)
             val delta = saved?.let { ResumeRules.restoreDelta(it, s.position, s.duration) }
+            Log.d("LunaResume", "first state key=$key pos=${s.position} dur=${s.duration} saved=${saved?.pos}/${saved?.dur} delta=$delta")
             if (saved != null && delta != null) {
                 val js = "b.currentTime=Math.max(0,Math.min(isFinite(b.duration)?b.duration:1e9,b.currentTime+($delta)));"
                 runVideo(js, "seek", delta)
