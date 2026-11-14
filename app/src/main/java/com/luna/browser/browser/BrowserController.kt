@@ -35,6 +35,8 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.webkit.WebViewCompat
+import androidx.webkit.WebViewFeature
 import com.luna.browser.AppState
 import com.luna.browser.data.AdBlocker
 import com.luna.browser.data.K
@@ -135,6 +137,10 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         baseUa = def.replace("; wv", "").replace(Regex("Version/[\\d.]+ "), "").replace(" Mobile", "")
         desktopUa = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) $chrome Safari/537.36"
 
+        // Debug builds only: lets Chrome DevTools on a PC (over adb) inspect pages while testing on the TV.
+        if ((activity.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
+            WebView.setWebContentsDebuggingEnabled(true)
+        }
         CookieManager.getInstance().setAcceptCookie(true)
         webView.apply {
             setBackgroundColor(Color.parseColor("#0B0D12"))
@@ -271,7 +277,24 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     private val client = object : WebViewClient() {
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
             val scheme = request.url.scheme ?: return false
-            return scheme != "http" && scheme != "https" && scheme != "about" && scheme != "file" && scheme != "data" && scheme != "blob"
+            if (scheme != "http" && scheme != "https" && scheme != "about" && scheme != "file" && scheme != "data" && scheme != "blob") return true
+            if (request.isForMainFrame && app.store.bool(K.BLOCK_POPUPS)) {
+                val target = request.url.toString()
+                // Click-hijack: the page swaps itself for an ad network.
+                if (app.store.bool(K.ADBLOCK) && app.ads.shouldBlock(request.url)) {
+                    notePopupBlocked("Đã chặn chuyển hướng tới trang quảng cáo")
+                    return true
+                }
+                // A page that sends itself to another site on its own, without the viewer pressing anything.
+                if (!request.hasGesture() && !request.isRedirect && url.startsWith("http") &&
+                    !PopupGuard.sameSite(target, url) && !PopupGuard.isAuth(target) &&
+                    SystemClock.uptimeMillis() - pageStartedAt > 2500
+                ) {
+                    notePopupBlocked("Đã chặn trang tự chuyển sang trang khác")
+                    return true
+                }
+            }
+            return false
         }
 
         override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
@@ -282,6 +305,8 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         }
 
         override fun onPageStarted(view: WebView, pageUrl: String?, favicon: Bitmap?) {
+            pageStartedAt = SystemClock.uptimeMillis()
+            if (!docStartScript && app.store.bool(K.BLOCK_POPUPS)) view.evaluateJavascript(PopupGuard.OVERLAY_JS, null)
             error = null
             loading = true
             progress = 0.05f
@@ -298,6 +323,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             syncNav()
             if (error == null && pageUrl != null) onVisited(pageUrl, title)
             if (app.store.bool(K.ADBLOCK)) view.evaluateJavascript(AdBlocker.COSMETIC_JS, null)
+            if (app.store.bool(K.BLOCK_POPUPS)) view.evaluateJavascript(PopupGuard.OVERLAY_JS, null)
         }
 
         override fun doUpdateVisitedHistory(view: WebView, pageUrl: String?, isReload: Boolean) {
@@ -386,15 +412,21 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         }
 
         override fun onCreateWindow(view: WebView, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message): Boolean {
-            if (!isUserGesture) return false
+            if (!isUserGesture) {
+                if (app.store.bool(K.BLOCK_POPUPS)) notePopupBlocked("Đã chặn một cửa sổ bật lên")
+                return false
+            }
             val temp = WebView(activity)
             temp.webViewClient = object : WebViewClient() {
+                private var done = false
                 private fun redirect(v: WebView, target: String?) {
-                    if (target != null && target != "about:blank") {
-                        v.stopLoading()
-                        load(target)
-                        handler.post { v.destroy() }
-                    }
+                    if (done || target == null || target == "about:blank") return
+                    done = true
+                    v.stopLoading()
+                    handler.post { v.destroy() }
+                    // There are no tabs on a TV: only same-site windows (or sign-in pages) may replace the page.
+                    if (!app.store.bool(K.BLOCK_POPUPS) || PopupGuard.allowPopup(target, url)) load(target)
+                    else notePopupBlocked("Đã chặn một cửa sổ quảng cáo")
                 }
                 override fun shouldOverrideUrlLoading(v: WebView, request: WebResourceRequest): Boolean {
                     redirect(v, request.url.toString()); return true
@@ -404,6 +436,20 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             (resultMsg.obj as WebView.WebViewTransport).webView = temp
             resultMsg.sendToTarget()
             return true
+        }
+    }
+
+    // ---- Pop-up guard ----
+    private var pageStartedAt = 0L
+    private var docStartScript = false
+    private var lastPopupToast = 0L
+
+    private fun notePopupBlocked(msg: String) {
+        app.ads.countBlocked()
+        val now = SystemClock.uptimeMillis()
+        if (now - lastPopupToast > 4000) {
+            lastPopupToast = now
+            app.toast(msg)
         }
     }
 
@@ -740,5 +786,12 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
     init {
         webView.webViewClient = client
         webView.webChromeClient = chrome
+        // Run the overlay sweeper before any page script, so click-catchers never get a first click.
+        if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
+            runCatching {
+                WebViewCompat.addDocumentStartJavaScript(webView, PopupGuard.OVERLAY_JS, setOf("*"))
+                docStartScript = true
+            }
+        }
     }
 }

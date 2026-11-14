@@ -65,6 +65,11 @@ class AdBlocker(private val ctx: Context) {
         return h
     }
 
+    /** Counts a blocked pop-up / redirect in the "blocked" statistic. */
+    fun countBlocked() {
+        main.post { blockedCount = counter.incrementAndGet() }
+    }
+
     fun shouldBlock(uri: Uri): Boolean {
         var h = uri.host?.lowercase() ?: return false
         val set = hosts
