@@ -38,6 +38,8 @@ class MainActivity : ComponentActivity() {
         app.registerNetwork()
         if (!handleIntent(intent)) app.launch()
         setContent { LunaApp(app) }
+        // Screens paint their own opaque background; drop the window's to save a full-screen pass.
+        window.decorView.post { window.setBackgroundDrawable(null) }
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -56,6 +58,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        com.luna.browser.ui.components.Interaction.touch()
         if (app.handleKey(event)) return true
         return super.dispatchKeyEvent(event)
     }

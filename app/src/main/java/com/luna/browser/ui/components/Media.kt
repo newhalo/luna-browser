@@ -26,6 +26,8 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.RadialGradientShader
 import androidx.compose.ui.unit.IntSize
@@ -66,12 +68,19 @@ import java.util.Calendar
 
 /** Image with crossfade; draws nothing when [model] is null or fails. */
 @Composable
-fun Art(model: Any?, modifier: Modifier = Modifier, scale: ContentScale = ContentScale.Crop, onLoaded: () -> Unit = {}) {
+fun Art(
+    model: Any?,
+    modifier: Modifier = Modifier,
+    scale: ContentScale = ContentScale.Crop,
+    alpha: Float = 1f,
+    onLoaded: () -> Unit = {},
+) {
     if (model == null) return
     AsyncImage(
         model = ImageRequest.Builder(LocalContext.current).data(model).crossfade(250).build(),
         contentDescription = null,
         contentScale = scale,
+        alpha = alpha,
         modifier = modifier,
         onSuccess = { onLoaded() },
     )
@@ -95,18 +104,24 @@ private val lights = listOf(
  * Static when reduced motion or the setting is off.
  */
 @Composable
-fun Aurora(modifier: Modifier = Modifier, animated: Boolean = true) {
+fun Aurora(modifier: Modifier = Modifier, animated: Boolean = true, dim: Float = 0f) {
     val still = LocalReduceMotion.current || !animated
-    // The drift is so slow (22 s per sweep) that ~15 updates a second look identical to 60, while
-    // leaving the TV's UI thread and GPU idle most of the time.
+    // The drift is so slow (22 s per sweep) that ~15 updates a second look identical to 60.
+    // Every update redraws the whole frame on this GPU, so the drift also pauses while the viewer
+    // is pressing keys: navigation gets the GPU to itself, the light resumes when idle.
     val t = remember { mutableFloatStateOf(0.5f) }
     if (!still) {
         LaunchedEffect(Unit) {
-            val start = System.nanoTime()
+            var phaseMs = 11_000L
+            var last = System.nanoTime()
             while (true) {
-                val phase = ((System.nanoTime() - start) / 1_000_000L % 44_000L) / 22_000f
-                t.floatValue = if (phase <= 1f) phase else 2f - phase
-                delay(66)
+                val now = System.nanoTime()
+                val idle = Interaction.idleFor() > 2_500
+                if (idle) phaseMs += (now - last) / 1_000_000L
+                last = now
+                val phase = (phaseMs % 44_000L) / 22_000f
+                if (idle) t.floatValue = if (phase <= 1f) phase else 2f - phase
+                delay(if (idle) 66 else 250)
             }
         }
     }
@@ -125,6 +140,12 @@ fun Aurora(modifier: Modifier = Modifier, animated: Boolean = true) {
                 paint.shader = RadialGradientShader(c, l.r * k, listOf(l.color, Color.Transparent))
                 canvas.drawCircle(c, l.r * k, paint)
             }
+            if (dim > 0f) {
+                // Darkening baked into the small bitmap instead of another full-screen layer.
+                paint.shader = null
+                paint.color = Bg.copy(alpha = dim)
+                canvas.drawRect(0f, 0f, 160f, 90f, paint)
+            }
             drawImage(
                 bitmap,
                 dstSize = IntSize(size.width.toInt(), size.height.toInt()),
@@ -134,25 +155,58 @@ fun Aurora(modifier: Modifier = Modifier, animated: Boolean = true) {
     )
 }
 
+/**
+ * The two cinematic scrims (dark on the left for the title, dark at the bottom for the rows),
+ * pre-multiplied into one small alpha bitmap so the GPU blends a single full-screen layer.
+ */
+private val scrim: ImageBitmap by lazy {
+    val w = 96
+    val h = 54
+    val bmp = android.graphics.Bitmap.createBitmap(w, h, android.graphics.Bitmap.Config.ARGB_8888)
+    fun ramp(x: Float, stops: List<Pair<Float, Float>>): Float {
+        for (i in 1 until stops.size) {
+            val (x0, a0) = stops[i - 1]
+            val (x1, a1) = stops[i]
+            if (x <= x1) return a0 + (a1 - a0) * ((x - x0) / (x1 - x0)).coerceIn(0f, 1f)
+        }
+        return stops.last().second
+    }
+    val hStops = listOf(0f to 0.96f, 0.5f to 0.6f, 1f to 0.15f)
+    val vStops = listOf(0f to 0.5f, 0.3f to 0f, 0.62f to 0.85f, 1f to 1f)
+    val rgb = Bg.toArgb() and 0x00FFFFFF
+    for (y in 0 until h) for (x in 0 until w) {
+        val a1 = ramp(x / (w - 1f), hStops)
+        val a2 = ramp(y / (h - 1f), vStops)
+        val a = 1f - (1f - a1) * (1f - a2) // two layers stacked
+        bmp.setPixel(x, y, ((a * 255).toInt().coerceIn(0, 255) shl 24) or rgb)
+    }
+    bmp.asImageBitmap()
+}
+
 /** Full-screen backdrop: the focused item's artwork over the aurora, with cinematic scrims. */
 @Composable
 fun Backdrop(art: () -> Any?, animated: Boolean = true) {
     Box(Modifier.fillMaxSize()) {
         Aurora(animated = animated)
         Crossfade(targetState = art(), animationSpec = tween(ms(450)), label = "backdrop") { a ->
-            if (a != null) Art(a, Modifier.fillMaxSize().alpha(0.62f))
+            // alpha applied while drawing the image — Modifier.alpha would render it offscreen first
+            if (a != null) Art(a, Modifier.fillMaxSize(), alpha = 0.62f)
         }
-        Box(
-            Modifier.fillMaxSize().background(
-                Brush.horizontalGradient(0f to Bg.copy(alpha = 0.96f), 0.5f to Bg.copy(alpha = 0.6f), 1f to Bg.copy(alpha = 0.15f)),
-            ),
-        )
-        Box(
-            Modifier.fillMaxSize().background(
-                Brush.verticalGradient(0f to Bg.copy(alpha = 0.5f), 0.3f to Color.Transparent, 0.62f to Bg.copy(alpha = 0.85f), 1f to Bg),
-            ),
+        Spacer(
+            Modifier.fillMaxSize().drawBehind {
+                drawImage(scrim, dstSize = IntSize(size.width.toInt(), size.height.toInt()), filterQuality = FilterQuality.Low)
+            },
         )
     }
+}
+
+/** Last remote-control input, so ambient animation can step aside while the viewer navigates. */
+object Interaction {
+    @Volatile
+    var lastInputAt = 0L
+
+    fun touch() { lastInputAt = android.os.SystemClock.uptimeMillis() }
+    fun idleFor() = android.os.SystemClock.uptimeMillis() - lastInputAt
 }
 
 /** Site icon: favicon when we have one, otherwise a lettered tile. */

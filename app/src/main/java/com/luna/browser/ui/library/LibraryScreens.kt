@@ -59,8 +59,7 @@ import com.luna.browser.ui.theme.T
 @Composable
 private fun LibraryFrame(app: AppState, content: @Composable ColumnScope.() -> Unit) {
     Box(Modifier.fillMaxSize()) {
-        Aurora(animated = app.store.bool(K.ANIMATED_BG))
-        Box(Modifier.fillMaxSize().background(Bg.copy(alpha = 0.6f)))
+        Aurora(animated = app.store.bool(K.ANIMATED_BG), dim = 0.6f)
         Column(Modifier.fillMaxSize().padding(horizontal = Dim.SafeH, vertical = Dim.SafeV)) { content() }
     }
 }

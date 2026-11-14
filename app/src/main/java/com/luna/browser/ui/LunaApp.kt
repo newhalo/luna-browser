@@ -47,7 +47,9 @@ fun LunaApp(app: AppState) {
         var shown by remember { mutableStateOf(false) }
         LaunchedEffect(Unit) { shown = true }
         val alpha by androidx.compose.animation.core.animateFloatAsState(if (shown) 1f else 0f, tween(ms(220)), label = "enter")
-        Box(Modifier.fillMaxSize().background(Bg).graphicsLayer { this.alpha = alpha }) {
+        // No background here: every screen paints its own opaque one (an extra full-screen
+        // layer costs this TV's GPU ~5 ms per frame).
+        Box(Modifier.fillMaxSize().graphicsLayer { this.alpha = alpha }) {
             when (app.screen) {
                 Screen.Home -> HomeScreen(app)
                 Screen.Browser -> BrowserScreen(app)

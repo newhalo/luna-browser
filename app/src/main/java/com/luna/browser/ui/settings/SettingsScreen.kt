@@ -94,8 +94,7 @@ fun SettingsScreen(app: AppState) {
     LaunchedEffect(Unit) { runCatching { firstFr.requestFocus() } }
 
     Box(Modifier.fillMaxSize()) {
-        Aurora(animated = app.store.bool(K.ANIMATED_BG))
-        Box(Modifier.fillMaxSize().background(Bg.copy(alpha = 0.55f)))
+        Aurora(animated = app.store.bool(K.ANIMATED_BG), dim = 0.55f)
         Row(Modifier.fillMaxSize().padding(horizontal = Dim.SafeH, vertical = Dim.SafeV)) {
             Column(Modifier.width(280.dp).fillMaxHeight().verticalScroll(rememberScrollState()).padding(end = 12.dp, bottom = 12.dp)) {
                 Txt("Cài đặt", T.display.copy(fontSize = 36.sp), Modifier.padding(bottom = 10.dp))
