@@ -74,6 +74,8 @@ dependencies {
     // Installs the baseline profiles shipped by Compose & AndroidX, so ART compiles the hot startup
     // and scrolling code ahead of time instead of interpreting it on the TV.
     implementation("androidx.profileinstaller:profileinstaller:1.3.1")
+    // QR code for pairing the phone remote (encoder only, no camera code).
+    implementation("com.google.zxing:core:3.5.3")
 
     testImplementation("junit:junit:4.13.2")
     // The Android SDK stubs have no org.json implementation, which unit tests need.

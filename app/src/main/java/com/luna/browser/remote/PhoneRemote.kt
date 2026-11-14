@@ -225,6 +225,7 @@ button.alt{background:#262b45;color:#f1f3fb}p{margin:0 0 10px;color:#aab0cc}#msg
 <button id="open">{{ph_open}}</button><button id="search" class="alt">{{ph_search}}</button><button id="type" class="alt">{{ph_type}}</button><button id="enter" class="alt">{{ph_enter}}</button></div>
 </div><div id="msg"></div></main><script>
 var L=__LABELS__,pin=null;try{pin=localStorage.getItem('luna.pin')}catch(e){}
+var qr=(location.hash||'').match(/pin=(\d{1,8})/);if(qr){pin=qr[1];try{history.replaceState(null,'',location.pathname)}catch(e){}}
 function $(i){return document.getElementById(i)}
 function say(t,e){var m=$('msg');m.textContent=t||'';m.className=e?'err':''}
 function call(act,text){var b='pin='+encodeURIComponent(pin||'')+'&act='+act+'&text='+encodeURIComponent(text||'');
@@ -235,7 +236,7 @@ else if(j.error==='locked')say(L.ph_locked,1);else if(j.error==='nofield')say(L.
 function send(act){var t=$('text').value;if(!t.trim())return;say('...');call(act,t).then(result).catch(function(){say('?',1)})}
 $('go').onclick=function(){pin=$('pin').value.trim();call('ping','').then(function(j){if(j.ok){try{localStorage.setItem('luna.pin',pin)}catch(e){}show(true);say('')}else result(j)})};
 $('open').onclick=function(){send('open')};$('search').onclick=function(){send('search')};$('type').onclick=function(){send('type')};$('enter').onclick=function(){send('enter')};
-if(pin){call('ping','').then(function(j){if(j.ok)show(true);else{show(false);result(j)}}).catch(function(){show(false)})}else show(false);
+if(pin){call('ping','').then(function(j){if(j.ok){try{localStorage.setItem('luna.pin',pin)}catch(e){}show(true)}else{show(false);result(j)}}).catch(function(){show(false)})}else show(false);
 </script></body></html>""".replace("__LABELS__", "{{labels}}")
     }
 }

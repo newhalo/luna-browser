@@ -11,6 +11,7 @@ data. Each remains under its own license.
 | [Kotlin](https://kotlinlang.org/) standard library and [kotlinx.coroutines](https://github.com/Kotlin/kotlinx.coroutines) | Apache-2.0 |
 | [Coil](https://coil-kt.github.io/coil/) (image loading) | Apache-2.0 |
 | Material Icons (Google) | Apache-2.0 |
+| [ZXing](https://github.com/zxing/zxing) core (QR code encoder for phone pairing) | Apache-2.0 |
 
 Test-only: [JUnit 4](https://junit.org/junit4/) (EPL-1.0) — not shipped in the APK.
 

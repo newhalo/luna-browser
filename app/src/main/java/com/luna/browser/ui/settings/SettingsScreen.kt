@@ -4,6 +4,7 @@ import android.os.Build
 import android.webkit.CookieManager
 import android.webkit.WebStorage
 import android.webkit.WebView
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,6 +49,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -61,6 +63,7 @@ import com.luna.browser.data.searchEnginesFor
 import com.luna.browser.ui.components.Aurora
 import com.luna.browser.ui.components.FocusSurface
 import com.luna.browser.ui.components.Txt
+import com.luna.browser.ui.components.qrBitmap
 import com.luna.browser.ui.theme.Accent
 import com.luna.browser.ui.theme.Bg
 import com.luna.browser.ui.theme.Danger
@@ -79,6 +82,7 @@ private data class Toggle(val key: String, val title: String, val desc: String) 
 private data class Choice(val key: String, val title: String, val desc: String, val options: List<Pair<String, String>>) : SRow
 private data class Action(val title: String, val desc: String, val value: String = "", val danger: Boolean = false, val confirm: Boolean = false, val run: () -> Unit) : SRow
 private data class Info(val title: String, val value: String) : SRow
+private data class Qr(val text: String, val caption: String) : SRow
 
 private class Cat(@StringRes val name: Int, val icon: ImageVector)
 
@@ -148,6 +152,7 @@ fun SettingsScreen(app: AppState) {
                                 }
                             }
                             is Info -> InfoRow(r.title, r.value)
+                            is Qr -> QrRow(r.text, r.caption)
                         }
                     }
                     if (selected == AD_BLOCKING) {
@@ -233,6 +238,18 @@ private fun InfoRow(title: String, value: String) {
     }
 }
 
+@Composable
+private fun QrRow(text: String, caption: String) {
+    val qr = remember(text) { qrBitmap(text) }
+    Row(Modifier.fillMaxWidth().padding(horizontal = 22.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+        Image(
+            qr, null, Modifier.size(200.dp).clip(RoundedCornerShape(12.dp)).background(Color.White),
+            filterQuality = FilterQuality.None,
+        )
+        Txt(caption, T.body, Modifier.padding(start = 24.dp).weight(1f), color = TextSecondary, maxLines = 4)
+    }
+}
+
 private fun rows(category: Int, app: AppState): List<SRow> {
     val s = app.store
     return when (category) {
@@ -269,14 +286,19 @@ private fun rows(category: Int, app: AppState): List<SRow> {
             Info(app.s(R.string.info_back), app.s(R.string.info_back_v)),
             Info(app.s(R.string.info_pp), app.s(R.string.info_pp_v)),
         )
-        PHONE -> listOf(
-            Toggle(K.PHONE, app.s(R.string.set_phone), app.s(R.string.set_phone_d)),
-            Info(app.s(R.string.set_phone_addr), app.phoneAddress() ?: app.s(R.string.set_phone_none)),
-            Info(app.s(R.string.set_phone_pin), s.str(K.PHONE_PIN)),
-            Action(app.s(R.string.set_phone_newpin), app.s(R.string.set_phone_newpin_d)) {
-                s.newPin(); app.toast(R.string.toast_pin_changed)
-            },
-        )
+        PHONE -> {
+            val address = app.phoneAddress()
+            listOfNotNull(
+                Toggle(K.PHONE, app.s(R.string.set_phone), app.s(R.string.set_phone_d)),
+                // The PIN rides in the #fragment: it never reaches the server log and the page strips it.
+                address?.let { Qr("$it/#pin=${s.str(K.PHONE_PIN)}", app.s(R.string.set_phone_qr)) },
+                Info(app.s(R.string.set_phone_addr), address ?: app.s(R.string.set_phone_none)),
+                Info(app.s(R.string.set_phone_pin), s.str(K.PHONE_PIN)),
+                Action(app.s(R.string.set_phone_newpin), app.s(R.string.set_phone_newpin_d)) {
+                    s.newPin(); app.toast(R.string.toast_pin_changed)
+                },
+            )
+        }
         6 -> listOf(
             Toggle(K.THIRD_PARTY, app.s(R.string.set_3p), app.s(R.string.set_3p_d)),
             Action(app.s(R.string.set_clear_hist), app.s(R.string.set_clear_hist_d), danger = true, confirm = true) {

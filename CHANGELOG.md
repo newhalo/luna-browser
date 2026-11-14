@@ -12,8 +12,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   bar. Videos that are almost finished are forgotten; a different video on the same page (an ad, a changed
   episode) is never seeked.
 - **Phone remote**: a small LAN web server (only while Luna is on screen) lets a phone send an address, a search or
-  text for the focused page field. PIN-paired, rate-limited, web pages only. *Settings → Phone remote* shows the
-  address and PIN and can issue a new PIN. `ResumeRulesTest`, `PhoneRemoteTest`.
+  text for the focused page field. PIN-paired, rate-limited, web pages only. *Settings → Phone remote* shows a QR
+  code (scan it to open the page already paired), the address and the PIN, and can issue a new PIN. `ResumeRulesTest`, `PhoneRemoteTest`.
 - **Localisation**: all UI text moved to string resources. Ten languages — English (default), Vietnamese,
   Spanish, French, German, Portuguese, Russian, Japanese, Korean, Simplified Chinese. The UI follows the TV's
   system language; *Settings → General → Language* overrides it live. Android 13+ per-app language picker supported.
