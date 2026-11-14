@@ -681,13 +681,24 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     }
 
     // ---- Video ----
-    private fun videoJs(action: String) = """(function(){var vs=document.getElementsByTagName('video'),b=null,ba=-1;
+    /**
+     * Uses the in-page bridge (reaches videos inside cross-site player iframes) when present,
+     * otherwise acts on the top page's own video with [action].
+     */
+    private fun videoJs(action: String, cmd: String, value: Int) = """(function(){if(window.__lunaCmd)return window.__lunaCmd('$cmd',$value);
+var vs=document.getElementsByTagName('video'),b=null,ba=-1;
 for(var i=0;i<vs.length;i++){var r=vs[i].getBoundingClientRect(),a=r.width*r.height;if(a>ba){ba=a;b=vs[i];}}
 if(!b)return null;$action
 return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyState<3&&!b.paused&&!b.ended),!!b.error];})()"""
 
-    private fun runVideo(action: String, after: (VideoState) -> VideoState = { it }, done: (VideoState) -> Unit = {}) {
-        webView.evaluateJavascript(videoJs(action)) { r ->
+    private fun runVideo(
+        action: String,
+        cmd: String = "state",
+        value: Int = 0,
+        after: (VideoState) -> VideoState = { it },
+        done: (VideoState) -> Unit = {},
+    ) {
+        webView.evaluateJavascript(videoJs(action, cmd, value)) { r ->
             val s = parse(r)?.let(after)
             if (s != null) { video = s; done(s) }
         }
@@ -713,14 +724,15 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
 
     private fun togglePlay(force: Boolean? = null) {
         val (js, paused) = when (force) { true -> playJs to false; false -> pauseJs to true; null -> toggleJs to null }
-        runVideo(js, after = { s -> s.copy(paused = paused ?: !s.paused) }) { s ->
+        val cmd = when (force) { true -> "play"; false -> "pause"; null -> "toggle" }
+        runVideo(js, cmd, 0, after = { s -> s.copy(paused = paused ?: !s.paused) }) { s ->
             flash(if (s.paused) "Tạm dừng" else "Đang phát", if (s.paused) Icons.Rounded.Pause else Icons.Rounded.PlayArrow)
         }
     }
 
     private fun seek(seconds: Int) {
         val js = "b.currentTime=Math.max(0,Math.min(isFinite(b.duration)?b.duration:1e9,b.currentTime+($seconds)));"
-        runVideo(js) { flash(if (seconds > 0) "Tua tới ${seconds} giây" else "Tua lùi ${-seconds} giây") }
+        runVideo(js, "seek", seconds) { flash(if (seconds > 0) "Tua tới ${seconds} giây" else "Tua lùi ${-seconds} giây") }
     }
 
     private fun mediaKey(code: Int) {
@@ -800,6 +812,7 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
         if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
             runCatching {
                 WebViewCompat.addDocumentStartJavaScript(webView, PopupGuard.OVERLAY_JS, setOf("*"))
+                WebViewCompat.addDocumentStartJavaScript(webView, PopupGuard.VIDEO_BRIDGE_JS, setOf("*"))
                 docStartScript = true
             }
         }

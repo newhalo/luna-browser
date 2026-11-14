@@ -37,6 +37,24 @@ object PopupGuard {
     fun allowPopup(target: String, current: String) = sameSite(target, current) || isAuth(target)
 
     /**
+     * Injected into every frame at document start. Lets the remote control a video that lives in a
+     * cross-site player iframe (common on film sites): the top page relays commands down to every
+     * frame with postMessage, and the frame that owns the biggest video reports its state back up.
+     * State array: [paused, position, duration, buffering, failed, area].
+     */
+    const val VIDEO_BRIDGE_JS = """(function(){if(window.__lunaBridge)return;window.__lunaBridge=1;
+function best(){var vs=document.getElementsByTagName('video'),b=null,ba=-1;for(var i=0;i<vs.length;i++){var r=vs[i].getBoundingClientRect(),a=r.width*r.height;if(a>ba){ba=a;b=vs[i];}}return b;}
+function st(b){var r=b.getBoundingClientRect();return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyState<3&&!b.paused&&!b.ended),!!b.error,r.width*r.height];}
+function act(b,a,v){if(a==='toggle'){if(b.paused){var p=b.play();if(p&&p.catch)p.catch(function(){});}else b.pause();}
+else if(a==='play'){var q=b.play();if(q&&q.catch)q.catch(function(){});}else if(a==='pause'){b.pause();}
+else if(a==='seek'){b.currentTime=Math.max(0,Math.min(isFinite(b.duration)?b.duration:1e9,b.currentTime+v));}}
+function relay(m){for(var i=0;i<window.frames.length;i++){try{window.frames[i].postMessage(m,'*');}catch(e){}}}
+window.__lunaCmd=function(a,v){var b=best();var s=null;if(b){act(b,a,v);s=st(b);}relay({__luna:1,a:a,v:v});return s||window.__lunaRemote||null;};
+window.addEventListener('message',function(e){var d=e.data;if(!d||!d.__luna)return;
+if(d.a){var b=best();if(b){act(b,d.a,d.v);try{window.top.postMessage({__luna:1,s:st(b)},'*');}catch(x){}}relay(d);}
+else if(d.s&&window===window.top){var c=window.__lunaRemote;if(!c||d.s[5]>=c[5]*0.5)window.__lunaRemote=d.s;}});})()"""
+
+    /**
      * Injected at document start: removes invisible full-screen click-catchers (blank iframes or
      * transparent layers with a huge z-index) that ad scripts lay over the video player.
      */
