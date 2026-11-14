@@ -69,7 +69,7 @@ dependencies {
     implementation("androidx.activity:activity-compose:1.9.0")
     implementation("androidx.core:core-ktx:1.13.1")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
-    implementation("io.coil-kt:coil-compose:2.6.0")
+    implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("androidx.webkit:webkit:1.11.0")
     // Installs the baseline profiles shipped by Compose & AndroidX, so ART compiles the hot startup
     // and scrolling code ahead of time instead of interpreting it on the TV.
