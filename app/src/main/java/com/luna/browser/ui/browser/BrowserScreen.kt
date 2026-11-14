@@ -102,7 +102,7 @@ fun BrowserScreen(app: AppState) {
             modifier = Modifier.fillMaxSize().onSizeChanged { b.onViewSize(it.width, it.height) },
         )
 
-        if (b.cursorMode && b.customView == null && !b.toolbarVisible && b.error == null) CursorOverlay(b)
+        if (b.cursorMode && b.customView == null && !b.toolbarVisible && b.error == null && !b.capturing) CursorOverlay(b)
 
         // Slim progress bar
         if (b.loading && b.error == null && b.customView == null) {
@@ -113,7 +113,7 @@ fun BrowserScreen(app: AppState) {
         }
 
         b.error?.let { ErrorPanel(app, it) }
-        if (b.customView != null) FullscreenLayer(b)
+        if (b.customView != null) FullscreenLayer(b) else OsdFlash(b)
         Toolbar(app, b)
     }
 }
@@ -175,7 +175,7 @@ private fun Toolbar(app: AppState, b: BrowserController) {
             Row(
                 Modifier.fillMaxWidth()
                     .clip(RoundedCornerShape(26.dp))
-                    .background(Color(0xF2101420))
+                    .background(Color(0xE6121622))
                     .border(1.dp, Outline, RoundedCornerShape(26.dp))
                     .padding(10.dp)
                     .onPreviewKeyEvent { e ->
@@ -185,10 +185,10 @@ private fun Toolbar(app: AppState, b: BrowserController) {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconLabelButton("Back", Icons.AutoMirrored.Rounded.ArrowBack, { b.goBack() }, enabled = b.canGoBack)
-                IconLabelButton("Forward", Icons.AutoMirrored.Rounded.ArrowForward, { b.goForward() }, enabled = b.canGoForward)
-                IconLabelButton("Refresh", Icons.Rounded.Refresh, { b.reload(); b.hideToolbar() })
-                IconLabelButton("Home", Icons.Rounded.Home, { app.goHome() })
+                IconLabelButton("Quay lại", Icons.AutoMirrored.Rounded.ArrowBack, { b.goBack() }, enabled = b.canGoBack)
+                IconLabelButton("Tiến", Icons.AutoMirrored.Rounded.ArrowForward, { b.goForward() }, enabled = b.canGoForward)
+                IconLabelButton("Tải lại", Icons.Rounded.Refresh, { b.reload(); b.hideToolbar() })
+                IconLabelButton("Trang chủ", Icons.Rounded.Home, { app.goHome() })
                 FocusSurface(
                     onClick = { b.hideToolbar(); app.openAddress(b.url) },
                     modifier = Modifier.weight(1f).height(66.dp).focusRequester(addressFr),
@@ -197,15 +197,15 @@ private fun Toolbar(app: AppState, b: BrowserController) {
                     Row(Modifier.padding(horizontal = 20.dp).align(Alignment.CenterStart), verticalAlignment = Alignment.CenterVertically) {
                         Icon(if (b.url.startsWith("https")) Icons.Rounded.Lock else Icons.Rounded.Search, null, tint = TextSecondary, modifier = Modifier.size(22.dp))
                         Column(Modifier.padding(start = 12.dp)) {
-                            Txt(if (b.url.isEmpty()) "Search or enter address" else hostOf(b.url), T.label)
-                            Txt(b.title.ifBlank { "Press OK to type an address" }, T.caption)
+                            Txt(if (b.url.isEmpty()) "Tìm kiếm hoặc nhập địa chỉ" else hostOf(b.url), T.label)
+                            Txt(b.title.ifBlank { "Bấm OK để nhập địa chỉ khác" }, T.caption)
                         }
                     }
                 }
                 val fav = app.store.isFavorite(b.url)
-                IconLabelButton(if (fav) "Saved" else "Save", if (fav) Icons.Rounded.Star else Icons.Rounded.StarBorder, { b.toggleFavorite() }, highlighted = fav)
-                IconLabelButton(if (b.cursorMode) "Cursor" else "Focus", if (b.cursorMode) Icons.Rounded.Mouse else Icons.Rounded.TouchApp, { b.toggleMode() })
-                IconLabelButton("Settings", Icons.Rounded.Settings, { app.navigate(Screen.Settings) })
+                IconLabelButton(if (fav) "Đã lưu" else "Lưu", if (fav) Icons.Rounded.Star else Icons.Rounded.StarBorder, { b.toggleFavorite() }, highlighted = fav)
+                IconLabelButton(if (b.cursorMode) "Con trỏ" else "Liên kết", if (b.cursorMode) Icons.Rounded.Mouse else Icons.Rounded.TouchApp, { b.toggleMode() })
+                IconLabelButton("Cài đặt", Icons.Rounded.Settings, { app.navigate(Screen.Settings) })
             }
         }
     }
@@ -229,9 +229,9 @@ private fun ErrorPanel(app: AppState, err: PageError) {
             Txt(err.message, T.body.copy(color = TextSecondary), maxLines = 3, align = TextAlign.Center, modifier = Modifier.width(560.dp), color = TextSecondary)
             Spacer(Modifier.height(28.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
-                TvButton("Try again", { b.retry() }, Modifier.focusRequester(fr), Icons.Rounded.Refresh, primary = true)
-                TvButton("Change address", { app.openAddress(b.url) }, icon = Icons.Rounded.Search)
-                TvButton("Home", { app.goHome() }, icon = Icons.Rounded.Home)
+                TvButton("Thử lại", { b.retry() }, Modifier.focusRequester(fr), Icons.Rounded.Refresh, primary = true)
+                TvButton("Đổi địa chỉ", { app.openAddress(b.url) }, icon = Icons.Rounded.Search)
+                TvButton("Trang chủ", { app.goHome() }, icon = Icons.Rounded.Home)
             }
         }
     }
@@ -276,7 +276,7 @@ private fun BoxScope.VideoOverlay(b: BrowserController) {
             verticalAlignment = Alignment.CenterVertically,
         ) {
             CircularProgressIndicator(color = Accent, strokeWidth = 3.dp, modifier = Modifier.size(24.dp))
-            Txt("  Buffering", T.label)
+            Txt("  Đang tải video…", T.label)
         }
     }
     if (v != null && v.failed) {
@@ -285,8 +285,8 @@ private fun BoxScope.VideoOverlay(b: BrowserController) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Icon(Icons.Rounded.ErrorOutline, null, tint = Danger, modifier = Modifier.size(48.dp))
-            Txt("This video can't be played", T.title, Modifier.padding(top = 8.dp))
-            Txt("Press Back to leave fullscreen, then try again.", T.caption)
+            Txt("Không phát được video này", T.title, Modifier.padding(top = 8.dp))
+            Txt("Bấm Quay lại để thoát toàn màn hình rồi thử lại.", T.caption)
         }
     }
     // Centre flash for play / pause / seek feedback
@@ -308,17 +308,30 @@ private fun BoxScope.VideoOverlay(b: BrowserController) {
             ) {
                 val frac = if (v != null && v.duration > 0) (v.position / v.duration).toFloat().coerceIn(0f, 1f) else 0f
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Txt(if (v == null) "No controllable video found" else if (v.paused) "Paused" else "Playing", T.label)
+                    Txt(if (v == null) "Không tìm thấy video để điều khiển" else if (v.paused) "Tạm dừng" else "Đang phát", T.label)
                     Spacer(Modifier.weight(1f))
-                    if (v != null) Txt("${fmt(v.position)} / ${if (v.duration > 0) fmt(v.duration) else "Live"}", T.label)
+                    if (v != null) Txt("${fmt(v.position)} / ${if (v.duration > 0) fmt(v.duration) else "Trực tiếp"}", T.label)
                 }
                 Spacer(Modifier.height(10.dp))
                 Box(Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)).background(Color(0x44FFFFFF))) {
                     Box(Modifier.fillMaxWidth(frac).fillMaxHeight().background(Accent))
                 }
                 Spacer(Modifier.height(12.dp))
-                Txt("Left / Right  Skip      OK  Play / Pause      Back  Hide controls", T.caption, color = Color(0xCCFFFFFF))
+                Txt("Trái / Phải  Tua      OK  Phát / Dừng      Quay lại  Ẩn điều khiển", T.caption, color = Color(0xCCFFFFFF))
             }
         }
+    }
+}
+
+/** Play / pause / seek feedback for videos inside the page (not fullscreen). */
+@Composable
+private fun BoxScope.OsdFlash(b: BrowserController) {
+    val o = b.osd ?: return
+    Row(
+        Modifier.align(Alignment.Center).clip(RoundedCornerShape(40.dp)).background(Color(0xCC000000)).padding(horizontal = 28.dp, vertical = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (o.icon != null) Icon(o.icon, null, tint = Color.White, modifier = Modifier.size(40.dp))
+        Txt((if (o.icon != null) "  " else "") + o.label, T.title)
     }
 }

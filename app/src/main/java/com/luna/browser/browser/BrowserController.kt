@@ -3,6 +3,7 @@ package com.luna.browser.browser
 import android.app.Activity
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.Rect
 import android.net.ConnectivityManager
 import android.net.http.SslError
 import android.os.Handler
@@ -12,6 +13,7 @@ import android.os.SystemClock
 import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
+import android.view.PixelCopy
 import android.view.View
 import android.view.ViewConfiguration
 import android.webkit.CookieManager
@@ -37,6 +39,9 @@ import com.luna.browser.AppState
 import com.luna.browser.data.AdBlocker
 import com.luna.browser.data.K
 import com.luna.browser.data.Site
+import com.luna.browser.data.hostOf
+import com.luna.browser.data.youtubeThumb
+import java.io.File
 import org.json.JSONArray
 import java.io.ByteArrayInputStream
 import kotlin.math.max
@@ -114,6 +119,9 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         private set
     var osd by mutableStateOf<Osd?>(null)
         private set
+    /** True for a moment while the page is screenshotted, so the pointer stays out of thumbnails. */
+    var capturing by mutableStateOf(false)
+        private set
     private var customCb: WebChromeClient.CustomViewCallback? = null
     private var lastControls = 0L
 
@@ -145,7 +153,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
                 displayZoomControls = false
                 mixedContentMode = WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
             }
-            setDownloadListener { _, _, _, _, _ -> app.toast("Downloads aren't supported yet") }
+            setDownloadListener { _, _, _, _, _ -> app.toast("Luna chưa hỗ trợ tải tệp xuống") }
         }
         applySettings()
         uaChanged = false
@@ -171,9 +179,10 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         webView.onResume()
         toolbarVisible = false
         webView.requestFocus()
+        scheduleIdleHide()
         if (!app.store.bool(K.TIP_SHOWN)) {
             app.store.put(K.TIP_SHOWN, true)
-            app.toast("Press Menu for the toolbar. Hold OK to switch cursor / focus mode.")
+            app.toast("Mẹo: bấm Menu để mở thanh công cụ, giữ OK để đổi giữa con trỏ và chế độ liên kết")
         }
     }
 
@@ -211,7 +220,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     fun toggleFavorite() {
         if (url.isEmpty()) return
         val added = app.store.toggleFavorite(Site(title.ifBlank { url }, url))
-        app.toast(if (added) "Added to Favorites" else "Removed from Favorites")
+        app.toast(if (added) "Đã thêm vào Yêu thích" else "Đã bỏ khỏi Yêu thích")
     }
 
     fun showToolbar() {
@@ -231,7 +240,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         cursorMode = !cursorMode
         held.clear()
         webView.requestFocus()
-        app.toast(if (cursorMode) "Cursor mode: move the pointer, press OK to click" else "Focus mode: arrows jump between links")
+        app.toast(if (cursorMode) "Chế độ con trỏ: di chuyển con trỏ, bấm OK để chọn" else "Chế độ liên kết: phím mũi tên nhảy giữa các liên kết")
     }
 
     /** Back handling inside the browser. Returns true when consumed. */
@@ -278,6 +287,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             progress = 0.05f
             pageUrl?.let { url = it }
             syncNav()
+            scheduleIdleHide()
         }
 
         override fun onPageFinished(view: WebView, pageUrl: String?) {
@@ -286,13 +296,15 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             pageUrl?.let { url = it }
             title = view.title ?: ""
             syncNav()
-            if (error == null && pageUrl != null) app.store.recordVisit(title, pageUrl)
+            if (error == null && pageUrl != null) onVisited(pageUrl, title)
             if (app.store.bool(K.ADBLOCK)) view.evaluateJavascript(AdBlocker.COSMETIC_JS, null)
         }
 
         override fun doUpdateVisitedHistory(view: WebView, pageUrl: String?, isReload: Boolean) {
             pageUrl?.let { url = it }
             syncNav()
+            // Single-page sites (YouTube) change videos without a new page load.
+            if (!isReload && !loading && error == null && pageUrl != null) onVisited(pageUrl, "")
         }
 
         override fun onReceivedError(view: WebView, request: WebResourceRequest, err: WebResourceError) {
@@ -306,24 +318,24 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, err: SslError) {
             handler.cancel()
             loading = false
-            error = PageError(ErrorKind.Ssl, "This connection isn't secure", "Luna blocked the page to keep your information safe. Try the address again or visit another site.")
+            error = PageError(ErrorKind.Ssl, "Kết nối không an toàn", "Luna đã chặn trang này để bảo vệ thông tin của bạn. Hãy thử lại hoặc mở trang khác.")
         }
     }
 
     private fun mapError(code: Int): PageError {
         val cm = activity.getSystemService(ConnectivityManager::class.java)
         if (cm?.activeNetwork == null) {
-            return PageError(ErrorKind.Offline, "No internet connection", "Check that your TV is connected to Wi-Fi or Ethernet, then try again.")
+            return PageError(ErrorKind.Offline, "Không có kết nối Internet", "Hãy kiểm tra TV đã kết nối Wi-Fi hoặc dây mạng, rồi thử lại.")
         }
         return when (code) {
             WebViewClient.ERROR_HOST_LOOKUP ->
-                PageError(ErrorKind.NotFound, "Can't find this website", "The address may be misspelled, or the website may be down.")
+                PageError(ErrorKind.NotFound, "Không tìm thấy trang web", "Địa chỉ có thể bị gõ sai, hoặc trang web đang tạm ngừng hoạt động.")
             WebViewClient.ERROR_TIMEOUT, WebViewClient.ERROR_CONNECT, WebViewClient.ERROR_IO ->
-                PageError(ErrorKind.Timeout, "This website isn't responding", "It is taking too long to answer. Try again in a moment.")
+                PageError(ErrorKind.Timeout, "Trang web không phản hồi", "Trang mất quá nhiều thời gian để trả lời. Hãy thử lại sau giây lát.")
             WebViewClient.ERROR_FAILED_SSL_HANDSHAKE ->
-                PageError(ErrorKind.Ssl, "This connection isn't secure", "Luna couldn't set up a secure connection to this website.")
+                PageError(ErrorKind.Ssl, "Kết nối không an toàn", "Luna không thể tạo kết nối bảo mật tới trang web này.")
             else ->
-                PageError(ErrorKind.Other, "This page couldn't be loaded", "Something went wrong while opening the page. Try again, or go back to the home screen.")
+                PageError(ErrorKind.Other, "Không mở được trang", "Đã có lỗi khi mở trang. Hãy thử lại hoặc quay về màn hình chính.")
         }
     }
 
@@ -340,6 +352,14 @@ class BrowserController(private val activity: Activity, private val app: AppStat
 
         override fun onReceivedTitle(view: WebView, t: String?) {
             title = t ?: ""
+            view.url?.let { app.store.updateTitle(it, title) }
+        }
+
+        override fun onReceivedIcon(view: WebView, icon: Bitmap?) {
+            val u = view.url ?: return
+            if (icon == null || icon.width < 32) return
+            val f = File(app.store.iconsDir, hostOf(u) + ".png")
+            Thread { runCatching { f.outputStream().use { icon.compress(Bitmap.CompressFormat.PNG, 100, it) } } }.start()
         }
 
         override fun getDefaultVideoPoster(): Bitmap = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
@@ -385,6 +405,60 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             resultMsg.sendToTarget()
             return true
         }
+    }
+
+    // ---- Thumbnails ----
+    private var artUrl = ""
+    private val artTask = Runnable { captureArt(artUrl) }
+
+    private fun onVisited(pageUrl: String, pageTitle: String) {
+        app.store.recordVisit(pageTitle, pageUrl)
+        artUrl = pageUrl
+        handler.removeCallbacks(artTask)
+        handler.postDelayed(artTask, 3500)
+    }
+
+    private fun captureArt(u: String) {
+        if (webView.url != u || error != null) return
+        if (youtubeThumb(u) == null) {
+            webView.evaluateJavascript(OG_JS) { r ->
+                val img = runCatching { JSONArray("[$r]").optString(0) }.getOrNull()
+                if (img != null && img.startsWith("http")) app.store.updateArt(u, image = img)
+            }
+        }
+        snapshot(u)
+    }
+
+    /** Screenshots the visible page (GPU content included) into a small JPEG for home-screen cards. */
+    private fun snapshot(u: String) {
+        if (customView != null || toolbarVisible || webView.width == 0 || !webView.isAttachedToWindow) return
+        capturing = true
+        handler.postDelayed({
+            val loc = IntArray(2)
+            webView.getLocationInWindow(loc)
+            val w = 480
+            val h = (w.toFloat() * webView.height / webView.width).toInt().coerceAtLeast(1)
+            val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+            try {
+                PixelCopy.request(
+                    activity.window, Rect(loc[0], loc[1], loc[0] + webView.width, loc[1] + webView.height), bmp,
+                    { res ->
+                        capturing = false
+                        if (res == PixelCopy.SUCCESS) saveSnap(u, bmp)
+                    }, handler,
+                )
+            } catch (e: Exception) {
+                capturing = false
+            }
+        }, 80)
+    }
+
+    private fun saveSnap(u: String, bmp: Bitmap) {
+        val f = File(app.store.thumbsDir, "${u.hashCode().toUInt()}.jpg")
+        Thread {
+            runCatching { f.outputStream().use { bmp.compress(Bitmap.CompressFormat.JPEG, 82, it) } }
+                .onSuccess { handler.post { app.store.updateArt(u, snap = f.path) } }
+        }.start()
     }
 
     // ---- Key handling ----
@@ -573,13 +647,13 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
     private fun togglePlay(force: Boolean? = null) {
         val (js, paused) = when (force) { true -> playJs to false; false -> pauseJs to true; null -> toggleJs to null }
         runVideo(js, after = { s -> s.copy(paused = paused ?: !s.paused) }) { s ->
-            flash(if (s.paused) "Paused" else "Playing", if (s.paused) Icons.Rounded.Pause else Icons.Rounded.PlayArrow)
+            flash(if (s.paused) "Tạm dừng" else "Đang phát", if (s.paused) Icons.Rounded.Pause else Icons.Rounded.PlayArrow)
         }
     }
 
     private fun seek(seconds: Int) {
         val js = "b.currentTime=Math.max(0,Math.min(isFinite(b.duration)?b.duration:1e9,b.currentTime+($seconds)));"
-        runVideo(js) { flash(if (seconds > 0) "+${seconds}s" else "−${-seconds}s") }
+        runVideo(js) { flash(if (seconds > 0) "Tua tới ${seconds} giây" else "Tua lùi ${-seconds} giây") }
     }
 
     private fun mediaKey(code: Int) {
@@ -645,6 +719,10 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
     private fun startPolling() {
         handler.removeCallbacks(poll)
         handler.post(poll)
+    }
+
+    private companion object {
+        const val OG_JS = """(function(){var m=document.querySelector('meta[property="og:image"],meta[name="og:image"],meta[name="twitter:image"],meta[property="twitter:image"]');return m?m.content:null})()"""
     }
 
     // Declared last so every property above (clients, runnables) is initialised first.

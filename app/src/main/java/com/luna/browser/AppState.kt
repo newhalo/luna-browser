@@ -32,6 +32,8 @@ class AppState(val activity: Activity) {
     var online by mutableStateOf(true)
     val focusMemory = mutableMapOf<String, String>()
     var onExit: () -> Unit = {}
+    var voiceAvailable by mutableStateOf(false)
+    var startVoice: () -> Unit = {}
 
     private val main = Handler(Looper.getMainLooper())
     private var backLong = false

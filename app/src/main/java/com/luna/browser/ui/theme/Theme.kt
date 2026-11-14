@@ -24,6 +24,8 @@ val Danger = Color(0xFFFF8A8A)
 val Success = Color(0xFF6EE7A8)
 val FocusRing = Color.White
 val Scrim = Color(0xE60B0D12)
+/** Translucent surface for controls that sit on top of artwork. */
+val Glass = Color(0x2EFFFFFF)
 
 /** Layout tokens. Designed on a 960 x 540 dp canvas (1080p and 4K both report this on Android TV). */
 object Dim {

@@ -25,6 +25,8 @@ import com.luna.browser.ui.browser.BrowserScreen
 import com.luna.browser.ui.components.ToastHost
 import com.luna.browser.ui.components.Txt
 import com.luna.browser.ui.components.MoonLogo
+import com.luna.browser.ui.components.Aurora
+import androidx.compose.ui.unit.sp
 import com.luna.browser.ui.home.AddressDialog
 import com.luna.browser.ui.home.HomeScreen
 import com.luna.browser.ui.library.FavoritesScreen
@@ -56,11 +58,12 @@ fun LunaApp(app: AppState) {
             if (app.addressOpen) AddressDialog(app)
             ToastHost(app, Modifier.align(Alignment.BottomCenter))
             AnimatedVisibility(visible = splash, exit = fadeOut(tween(ms(250)))) {
-                Box(Modifier.fillMaxSize().background(Bg), contentAlignment = Alignment.Center) {
+                Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Aurora()
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        MoonLogo(Modifier.size(96.dp))
-                        Txt("Luna Browser", T.display, Modifier.padding(top = 16.dp))
-                        Txt("Browse the web from your sofa", T.caption, color = TextSecondary)
+                        MoonLogo(Modifier.size(104.dp))
+                        Txt("Luna", T.display.copy(fontSize = 56.sp), Modifier.padding(top = 18.dp))
+                        Txt("Lướt web thoải mái trên TV", T.body, color = TextSecondary)
                     }
                 }
             }

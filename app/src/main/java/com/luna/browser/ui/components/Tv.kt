@@ -123,12 +123,13 @@ fun TvButton(
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
     primary: Boolean = false,
+    container: Color = Surface,
 ) {
     FocusSurface(
         onClick = onClick,
         modifier = modifier.height(52.dp),
         shape = RoundedCornerShape(26.dp),
-        container = if (primary) Accent.copy(alpha = 0.22f) else Surface,
+        container = if (primary) Accent.copy(alpha = 0.22f) else container,
     ) {
         Row(
             Modifier.padding(horizontal = 22.dp).align(Alignment.Center),
