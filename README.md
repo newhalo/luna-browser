@@ -79,12 +79,6 @@ Scan the QR code on the TV (*Settings → Phone remote*): the page opens already
 
 ![The phone page: Remote tab with a D-pad, OK, Back / Home / Menu, media keys and volume; Type tab with the text box and actions](docs/screenshots/11-phone-remote.jpg)
 
-### Ten languages, live
-
-The UI follows the TV's system language; this is Settings in every translation (switching needs no restart):
-
-![Settings in English, Vietnamese, Spanish, French, German, Portuguese, Russian, Japanese, Korean and Chinese](docs/screenshots/10-languages.jpg)
-
 ## Install
 
 You need an **Android TV / Google TV** (Android 8.0+, API 26) and the ability to sideload an APK. One APK runs on
