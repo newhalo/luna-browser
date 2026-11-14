@@ -76,7 +76,7 @@ private fun ThumbRow(item: MediaItem, meta: String, modifier: Modifier, onClick:
                     .background(Brush.linearGradient(listOf(Color(item.brand.first), Color(item.brand.second)))),
                 contentAlignment = Alignment.Center,
             ) {
-                if (item.art != null) Art(item.art, Modifier.fillMaxSize()) else SiteIcon(item.subtitle, item.icon, 36.dp)
+                if (item.art != null) Art(item.art, Modifier.fillMaxSize(), fallback = item.alt) else SiteIcon(item.subtitle, item.icon, 36.dp)
             }
             Column(Modifier.padding(start = 18.dp).weight(1f)) {
                 Txt(item.title, T.body)

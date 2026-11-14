@@ -11,6 +11,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
   Spanish, French, German, Portuguese, Russian, Japanese, Korean, Simplified Chinese. The UI follows the TV's
   system language; *Settings → General → Language* overrides it live. Android 13+ per-app language picker supported.
 - Regional defaults: quick-access sites, search engines, voice-search language and filter lists per language.
+- **Works across TVs**: the UI is laid out on a 960 dp canvas derived from the screen's pixels (720p–4K and any
+  density setting look the same), a low-memory profile for entry-level TVs, Info / Bookmark open the toolbar and the red
+  key toggles pointer / link mode for remotes without a Menu key, fallback for older WebViews. See
+  [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
 - **EasyList** as a filter list (on by default except for Vietnamese, where ABPVN is).
 - `LocalizationTest` (same keys, placeholders and plural forms in every language), `docs/LOCALIZATION.md`.
 

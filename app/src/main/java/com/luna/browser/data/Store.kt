@@ -9,6 +9,7 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import org.json.JSONArray
+import com.luna.browser.data.filter.siteOf
 import org.json.JSONObject
 import java.io.File
 import java.net.URLEncoder
@@ -38,6 +39,9 @@ data class HistoryEntry(
     val art: Any? by lazy {
         if (deep && image != null) image else snap?.let { File(it) } ?: image
     }
+
+    /** The page screenshot, when [art] is a remote image that might fail to load. */
+    val altArt: Any? by lazy { snap?.let { File(it) }?.takeIf { art !is File } }
 }
 
 /** One card on the home screen. */
@@ -50,6 +54,8 @@ data class MediaItem(
     val icon: Any?,
     val brand: Pair<Long, Long>,
     val time: Long = 0L,
+    /** Shown instead of [art] when that image fails to load (e.g. a remote og:image that is blocked). */
+    val alt: Any? = null,
 )
 
 /**
@@ -336,8 +342,9 @@ class Store(ctx: Context) {
         history.firstOrNull { it.host == host && it.deep && it.image != null }?.image
             ?: history.firstOrNull { it.host == host }?.art
 
+    /** "VnExpress" for known sites, otherwise the main label of the domain: en.wikipedia.org -> "Wikipedia". */
     private fun siteName(host: String) = KnownSites.firstOrNull { it.host == host }?.title
-        ?: host.substringBefore('.').replaceFirstChar { it.uppercase() }
+        ?: siteOf(host).substringBefore('.').replaceFirstChar { it.uppercase() }
 
     /** Frequently used sites first, topped up with the curated quick sites. */
     fun siteItems(lang: String, limit: Int = 10): List<MediaItem> {
@@ -354,7 +361,7 @@ class Store(ctx: Context) {
     }
 
     fun continueItems(limit: Int = 12): List<MediaItem> = history.take(limit).map {
-        MediaItem("h:${it.url}", cleanTitle(it.title, it.url).ifBlank { it.title }, it.host, it.url, it.art, iconFor(it.host), brandOf(it.host), it.time)
+        MediaItem("h:${it.url}", cleanTitle(it.title, it.url).ifBlank { it.title }, it.host, it.url, it.art, iconFor(it.host), brandOf(it.host), it.time, it.altArt)
     }
 
     fun favoriteItems(): List<MediaItem> = favorites.map {

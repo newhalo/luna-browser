@@ -68,7 +68,10 @@ The UI follows the TV's system language; this is Settings in every translation (
 
 ## Install
 
-You need an **Android TV / Google TV** (Android 8.0+, API 26) and the ability to sideload an APK.
+You need an **Android TV / Google TV** (Android 8.0+, API 26) and the ability to sideload an APK. One APK runs on
+any CPU architecture and any TV resolution (720p to 4K); entry-level TVs get a lighter profile automatically.
+Details and known limits: [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md). Tested so far on a Xiaomi TV S Pro 65"
+— reports from other TVs are welcome.
 
 1. Download `luna-browser-vX.Y.Z.apk` from the [Releases](https://github.com/newhalo/luna-browser/releases) page
    (or the `luna-browser-release` artifact of a CI run).
@@ -93,9 +96,9 @@ Luna appears in the TV launcher as **Luna Browser**.
 | D-pad | move the pointer; at the screen edge scroll; **Up** at the very top opens the toolbar | **← / →** seek (hold to accelerate) |
 | **OK** | click | show controls, then play / pause |
 | Hold **OK** | switch pointer ⇄ link-focus mode | — |
-| **Menu** | show / hide the toolbar | same |
+| **Menu** (or **Info**) | show / hide the toolbar | same |
 | **Back** | close toolbar → previous page → Home → exit | hide controls → leave fullscreen |
-| Hold **Back** | open the toolbar | leave fullscreen, open toolbar |
+| Hold **Back** | open the toolbar (use this if your remote has no Menu key) | leave fullscreen, open toolbar |
 | Play/Pause, ⏪ ⏩ | control the page's video | same |
 
 Home, volume and power keys are never intercepted. Full table: [docs/DESIGN.md](docs/DESIGN.md#remote-map).
@@ -128,7 +131,7 @@ app/src/main/assets/filters/luna.txt  Luna's own filter rules (Adblock Plus synt
 app/src/test/                         unit tests (filter engine)
 tools/sitecheck/                      on-TV ad-blocking report (Chrome DevTools + adb)
 tools/perf/                           on-TV frame timing
-docs/                                 architecture, design, ad blocking, performance, localization, releasing
+docs/                                 architecture, design, ad blocking, performance, localization, compatibility, releasing
 ```
 
 Start with [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).

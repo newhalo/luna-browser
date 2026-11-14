@@ -76,18 +76,27 @@ fun Art(
     modifier: Modifier = Modifier,
     scale: ContentScale = ContentScale.Crop,
     alpha: Float = 1f,
+    /** Used when [model] fails to load. */
+    fallback: Any? = null,
     onLoaded: () -> Unit = {},
 ) {
     if (model == null) return
+    var failed by remember(model) { mutableStateOf(false) }
+    val shown = if (failed && fallback != null) fallback else model
     AsyncImage(
-        model = ImageRequest.Builder(LocalContext.current).data(model).crossfade(250).build(),
+        model = ImageRequest.Builder(LocalContext.current).data(shown).crossfade(250)
+            // Some image hosts (Wikimedia, for one) reject clients that don't identify themselves.
+            .addHeader("User-Agent", USER_AGENT).build(),
         contentDescription = null,
         contentScale = scale,
         alpha = alpha,
         modifier = modifier,
         onSuccess = { onLoaded() },
+        onError = { failed = true },
     )
 }
+
+private const val USER_AGENT = "LunaBrowser/0.2 (Android TV; +https://github.com/newhalo/luna-browser)"
 
 /** One drifting light: centre and radius in dp on the 960×540 dp canvas, drift (dx, dy) over a sweep. */
 private class Light(val color: Color, val x: Float, val y: Float, val r: Float, val dx: Float, val dy: Float)
@@ -287,7 +296,7 @@ fun MediaCard(
             focusScale = 1.08f,
         ) {
             if (item.art != null) {
-                Art(item.art, Modifier.fillMaxSize())
+                Art(item.art, Modifier.fillMaxSize(), fallback = item.alt)
                 Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.45f to Color.Transparent, 1f to Color(0xCC000000))))
                 Row(Modifier.align(Alignment.BottomStart).padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
                     SiteIcon(item.subtitle, item.icon, 24.dp)

@@ -11,6 +11,8 @@ By participating you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 - **Report a site that still shows ads or pop-ups** — use the *Ad / pop-up report* issue template. This is
   the most useful report we get, and usually the fastest to fix (often a one-line filter rule).
 - **Report a bug** with the remote or the video controls, ideally with the TV model and Android version.
+  **Compatibility reports** from TVs other than the maintainer's are especially useful —
+  see [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md).
 - **Translate or proofread the UI.** Ten languages exist, not all written by native speakers; fixing a
   translation or adding a language needs no code — see [docs/LOCALIZATION.md](docs/LOCALIZATION.md).
 - **Fix a bug or build a feature** — open an issue first for anything larger than a small fix, so we can agree

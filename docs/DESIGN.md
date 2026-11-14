@@ -1,8 +1,9 @@
 # Design system
 
 Luna is designed **TV-first, remote-first, dark**, in the spirit of streaming apps — content (especially video)
-first, chrome second. The layout is drawn on a **960 × 540 dp** canvas: Android TV reports exactly this for both
-1080p and 4K panels, so one layout is density-correct on both.
+first, chrome second. The layout is drawn on a **960 × 540 dp** canvas. Most Android TVs report exactly this
+(720p, 1080p and 4K panels alike), and the app enforces it: the density is derived from the screen's pixels
+(`ui/theme/Scale.kt`), so the UI keeps the same physical size on any TV, whatever density setting its maker chose.
 
 ## Principles
 
@@ -51,7 +52,8 @@ artwork or brand gradient), `SiteIcon`, `EmptyState`, `ToastHost`, `Aurora`, `Ba
 | D-pad | Move the pointer (accelerates); push at the top/bottom edge to scroll; Up at the very top opens the toolbar | Left / Right seek (hold to accelerate), Up / Down show controls |
 | OK | Click | First press shows controls, then play / pause |
 | Hold OK | Switch cursor ⇄ link-focus mode | — |
-| Menu | Toggle the floating toolbar | Toggle toolbar |
+| Menu / Info / Bookmark | Toggle the floating toolbar | Toggle toolbar |
+| Red colour key | Switch pointer ⇄ link mode | — |
 | Back | Close toolbar → page history → Home → exit | Hide controls → leave fullscreen |
 | Hold Back | Open the toolbar | Leave fullscreen and open the toolbar |
 | Play/Pause, FF, RW | Control the page's video | Same |
