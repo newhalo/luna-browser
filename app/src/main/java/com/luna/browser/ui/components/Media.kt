@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -61,6 +62,7 @@ import coil.request.ImageRequest
 import com.luna.browser.AppState
 import com.luna.browser.R
 import com.luna.browser.data.MediaItem
+import com.luna.browser.ui.theme.Accent
 import com.luna.browser.ui.theme.Bg
 import com.luna.browser.ui.theme.LocalReduceMotion
 import com.luna.browser.ui.theme.T
@@ -301,6 +303,12 @@ fun MediaCard(
                 Row(Modifier.align(Alignment.BottomStart).padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
                     SiteIcon(item.subtitle, item.icon, 24.dp)
                     Txt("  " + item.subtitle, T.caption.copy(fontSize = 14.sp, color = Color.White), color = Color.White)
+                }
+                if (item.progress > 0.02f) {
+                    // How far the video was watched, like the red bar on YouTube / Netflix.
+                    Box(Modifier.align(Alignment.BottomStart).fillMaxWidth().height(5.dp).background(Color(0x88000000))) {
+                        Box(Modifier.fillMaxWidth(item.progress.coerceAtMost(1f)).fillMaxHeight().background(Accent))
+                    }
                 }
             } else {
                 Box(Modifier.fillMaxSize().background(Brush.linearGradient(listOf(Color(item.brand.first), Color(item.brand.second)))))

@@ -56,6 +56,8 @@ data class MediaItem(
     val time: Long = 0L,
     /** Shown instead of [art] when that image fails to load (e.g. a remote og:image that is blocked). */
     val alt: Any? = null,
+    /** 0..1 how much of the video was watched (0 = nothing to resume). */
+    val progress: Float = 0f,
 )
 
 /**
@@ -168,6 +170,9 @@ object K {
     const val TIP_SHOWN = "tipShown"
     /** "auto" follows the system language; otherwise a language code from [Languages]. */
     const val LANGUAGE = "language"
+    /** Lets a phone on the same Wi-Fi send addresses and text to the TV. */
+    const val PHONE = "phoneRemote"
+    const val PHONE_PIN = "phonePin"
 }
 
 /** Languages the UI is translated into (code to its own name, never translated). Keep in sync with res/xml/locales_config.xml. */
@@ -214,12 +219,21 @@ class Store(ctx: Context) {
         // Entry-level TVs start with the light settings; everything can be switched back on in Settings.
         K.REDUCE_MOTION to lowEnd.toString(), K.ANIMATED_BG to (!lowEnd).toString(),
         K.TIP_SHOWN to "false", K.LANGUAGE to "auto",
+        K.PHONE to "true", K.PHONE_PIN to "",
     )
 
     val settings = mutableStateMapOf<String, String>().apply {
         putAll(defaults)
         defaults.keys.forEach { k -> sp.getString("s.$k", null)?.let { put(k, it) } }
     }
+
+    init {
+        // The pairing PIN is made once, on first run.
+        if (str(K.PHONE_PIN).isEmpty()) newPin()
+    }
+
+    /** Replaces the pairing PIN (phones have to pair again). */
+    fun newPin() = put(K.PHONE_PIN, "%04d".format(java.security.SecureRandom().nextInt(10_000)))
 
     fun str(k: String): String = settings[k] ?: defaults[k] ?: ""
     fun bool(k: String): Boolean = str(k) == "true"
@@ -237,6 +251,47 @@ class Store(ctx: Context) {
             o.keys().forEach { put(it, o.getInt(it)) }
         }
     }
+    // ---- Resume positions ("continue where you left off") ----
+    private val positions = HashMap<String, Resume>().apply {
+        runCatching {
+            val o = JSONObject(sp.getString("positions", "{}")!!)
+            o.keys().forEach { k -> o.getJSONArray(k).let { a -> put(k, Resume(a.getDouble(0), a.getDouble(1), a.getLong(2))) } }
+        }
+    }
+    private var positionsWritten = 0L
+
+    /** Where the video on [url] was left, or null when there is nothing worth resuming. */
+    fun resumeFor(url: String): Resume? = synchronized(positions) { positions[ResumeRules.key(url)] }
+
+    /**
+     * Remembers the playing position. Called about twice a second while a video is fullscreen, so
+     * the disk is only touched every few seconds, or when [flush] is true (leaving the video).
+     */
+    fun savePosition(url: String, pos: Double, dur: Double, flush: Boolean = false) {
+        val key = ResumeRules.key(url)
+        synchronized(positions) {
+            when {
+                ResumeRules.finished(pos, dur) && dur >= ResumeRules.MIN_DURATION -> positions.remove(key)
+                ResumeRules.shouldSave(pos, dur) -> positions[key] = Resume(pos, dur, System.currentTimeMillis())
+                else -> return
+            }
+            if (positions.size > MAX_POSITIONS) {
+                positions.entries.sortedBy { it.value.time }.take(positions.size - MAX_POSITIONS).forEach { positions.remove(it.key) }
+            }
+        }
+        val now = System.currentTimeMillis()
+        if (flush || now - positionsWritten > 5_000) {
+            positionsWritten = now
+            val copy = synchronized(positions) { HashMap(positions) }
+            io.execute {
+                val o = JSONObject()
+                copy.forEach { (k, r) -> o.put(k, JSONArray().put(r.pos).put(r.dur).put(r.time)) }
+                sp.edit().putString("positions", o.toString()).apply()
+            }
+            if (flush) version++
+        }
+    }
+
     var lastSession by mutableStateOf(readSites("last").firstOrNull())
         private set
 
@@ -314,7 +369,8 @@ class Store(ctx: Context) {
         lastSession = null
         version++
         io.execute { thumbsDir.listFiles()?.forEach { it.delete() } }
-        sp.edit().putString("visits", "{}").apply()
+        synchronized(positions) { positions.clear() }
+        sp.edit().putString("visits", "{}").putString("positions", "{}").apply()
         writeHistory()
         writeSites("last", emptyList())
     }
@@ -361,7 +417,7 @@ class Store(ctx: Context) {
     }
 
     fun continueItems(limit: Int = 12): List<MediaItem> = history.take(limit).map {
-        MediaItem("h:${it.url}", cleanTitle(it.title, it.url).ifBlank { it.title }, it.host, it.url, it.art, iconFor(it.host), brandOf(it.host), it.time, it.altArt)
+        MediaItem("h:${it.url}", cleanTitle(it.title, it.url).ifBlank { it.title }, it.host, it.url, it.art, iconFor(it.host), brandOf(it.host), it.time, it.altArt, resumeFor(it.url)?.fraction ?: 0f)
     }
 
     fun favoriteItems(): List<MediaItem> = favorites.map {
@@ -375,8 +431,13 @@ class Store(ctx: Context) {
         if (Regex("^[a-zA-Z][a-zA-Z0-9+.-]*://.*").matches(t)) return t
         if (t.startsWith("localhost") || Regex("^(\\d{1,3}\\.){3}\\d{1,3}(:\\d+)?(/.*)?$").matches(t)) return "http://$t"
         if (!t.contains(' ') && t.contains('.')) return "https://$t"
+        return searchUrl(t)
+    }
+
+    /** The address of a web search for [query] with the chosen search engine. */
+    fun searchUrl(query: String): String {
         val template = SearchEngines[str(K.ENGINE)] ?: SearchEngines.getValue("Google")
-        return template.replace("%s", URLEncoder.encode(t, "UTF-8"))
+        return template.replace("%s", URLEncoder.encode(query.trim(), "UTF-8"))
     }
 
     // ---- Persistence helpers ----
@@ -428,5 +489,6 @@ class Store(ctx: Context) {
 
     private companion object {
         const val MAX_HISTORY = 300
+        const val MAX_POSITIONS = 150
     }
 }

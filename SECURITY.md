@@ -27,6 +27,9 @@ release notes unless you prefer to stay anonymous.
 - Data leaks: Luna has no analytics or accounts and sends nothing but the requests listed in the
   [README](README.md#privacy).
 
+- The **phone remote** (`remote/PhoneRemote.kt`): a LAN-only HTTP server that is PIN-protected and only runs while the
+  app is on screen. Authentication bypasses, ways to make it open non-web URLs, or to run it while off, are in scope.
+
 ## Out of scope
 
 - Vulnerabilities in the Android System WebView / Chromium that Luna renders with — report those upstream.

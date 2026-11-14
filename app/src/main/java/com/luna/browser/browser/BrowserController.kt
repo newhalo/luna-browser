@@ -42,6 +42,7 @@ import com.luna.browser.AppState
 import com.luna.browser.R
 import com.luna.browser.data.AdBlocker
 import com.luna.browser.data.K
+import com.luna.browser.data.ResumeRules
 import com.luna.browser.data.Site
 import com.luna.browser.data.hostOf
 import com.luna.browser.data.youtubeThumb
@@ -421,6 +422,9 @@ class BrowserController(private val activity: Activity, private val app: AppStat
 
         override fun onHideCustomView() {
             customView?.keepScreenOn = false
+            // Remember where the video was left before its state is dropped.
+            video?.let { saveProgress(it, flush = true) }
+            resumeTried = null
             customView = null
             customCb = null
             controlsVisible = false
@@ -902,9 +906,48 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
     private val poll = object : Runnable {
         override fun run() {
             if (customView == null) return
-            runVideo("")
+            runVideo("", done = { trackProgress(it) })
             handler.postDelayed(this, 600)
         }
+    }
+
+    // ---- Resume: remember where each long video was left, and go back there next time ----
+    /** The video (by [ResumeRules.key]) whose saved position was already offered in this fullscreen session. */
+    private var resumeTried: String? = null
+
+    private fun saveProgress(s: VideoState, flush: Boolean = false) {
+        val u = url
+        if (u.isBlank() || s.failed || (s.buffering && !flush)) return
+        // Until the saved position has been applied, a freshly started video must not overwrite it.
+        if (resumeTried != ResumeRules.key(u)) return
+        app.store.savePosition(u, s.position, s.duration, flush)
+    }
+
+    private fun trackProgress(s: VideoState) {
+        val u = url
+        if (u.isBlank() || s.failed || s.buffering) return
+        val key = ResumeRules.key(u)
+        if (resumeTried != key && s.duration >= ResumeRules.MIN_DURATION) {
+            resumeTried = key
+            val saved = app.store.resumeFor(u)
+            val delta = saved?.let { ResumeRules.restoreDelta(it, s.position, s.duration) }
+            if (saved != null && delta != null) {
+                val js = "b.currentTime=Math.max(0,Math.min(isFinite(b.duration)?b.duration:1e9,b.currentTime+($delta)));"
+                runVideo(js, "seek", delta)
+                flash(app.s(R.string.vid_resumed, ResumeRules.clock(saved.pos)), Icons.Rounded.PlayArrow, hold = true)
+                return
+            }
+        }
+        saveProgress(s)
+    }
+
+    /**
+     * Types [text] into the text field that has focus on the page (used by the phone remote).
+     * [submit] also presses Enter / submits the form. [done] gets false when no field has focus.
+     */
+    fun typeIntoFocused(text: String, submit: Boolean, done: (Boolean) -> Unit) {
+        val js = TYPE_JS.replace("__TEXT__", JSONObject.quote(text)).replace("__SUBMIT__", submit.toString())
+        webView.evaluateJavascript(js) { r -> done(r == "\"ok\"") }
     }
 
     private fun startPolling() {
@@ -913,6 +956,18 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
     }
 
     private companion object {
+        /** Sets the value of the focused input the way a user typing would (frameworks listen to input events). */
+        const val TYPE_JS = """(function(){var e=document.activeElement;
+while(e&&e.shadowRoot&&e.shadowRoot.activeElement)e=e.shadowRoot.activeElement;
+if(!e)return 'none';var t=__TEXT__,tag=(e.tagName||'').toUpperCase();
+if(tag==='INPUT'||tag==='TEXTAREA'){var p=tag==='INPUT'?HTMLInputElement.prototype:HTMLTextAreaElement.prototype;
+var d=Object.getOwnPropertyDescriptor(p,'value');if(d&&d.set)d.set.call(e,t);else e.value=t;
+e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));}
+else if(e.isContentEditable){e.textContent=t;e.dispatchEvent(new Event('input',{bubbles:true}));}
+else return 'none';
+if(__SUBMIT__){['keydown','keypress','keyup'].forEach(function(n){e.dispatchEvent(new KeyboardEvent(n,{key:'Enter',code:'Enter',keyCode:13,which:13,bubbles:true}));});
+var f=e.form;if(f){if(f.requestSubmit)f.requestSubmit();else f.submit();}}
+return 'ok';})()"""
         const val OG_JS = """(function(){var m=document.querySelector('meta[property="og:image"],meta[name="og:image"],meta[name="twitter:image"],meta[property="twitter:image"]');return m?m.content:null})()"""
     }
 

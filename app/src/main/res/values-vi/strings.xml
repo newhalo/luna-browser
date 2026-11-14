@@ -207,4 +207,27 @@
     <string name="about_hold_ok_v">Đổi giữa con trỏ và chế độ liên kết</string>
     <string name="about_hold_back">Giữ Quay lại</string>
     <string name="about_hold_back_v">Mở thanh công cụ</string>
+    <string name="vid_resumed">Tiếp tục từ %s</string>
+    <string name="toast_phone_open">Từ điện thoại: %s</string>
+    <string name="toast_pin_changed">Đã tạo mã PIN mới</string>
+    <string name="set_cat_phone">Điện thoại</string>
+    <string name="set_phone">Điều khiển bằng điện thoại</string>
+    <string name="set_phone_d">Gửi địa chỉ, từ khóa và văn bản từ điện thoại cùng mạng Wi-Fi.</string>
+    <string name="set_phone_addr">Địa chỉ</string>
+    <string name="set_phone_pin">Mã PIN</string>
+    <string name="set_phone_newpin">Tạo mã PIN mới</string>
+    <string name="set_phone_newpin_d">Điện thoại phải ghép nối lại.</string>
+    <string name="set_phone_none">Chưa kết nối mạng</string>
+    <string name="ph_title">Luna remote</string>
+    <string name="ph_pin">Nhập mã PIN hiển thị trên TV (Cài đặt, Điện thoại)</string>
+    <string name="ph_pair">Ghép nối</string>
+    <string name="ph_hint">Địa chỉ, từ khóa hoặc văn bản</string>
+    <string name="ph_open">Mở trên TV</string>
+    <string name="ph_search">Tìm kiếm trên TV</string>
+    <string name="ph_type">Gõ vào ô trên trang</string>
+    <string name="ph_enter">Gõ và nhấn Enter</string>
+    <string name="ph_sent">Đã gửi tới TV</string>
+    <string name="ph_bad_pin">Sai mã PIN</string>
+    <string name="ph_locked">Thử quá nhiều lần. Vui lòng đợi nửa phút.</string>
+    <string name="ph_nofield">TV chưa chọn ô nhập liệu nào. Hãy đưa con trỏ vào ô đó và nhấn OK trước.</string>
 </resources>

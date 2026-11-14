@@ -219,4 +219,27 @@
     <string name="about_hold_ok_v">Переключение между указателем и режимом ссылок</string>
     <string name="about_hold_back">Удержание «Назад»</string>
     <string name="about_hold_back_v">Открыть панель инструментов</string>
+    <string name="vid_resumed">Продолжено с %s</string>
+    <string name="toast_phone_open">С телефона: %s</string>
+    <string name="toast_pin_changed">Создан новый PIN-код</string>
+    <string name="set_cat_phone">Телефон</string>
+    <string name="set_phone">Управление с телефона</string>
+    <string name="set_phone_d">Отправляйте адреса, запросы и текст с телефона в той же сети Wi-Fi.</string>
+    <string name="set_phone_addr">Адрес</string>
+    <string name="set_phone_pin">PIN-код</string>
+    <string name="set_phone_newpin">Новый PIN-код</string>
+    <string name="set_phone_newpin_d">Телефоны нужно будет подключить заново.</string>
+    <string name="set_phone_none">Нет подключения к сети</string>
+    <string name="ph_title">Пульт Luna</string>
+    <string name="ph_pin">Введите PIN-код, показанный на телевизоре (Настройки, Телефон)</string>
+    <string name="ph_pair">Подключить</string>
+    <string name="ph_hint">Адрес, запрос или текст</string>
+    <string name="ph_open">Открыть на ТВ</string>
+    <string name="ph_search">Искать на ТВ</string>
+    <string name="ph_type">Ввести в поле на странице</string>
+    <string name="ph_enter">Ввести и нажать Enter</string>
+    <string name="ph_sent">Отправлено на ТВ</string>
+    <string name="ph_bad_pin">Неверный PIN-код</string>
+    <string name="ph_locked">Слишком много попыток. Подождите полминуты.</string>
+    <string name="ph_nofield">На телевизоре не выбрано текстовое поле. Наведите на него курсор и нажмите OK.</string>
 </resources>

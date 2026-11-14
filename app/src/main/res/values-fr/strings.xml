@@ -211,4 +211,27 @@
     <string name="about_hold_ok_v">Bascule entre le mode pointeur et le mode liens</string>
     <string name="about_hold_back">Maintenir Retour</string>
     <string name="about_hold_back_v">Ouvre la barre d’outils</string>
+    <string name="vid_resumed">Reprise à %s</string>
+    <string name="toast_phone_open">Depuis le téléphone : %s</string>
+    <string name="toast_pin_changed">Nouveau code PIN créé</string>
+    <string name="set_cat_phone">Téléphone</string>
+    <string name="set_phone">Télécommande par téléphone</string>
+    <string name="set_phone_d">Envoyez des adresses, des recherches et du texte depuis un téléphone sur le même Wi-Fi.</string>
+    <string name="set_phone_addr">Adresse</string>
+    <string name="set_phone_pin">Code PIN</string>
+    <string name="set_phone_newpin">Nouveau code PIN</string>
+    <string name="set_phone_newpin_d">Les téléphones devront être appairés de nouveau.</string>
+    <string name="set_phone_none">Non connecté à un réseau</string>
+    <string name="ph_title">Télécommande Luna</string>
+    <string name="ph_pin">Saisissez le code PIN affiché sur la télé (Réglages, Téléphone)</string>
+    <string name="ph_pair">Appairer</string>
+    <string name="ph_hint">Adresse, recherche ou texte</string>
+    <string name="ph_open">Ouvrir sur la télé</string>
+    <string name="ph_search">Rechercher sur la télé</string>
+    <string name="ph_type">Saisir dans la page</string>
+    <string name="ph_enter">Saisir et appuyer sur Entrée</string>
+    <string name="ph_sent">Envoyé à la télé</string>
+    <string name="ph_bad_pin">Code PIN incorrect</string>
+    <string name="ph_locked">Trop de tentatives. Attendez une demi-minute.</string>
+    <string name="ph_nofield">Aucun champ de texte n’est sélectionné sur la télé. Placez d’abord le pointeur dessus et appuyez sur OK.</string>
 </resources>

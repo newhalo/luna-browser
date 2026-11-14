@@ -207,4 +207,27 @@
     <string name="about_hold_ok_v">ポインターモードとリンクモードを切り替え</string>
     <string name="about_hold_back">戻る長押し</string>
     <string name="about_hold_back_v">ツールバーを開く</string>
+    <string name="vid_resumed">%s から再開しました</string>
+    <string name="toast_phone_open">スマホから: %s</string>
+    <string name="toast_pin_changed">新しいPINを作成しました</string>
+    <string name="set_cat_phone">スマホ</string>
+    <string name="set_phone">スマホリモコン</string>
+    <string name="set_phone_d">同じWi-Fiのスマホから、アドレス・検索語・テキストを送信します。</string>
+    <string name="set_phone_addr">アドレス</string>
+    <string name="set_phone_pin">PIN</string>
+    <string name="set_phone_newpin">新しいPIN</string>
+    <string name="set_phone_newpin_d">スマホは再度ペアリングが必要になります。</string>
+    <string name="set_phone_none">ネットワークに接続されていません</string>
+    <string name="ph_title">Luna リモコン</string>
+    <string name="ph_pin">テレビに表示されているPINを入力してください（設定、スマホ）</string>
+    <string name="ph_pair">ペアリング</string>
+    <string name="ph_hint">アドレス、検索語、テキスト</string>
+    <string name="ph_open">テレビで開く</string>
+    <string name="ph_search">テレビで検索</string>
+    <string name="ph_type">ページの入力欄に入力</string>
+    <string name="ph_enter">入力してEnterを押す</string>
+    <string name="ph_sent">テレビに送信しました</string>
+    <string name="ph_bad_pin">PINが違います</string>
+    <string name="ph_locked">試行回数が多すぎます。30秒ほどお待ちください。</string>
+    <string name="ph_nofield">テレビで入力欄が選択されていません。先にポインターを入力欄に合わせてOKを押してください。</string>
 </resources>

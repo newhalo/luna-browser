@@ -11,13 +11,17 @@ import android.view.KeyEvent
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.luna.browser.browser.BrowserController
 import com.luna.browser.data.AdBlocker
 import com.luna.browser.data.K
 import com.luna.browser.data.Store
+import com.luna.browser.remote.PhoneRemote
+import com.luna.browser.remote.RemoteAction
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -45,7 +49,57 @@ class AppState(val activity: Activity) {
     private val main = Handler(Looper.getMainLooper())
     val scope = kotlinx.coroutines.MainScope()
 
+    // ---- Phone remote ----
+    /** True while Luna is on screen: the phone remote only listens then. */
+    var foreground by mutableStateOf(false)
+
+    val remote = PhoneRemote(
+        pin = { store.str(K.PHONE_PIN) },
+        labels = {
+            mapOf(
+                "ph_title" to s(R.string.ph_title), "ph_pin" to s(R.string.ph_pin), "ph_pair" to s(R.string.ph_pair),
+                "ph_hint" to s(R.string.ph_hint), "ph_open" to s(R.string.ph_open), "ph_search" to s(R.string.ph_search),
+                "ph_type" to s(R.string.ph_type), "ph_enter" to s(R.string.ph_enter), "ph_sent" to s(R.string.ph_sent),
+                "ph_bad_pin" to s(R.string.ph_bad_pin), "ph_locked" to s(R.string.ph_locked), "ph_nofield" to s(R.string.ph_nofield),
+            )
+        },
+        perform = { action, text, done -> main.post { performRemote(action, text, done) } },
+    )
+
+    private var addressCache: Pair<Long, String?> = 0L to null
+
+    /** "http://192.168.1.20:8765" while the phone remote is listening, else null. Cached: it asks the network stack. */
+    fun phoneAddress(): String? {
+        val port = remote.port
+        if (port == 0) return null
+        val now = System.currentTimeMillis()
+        if (now - addressCache.first > 5_000) addressCache = now to PhoneRemote.localAddress()
+        return addressCache.second?.let { "http://$it:$port" }
+    }
+
+    private fun performRemote(action: RemoteAction, text: String, done: (Boolean) -> Unit) {
+        when (action) {
+            RemoteAction.Ping -> done(true)
+            RemoteAction.Open, RemoteAction.Search -> {
+                val url = if (action == RemoteAction.Search) store.searchUrl(text) else store.resolve(text)
+                // Only web pages: no file://, intent:// and the like, even with the right PIN.
+                if (!url.startsWith("http://") && !url.startsWith("https://")) return done(false)
+                toast(R.string.toast_phone_open, text.take(60))
+                browser.load(url)
+                if (screen != Screen.Browser) navigate(Screen.Browser)
+                done(true)
+            }
+            RemoteAction.Type, RemoteAction.TypeEnter ->
+                if (screen == Screen.Browser) browser.typeIntoFocused(text, action == RemoteAction.TypeEnter, done) else done(false)
+        }
+    }
+
     init {
+        scope.launch {
+            snapshotFlow { foreground && store.bool(K.PHONE) }.distinctUntilChanged().collect { on ->
+                if (on) remote.start() else remote.stop()
+            }
+        }
         // Filter lists refresh in the background (first run, then daily) — but not during start-up,
         // when download + recompile would compete with the first frames.
         scope.launch {
@@ -193,6 +247,7 @@ class AppState(val activity: Activity) {
     }
 
     fun destroy() {
+        remote.stop()
         netCallback?.let { runCatching { activity.getSystemService(ConnectivityManager::class.java)?.unregisterNetworkCallback(it) } }
         browser.destroy()
         scope.cancel()

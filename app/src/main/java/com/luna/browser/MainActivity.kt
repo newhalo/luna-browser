@@ -63,6 +63,16 @@ class MainActivity : ComponentActivity() {
         return super.dispatchKeyEvent(event)
     }
 
+    override fun onStart() {
+        super.onStart()
+        app.foreground = true
+    }
+
+    override fun onStop() {
+        app.foreground = false
+        super.onStop()
+    }
+
     override fun onPause() {
         super.onPause()
         if (app.screen == Screen.Browser) app.browser.webView.onPause()

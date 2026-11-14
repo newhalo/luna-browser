@@ -76,4 +76,6 @@ dependencies {
     implementation("androidx.profileinstaller:profileinstaller:1.3.1")
 
     testImplementation("junit:junit:4.13.2")
+    // The Android SDK stubs have no org.json implementation, which unit tests need.
+    testImplementation("org.json:json:20240303")
 }

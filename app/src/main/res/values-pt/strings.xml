@@ -211,4 +211,27 @@
     <string name="about_hold_ok_v">Alterna entre o modo ponteiro e o modo links</string>
     <string name="about_hold_back">Segurar Voltar</string>
     <string name="about_hold_back_v">Abre a barra de ferramentas</string>
+    <string name="vid_resumed">Retomado em %s</string>
+    <string name="toast_phone_open">Do telemóvel: %s</string>
+    <string name="toast_pin_changed">Novo PIN criado</string>
+    <string name="set_cat_phone">Telemóvel</string>
+    <string name="set_phone">Comando pelo telemóvel</string>
+    <string name="set_phone_d">Envie endereços, pesquisas e texto a partir de um telemóvel na mesma rede Wi-Fi.</string>
+    <string name="set_phone_addr">Endereço</string>
+    <string name="set_phone_pin">PIN</string>
+    <string name="set_phone_newpin">Novo PIN</string>
+    <string name="set_phone_newpin_d">Os telemóveis terão de ser emparelhados de novo.</string>
+    <string name="set_phone_none">Sem ligação à rede</string>
+    <string name="ph_title">Comando Luna</string>
+    <string name="ph_pin">Introduza o PIN apresentado na TV (Definições, Telemóvel)</string>
+    <string name="ph_pair">Emparelhar</string>
+    <string name="ph_hint">Endereço, pesquisa ou texto</string>
+    <string name="ph_open">Abrir na TV</string>
+    <string name="ph_search">Pesquisar na TV</string>
+    <string name="ph_type">Escrever na página</string>
+    <string name="ph_enter">Escrever e premir Enter</string>
+    <string name="ph_sent">Enviado para a TV</string>
+    <string name="ph_bad_pin">PIN incorreto</string>
+    <string name="ph_locked">Demasiadas tentativas. Aguarde meio minuto.</string>
+    <string name="ph_nofield">Nenhum campo de texto está selecionado na TV. Mova primeiro o ponteiro para o campo e prima OK.</string>
 </resources>

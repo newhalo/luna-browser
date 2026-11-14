@@ -211,4 +211,27 @@
     <string name="about_hold_ok_v">Zwischen Zeiger- und Link-Modus wechseln</string>
     <string name="about_hold_back">Zurück gedrückt halten</string>
     <string name="about_hold_back_v">Symbolleiste öffnen</string>
+    <string name="vid_resumed">Fortgesetzt bei %s</string>
+    <string name="toast_phone_open">Vom Handy: %s</string>
+    <string name="toast_pin_changed">Neue PIN erstellt</string>
+    <string name="set_cat_phone">Handy</string>
+    <string name="set_phone">Handy-Fernbedienung</string>
+    <string name="set_phone_d">Adressen, Suchen und Text von einem Handy im selben WLAN senden.</string>
+    <string name="set_phone_addr">Adresse</string>
+    <string name="set_phone_pin">PIN</string>
+    <string name="set_phone_newpin">Neue PIN</string>
+    <string name="set_phone_newpin_d">Handys müssen sich erneut koppeln.</string>
+    <string name="set_phone_none">Mit keinem Netzwerk verbunden</string>
+    <string name="ph_title">Luna-Fernbedienung</string>
+    <string name="ph_pin">Gib die PIN ein, die auf dem Fernseher angezeigt wird (Einstellungen, Handy)</string>
+    <string name="ph_pair">Koppeln</string>
+    <string name="ph_hint">Adresse, Suche oder Text</string>
+    <string name="ph_open">Auf dem Fernseher öffnen</string>
+    <string name="ph_search">Auf dem Fernseher suchen</string>
+    <string name="ph_type">In die Seite tippen</string>
+    <string name="ph_enter">Tippen und Enter drücken</string>
+    <string name="ph_sent">An den Fernseher gesendet</string>
+    <string name="ph_bad_pin">Falsche PIN</string>
+    <string name="ph_locked">Zu viele Versuche. Bitte eine halbe Minute warten.</string>
+    <string name="ph_nofield">Auf dem Fernseher ist kein Textfeld ausgewählt. Bewege zuerst den Zeiger darauf und drücke OK.</string>
 </resources>

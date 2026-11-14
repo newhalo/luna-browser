@@ -232,4 +232,27 @@
     <string name="about_hold_ok_v">Switch between pointer and link mode</string>
     <string name="about_hold_back">Hold Back</string>
     <string name="about_hold_back_v">Open the toolbar</string>
+    <string name="vid_resumed">Resumed from %s</string>
+    <string name="toast_phone_open">From phone: %s</string>
+    <string name="toast_pin_changed">New PIN created</string>
+    <string name="set_cat_phone">Phone remote</string>
+    <string name="set_phone">Phone remote</string>
+    <string name="set_phone_d">Send addresses, searches and text from a phone on the same Wi-Fi.</string>
+    <string name="set_phone_addr">Address</string>
+    <string name="set_phone_pin">PIN</string>
+    <string name="set_phone_newpin">New PIN</string>
+    <string name="set_phone_newpin_d">Phones have to pair again.</string>
+    <string name="set_phone_none">Not connected to a network</string>
+    <string name="ph_title">Luna remote</string>
+    <string name="ph_pin">Enter the PIN shown on the TV (Settings, Phone remote)</string>
+    <string name="ph_pair">Pair</string>
+    <string name="ph_hint">Address, search or text</string>
+    <string name="ph_open">Open on TV</string>
+    <string name="ph_search">Search on TV</string>
+    <string name="ph_type">Type into the page</string>
+    <string name="ph_enter">Type and press Enter</string>
+    <string name="ph_sent">Sent to the TV</string>
+    <string name="ph_bad_pin">Wrong PIN</string>
+    <string name="ph_locked">Too many attempts. Wait half a minute.</string>
+    <string name="ph_nofield">No text field is selected on the TV. Move the pointer onto it and press OK first.</string>
 </resources>

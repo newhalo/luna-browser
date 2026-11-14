@@ -30,6 +30,10 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 - **Video first** — fullscreen controls for any HTML5 video, **even inside a player iframe from another domain**
   (where most film sites put it). Hold ← / → to seek: key repeats accumulate, accelerate (10 s → 30 s → 60 s) and
   are previewed on the progress bar, then sent as **one** seek, so the stream doesn't reload at every step.
+- **Continue where you left off** — long videos remember their position; the next time you open the page Luna jumps
+  back to it and the card on Home shows a progress bar.
+- **Phone remote** — type an address, a search, or text for a form field on your phone instead of with the remote:
+  open the address shown in *Settings → Phone remote* on a phone on the same Wi-Fi (details [below](#phone-remote)).
 - **Ad, tracker and pop-up blocking** — a standards-based filter engine (Adblock Plus / uBlock Origin syntax)
   with the community [EasyList](https://easylist.to) and [ABPVN](https://abpvn.com) lists refreshed daily, a built-in list, generic pop-up and
   redirect protection, removal of invisible click-catching overlays and "disable your ad blocker" nags.
@@ -138,6 +142,21 @@ docs/                                 architecture, design, ad blocking, perform
 
 Start with [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
+## Phone remote
+
+Typing with a TV remote is slow. With *Settings → Phone remote* on (the default), Luna listens on your home network
+while it is on screen:
+
+1. On the TV open **Settings → Phone remote**: it shows an address such as `http://192.168.1.20:8765` and a 4-digit PIN.
+2. On a phone connected to the same Wi-Fi, open that address in any browser and enter the PIN once (the phone
+   remembers it).
+3. Type an address or words and tap **Open on TV** or **Search on TV**. To fill a text box on a page (a film site's
+   search, a login), put the TV pointer on the box, press OK, then tap **Type into the page** (or **Type and press Enter**).
+
+It can only open web pages, search, and type into the focused field. Every request needs the PIN, five wrong
+PINs lock it for 30 seconds, and it stops listening when Luna is not on screen. The traffic is plain HTTP on your
+local network, so turn it off on networks you don't trust. *New PIN* unpairs all phones.
+
 ## Privacy
 
 Luna has no accounts, no analytics and no telemetry. The only network traffic besides the pages you open:
@@ -147,6 +166,7 @@ Luna has no accounts, no analytics and no telemetry. The only network traffic be
 | Filter lists: EasyList (`easylist.to`) or, for Vietnamese, ABPVN (`raw.githubusercontent.com`, `abpvn.com`) | first run, then daily | ad-blocking rules (each list can be switched off in Settings) |
 | `google.com/s2/favicons` | home screen, only for the built-in quick sites | their icons |
 | Thumbnails (`i.ytimg.com` or the page's own `og:image`) | home / history cards | artwork for pages you visited |
+| Incoming: your phone → the TV on port 8765 (LAN only, PIN-protected) | only while Luna is on screen and *Phone remote* is on | the phone remote |
 
 History, favourites and thumbnails stay in the app's private storage on the TV; *Settings → Privacy* clears them.
 Pages are rendered by the Android System WebView and get **no** JavaScript bridge to the app.
@@ -155,6 +175,7 @@ Pages are rendered by the Android System WebView and get **no** JavaScript bridg
 
 - [ ] More languages and native-speaker review of the existing translations ([how](docs/LOCALIZATION.md)).
 - [ ] Tabs.
+- [ ] Resume position for videos watched outside fullscreen.
 - [ ] Downloads handling.
 - [ ] Per-site settings (desktop / mobile, zoom, pointer mode).
 - [ ] Optional hosting of `luna.txt` for rule updates without a release.

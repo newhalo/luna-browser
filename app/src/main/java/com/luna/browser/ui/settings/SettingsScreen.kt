@@ -26,6 +26,7 @@ import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Mouse
+import androidx.compose.material.icons.rounded.PhoneAndroid
 import androidx.compose.material.icons.rounded.Shield
 import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.Videocam
@@ -87,11 +88,13 @@ private val categories = listOf(
     Cat(R.string.set_cat_browsing, Icons.Rounded.Mouse),
     Cat(R.string.set_cat_adblock, Icons.Rounded.Shield),
     Cat(R.string.set_cat_video, Icons.Rounded.Videocam),
+    Cat(R.string.set_cat_phone, Icons.Rounded.PhoneAndroid),
     Cat(R.string.set_cat_privacy, Icons.Rounded.Lock),
     Cat(R.string.set_cat_about, Icons.Rounded.Info),
 )
 
 private const val AD_BLOCKING = 3
+private const val PHONE = 5
 
 @Composable
 fun SettingsScreen(app: AppState) {
@@ -266,7 +269,15 @@ private fun rows(category: Int, app: AppState): List<SRow> {
             Info(app.s(R.string.info_back), app.s(R.string.info_back_v)),
             Info(app.s(R.string.info_pp), app.s(R.string.info_pp_v)),
         )
-        5 -> listOf(
+        PHONE -> listOf(
+            Toggle(K.PHONE, app.s(R.string.set_phone), app.s(R.string.set_phone_d)),
+            Info(app.s(R.string.set_phone_addr), app.phoneAddress() ?: app.s(R.string.set_phone_none)),
+            Info(app.s(R.string.set_phone_pin), s.str(K.PHONE_PIN)),
+            Action(app.s(R.string.set_phone_newpin), app.s(R.string.set_phone_newpin_d)) {
+                s.newPin(); app.toast(R.string.toast_pin_changed)
+            },
+        )
+        6 -> listOf(
             Toggle(K.THIRD_PARTY, app.s(R.string.set_3p), app.s(R.string.set_3p_d)),
             Action(app.s(R.string.set_clear_hist), app.s(R.string.set_clear_hist_d), danger = true, confirm = true) {
                 s.clearHistory(); app.toast(R.string.toast_history_cleared)

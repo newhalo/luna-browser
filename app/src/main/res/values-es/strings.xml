@@ -211,4 +211,27 @@
     <string name="about_hold_ok_v">Cambia entre modo puntero y modo enlaces</string>
     <string name="about_hold_back">Mantener Atrás</string>
     <string name="about_hold_back_v">Abre la barra de herramientas</string>
+    <string name="vid_resumed">Continuando desde %s</string>
+    <string name="toast_phone_open">Desde el móvil: %s</string>
+    <string name="toast_pin_changed">Nuevo PIN creado</string>
+    <string name="set_cat_phone">Móvil</string>
+    <string name="set_phone">Mando desde el móvil</string>
+    <string name="set_phone_d">Envía direcciones, búsquedas y texto desde un móvil en la misma red Wi-Fi.</string>
+    <string name="set_phone_addr">Dirección</string>
+    <string name="set_phone_pin">PIN</string>
+    <string name="set_phone_newpin">Nuevo PIN</string>
+    <string name="set_phone_newpin_d">Los móviles tendrán que emparejarse de nuevo.</string>
+    <string name="set_phone_none">Sin conexión a la red</string>
+    <string name="ph_title">Mando Luna</string>
+    <string name="ph_pin">Introduce el PIN que se muestra en la tele (Ajustes, Móvil)</string>
+    <string name="ph_pair">Emparejar</string>
+    <string name="ph_hint">Dirección, búsqueda o texto</string>
+    <string name="ph_open">Abrir en la tele</string>
+    <string name="ph_search">Buscar en la tele</string>
+    <string name="ph_type">Escribir en la página</string>
+    <string name="ph_enter">Escribir y pulsar Intro</string>
+    <string name="ph_sent">Enviado a la tele</string>
+    <string name="ph_bad_pin">PIN incorrecto</string>
+    <string name="ph_locked">Demasiados intentos. Espera medio minuto.</string>
+    <string name="ph_nofield">No hay ningún campo de texto seleccionado en la tele. Mueve el puntero sobre él y pulsa OK.</string>
 </resources>
