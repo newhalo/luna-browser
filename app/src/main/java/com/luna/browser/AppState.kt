@@ -1,0 +1,135 @@
+package com.luna.browser
+
+import android.app.Activity
+import android.net.ConnectivityManager
+import android.net.Network
+import android.os.Handler
+import android.os.Looper
+import android.view.KeyEvent
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import com.luna.browser.browser.BrowserController
+import com.luna.browser.data.AdBlocker
+import com.luna.browser.data.K
+import com.luna.browser.data.Store
+
+enum class Screen { Home, Browser, Settings, History, Favorites }
+
+/** Single source of truth for navigation, shared services and global key handling. */
+class AppState(val activity: Activity) {
+    val store = Store(activity)
+    val ads = AdBlocker(activity)
+    val browser: BrowserController by lazy { BrowserController(activity, this) }
+
+    var screen by mutableStateOf(Screen.Home)
+        private set
+    private val stack = ArrayDeque<Screen>()
+
+    var addressOpen by mutableStateOf(false)
+    var addressInitial = ""
+    var toastMsg by mutableStateOf<String?>(null)
+    var online by mutableStateOf(true)
+    val focusMemory = mutableMapOf<String, String>()
+    var onExit: () -> Unit = {}
+
+    private val main = Handler(Looper.getMainLooper())
+    private var backLong = false
+    private var netCallback: ConnectivityManager.NetworkCallback? = null
+
+    fun toast(msg: String) {
+        toastMsg = msg
+    }
+
+    // ---- Navigation ----
+    fun navigate(to: Screen) {
+        if (to == screen) return
+        stack.addLast(screen)
+        show(to)
+    }
+
+    fun goHome() {
+        stack.clear()
+        show(Screen.Home)
+    }
+
+    private fun show(to: Screen) {
+        if (screen == Screen.Browser) browser.onLeave()
+        screen = to
+        if (to == Screen.Browser) browser.onEnter()
+    }
+
+    /** Opens a URL or search query in the browser. */
+    fun openUrl(input: String) {
+        val url = store.resolve(input)
+        if (url.isEmpty()) return
+        browser.load(url)
+        if (screen != Screen.Browser) navigate(Screen.Browser)
+    }
+
+    /** Re-shows the page that is already loaded, or loads it if the browser is empty. */
+    fun resume(url: String) {
+        if (browser.webView.url == url) navigate(Screen.Browser) else openUrl(url)
+    }
+
+    fun openAddress(initial: String = "") {
+        addressInitial = initial
+        addressOpen = true
+    }
+
+    fun launch() {
+        val last = store.lastSession
+        if (store.str(K.LAUNCH) == "resume" && last != null) openUrl(last.url)
+    }
+
+    // ---- Keys ----
+    fun handleKey(e: KeyEvent): Boolean {
+        if (e.keyCode == KeyEvent.KEYCODE_BACK) return handleBack(e)
+        if (screen == Screen.Browser) return browser.handleKey(e)
+        return false
+    }
+
+    private fun handleBack(e: KeyEvent): Boolean {
+        if (e.action == KeyEvent.ACTION_DOWN) {
+            if (e.repeatCount == 0) backLong = false
+            else if (!backLong && e.eventTime - e.downTime >= 600) {
+                backLong = true
+                if (screen == Screen.Browser) browser.onLongBack()
+            }
+            return true
+        }
+        if (backLong) {
+            backLong = false
+            return true
+        }
+        back()
+        return true
+    }
+
+    fun back() {
+        when {
+            addressOpen -> addressOpen = false
+            screen == Screen.Browser && browser.onBack() -> Unit
+            stack.isNotEmpty() -> show(stack.removeLast())
+            screen != Screen.Home -> show(Screen.Home)
+            else -> onExit()
+        }
+    }
+
+    // ---- Network ----
+    fun registerNetwork() {
+        val cm = activity.getSystemService(ConnectivityManager::class.java) ?: return
+        online = cm.activeNetwork != null
+        val cb = object : ConnectivityManager.NetworkCallback() {
+            override fun onAvailable(network: Network) { main.post { online = true } }
+            override fun onLost(network: Network) { main.post { online = cm.activeNetwork != null } }
+        }
+        netCallback = cb
+        runCatching { cm.registerDefaultNetworkCallback(cb) }
+    }
+
+    fun destroy() {
+        netCallback?.let { runCatching { activity.getSystemService(ConnectivityManager::class.java)?.unregisterNetworkCallback(it) } }
+        browser.destroy()
+    }
+}

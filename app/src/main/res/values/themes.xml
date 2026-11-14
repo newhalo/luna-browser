@@ -1,0 +1,9 @@
+<resources>
+    <color name="luna_bg">#FF0B0D12</color>
+    <style name="Theme.Luna" parent="android:Theme.Material.NoActionBar">
+        <item name="android:windowBackground">@color/luna_bg</item>
+        <item name="android:colorBackground">@color/luna_bg</item>
+        <item name="android:statusBarColor">@color/luna_bg</item>
+        <item name="android:navigationBarColor">@color/luna_bg</item>
+    </style>
+</resources>
