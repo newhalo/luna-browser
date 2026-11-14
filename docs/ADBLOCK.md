@@ -76,8 +76,11 @@ top of `data/filter/FilterEngine.kt`; scriptlet and procedural filters (`#?#`, `
 - WebView does not report a request's resource type, so Luna infers it from the URL extension and the `Accept`
   header. A `$script` rule will not match a script served without a `.js` extension (such a request is treated as
   "unknown type" and matches only script / xhr / other rules).
-- Bundled `luna.txt` only changes with app releases. To ship updates without a release you could host it publicly
-  and add its URL as another entry in `FilterLists`.
+- `luna.txt` is bundled in the app **and** downloaded from this repository (`raw.githubusercontent.com/.../HEAD/...`)
+  once a day, so a fix reaches installed apps without a release. The copy with the higher `! Version: YYYY.MM.DD`
+  line wins, which is why every edit must bump that line; `BundledListTest` (CI) checks the header, that the file
+  parses into a sane number of rules, and that it has no script-injection syntax. Merging to the default branch
+  publishes the change to everyone, so review rule edits like code.
 - No filter list can stop an ad that is rendered *inside* the video stream.
 
 ## A note on use

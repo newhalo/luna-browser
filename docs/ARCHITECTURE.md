@@ -6,7 +6,7 @@ pages. A small set of plain-Kotlin classes owns state and behaviour; Compose onl
 ```
 MainActivity ── dispatchKeyEvent ──► AppState.handleKey ──► BrowserController.handleKey
      │                                    │
-     └── setContent ──► LunaApp ──► Home / Browser / Settings / History / Favorites screens
+     └── setContent ──► LunaApp ──► Home / Browser / Tabs / Settings / History / Favorites screens
                                           │
                          ┌────────────────┼───────────────────────────────┐
                          ▼                ▼                               ▼
@@ -24,9 +24,11 @@ MainActivity ── dispatchKeyEvent ──► AppState.handleKey ──► Brow
 | `Store` | `data` | Settings, favourites, history and artwork paths. Compose-observable; disk writes happen on a background executor. `version` is bumped on any change so screens can memoise |
 | `AdBlocker` | `data` | Owns the filter lists (bundled + downloaded), compiles them off the UI thread, answers `shouldBlock` for WebView threads |
 | `FilterBuilder` / `FilterEngine` | `data.filter` | Pure-Kotlin Adblock Plus parser and matcher (no Android dependency → plain JUnit tests) |
-| `PhoneRemote` | `remote` | LAN web server for the phone remote: PIN check, per-phone lock-out, a time and size budget per request, actions (open / search / type / remote keys / volume / home) handed to the UI thread through a callback — keys are injected as real `KeyEvent`s through the activity, limited to a whitelist; started and stopped by `AppState` from a `snapshotFlow` of "foreground and enabled" |
+| `PhoneRemote` | `remote` | LAN web server for the phone remote (keep-alive connections, closed when it stops): PIN check, per-phone lock-out, a time and size budget per request, actions (open / search / type / remote keys / volume / home / touchpad move, scroll, tap) handed to the UI thread through a callback — keys are injected as real `KeyEvent`s through the activity, limited to a whitelist; started and stopped by `AppState` from a `snapshotFlow` of "foreground and enabled" |
 | `ResumeRules` / `Store.savePosition` | `data` | Pure rules for "continue where you left off" (what is worth saving, when a video is finished, when a saved position applies) and the throttled store of positions; `BrowserController` polls the video twice a second while fullscreen |
-| `BrowserController` | `browser` | Owns the `WebView` and its clients; page state; error mapping; the **virtual cursor**; fullscreen video and remote handling; thumbnail capture |
+| `TabManager` / `Tab` / `TabPolicy` | `browser` | The open tabs. Each live tab owns a `BrowserController`; only 3 (2 on low-memory TVs) are live at once, the others are *frozen* to an address + title and loaded again when selected (`TabPolicy` decides what to freeze). Tabs are restored, frozen, after a restart. `AppState.browser` is the current tab's controller |
+| `BrowserController` | `browser` | Owns one tab's `WebView` and its clients; page state; error mapping; the **virtual cursor**; fullscreen and in-page video handling (it remembers where long videos were left); per-site settings applied *before* a request goes out (user agent, text size, ad blocking, control mode); thumbnail capture |
+| `SiteSettings` | `data` | Per-site overrides (desktop site, text size, ad blocking, control mode), stored by registrable domain; every field falls back to the global setting |
 | `PopupGuard` | `browser` | Generic pop-up rules plus the JavaScript injected into every frame (overlay sweeper, cross-iframe video bridge) |
 | `ui.components` | `ui` | `FocusSurface` and the TV widgets, `MediaCard`, `Aurora` / `Backdrop` |
 | `ui.theme` | `ui` | Colour, type and spacing tokens |

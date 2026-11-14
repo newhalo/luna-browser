@@ -6,6 +6,27 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- **Tabs**: up to 8 pages open at once. Each tab has its own WebView, but only 3 (2 on low-memory TVs) are live at a
+  time; the others are frozen to an address and loaded again when selected, so a TV's memory is never exhausted.
+  A *Tabs* screen (toolbar button, or on Home once something is open) shows them as the same 16:9 cards as Home:
+  OK opens one, Down reaches *Close tab* / *Close other tabs* / *New tab*. Tabs come back after a restart.
+- **Site settings**: a *Site* panel in the toolbar changes desktop site, text size, ad blocking and control mode for
+  just the site you are on (every field falls back to the global setting). *Settings → Browsing* shows how many sites
+  have overrides and can reset them. Useful when one site breaks with the blocker on, or needs bigger text.
+- **Filter rules without a release**: Luna's own `luna.txt` is also downloaded daily from this repository; the copy
+  with the higher `! Version:` wins. `BundledListTest` guards the file in CI.
+- **Phone touchpad**: a *D-pad / Touchpad* switch in the phone's Remote tab. Drag to move the pointer (with
+  acceleration), tap to click, two fingers to scroll; where there is no pointer (menus, Home, video) swipes become
+  D-pad presses. The phone connection is now kept alive for a smooth pointer.
+- Video position is also remembered for videos that play inside the page (not only fullscreen).
+- Debug builds install next to the release app (`com.luna.browser.debug`, "Luna (debug)").
+
+### Changed
+- The browser toolbar has two rows (address on top, actions below) to make room for *Tabs* and *Site*.
+- Toolchain: Android Gradle Plugin 8.13, Gradle 8.14, Kotlin 2.1 (with the Compose compiler plugin), Compose BOM
+  2024.12, compileSdk 36 and newer AndroidX / Coil libraries.
+
 ## [0.3.1] — 2026-11-15
 
 ### Added
