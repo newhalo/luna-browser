@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
@@ -183,12 +184,45 @@ private val scrim: ImageBitmap by lazy {
     bmp.asImageBitmap()
 }
 
+private class Slot<T>(val value: T)
+
+/**
+ * Crossfade without offscreen layers. Compose's Crossfade fades each child through an offscreen
+ * buffer — for a full-screen backdrop that is two extra full-screen passes per frame, which this
+ * TV's GPU can't afford. ModulateAlpha applies the alpha to each draw call directly.
+ */
+@Composable
+fun <T> LightCrossfade(target: T, durationMs: Int, modifier: Modifier = Modifier, content: @Composable (T) -> Unit) {
+    var current by remember { mutableStateOf(Slot(target)) }
+    var previous by remember { mutableStateOf<Slot<T>?>(null) }
+    val progress = remember { androidx.compose.animation.core.Animatable(1f) }
+    LaunchedEffect(target) {
+        if (target != current.value) {
+            previous = current
+            current = Slot(target)
+            progress.snapTo(0f)
+            progress.animateTo(1f, tween(durationMs))
+            previous = null
+        }
+    }
+    Box(modifier) {
+        previous?.let { p ->
+            androidx.compose.runtime.key(p) {
+                Box(Modifier.graphicsLayer { alpha = 1f - progress.value; compositingStrategy = CompositingStrategy.ModulateAlpha }) { content(p.value) }
+            }
+        }
+        androidx.compose.runtime.key(current) {
+            Box(Modifier.graphicsLayer { alpha = progress.value; compositingStrategy = CompositingStrategy.ModulateAlpha }) { content(current.value) }
+        }
+    }
+}
+
 /** Full-screen backdrop: the focused item's artwork over the aurora, with cinematic scrims. */
 @Composable
 fun Backdrop(art: () -> Any?, animated: Boolean = true) {
     Box(Modifier.fillMaxSize()) {
         Aurora(animated = animated)
-        Crossfade(targetState = art(), animationSpec = tween(ms(450)), label = "backdrop") { a ->
+        LightCrossfade(art(), ms(450), Modifier.fillMaxSize()) { a ->
             // alpha applied while drawing the image — Modifier.alpha would render it offscreen first
             if (a != null) Art(a, Modifier.fillMaxSize(), alpha = 0.62f)
         }
@@ -254,7 +288,7 @@ fun MediaCard(
                 Art(item.art, Modifier.fillMaxSize())
                 Box(Modifier.fillMaxSize().background(Brush.verticalGradient(0.45f to Color.Transparent, 1f to Color(0xCC000000))))
                 Row(Modifier.align(Alignment.BottomStart).padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
-                    SiteIcon(item.title, item.icon, 24.dp)
+                    SiteIcon(item.subtitle, item.icon, 24.dp)
                     Txt("  " + item.subtitle, T.caption.copy(fontSize = 14.sp, color = Color.White), color = Color.White)
                 }
             } else {

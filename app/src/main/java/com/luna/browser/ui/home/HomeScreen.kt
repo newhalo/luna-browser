@@ -65,6 +65,7 @@ import com.luna.browser.data.K
 import com.luna.browser.data.MediaItem
 import com.luna.browser.data.hostOf
 import com.luna.browser.ui.components.Backdrop
+import com.luna.browser.ui.components.LightCrossfade
 import com.luna.browser.ui.components.FocusSurface
 import com.luna.browser.ui.components.MediaCard
 import com.luna.browser.ui.components.MoonLogo
@@ -168,7 +169,7 @@ private fun Header(app: AppState) {
 @Composable
 private fun HeroInfo(hero: () -> MediaItem?, online: Boolean) {
     Box(Modifier.fillMaxWidth().height(132.dp).padding(horizontal = Dim.SafeH), contentAlignment = Alignment.BottomStart) {
-        Crossfade(targetState = hero(), animationSpec = tween(ms(220)), label = "hero") { h ->
+        LightCrossfade(hero(), ms(220)) { h ->
             Column(Modifier.width(640.dp)) {
                 if (h == null) {
                     Txt(greeting(), T.display.copy(fontSize = 42.sp))
@@ -301,7 +302,7 @@ fun AddressDialog(app: AppState) {
                 suggestions.forEach { s ->
                     FocusSurface({ app.addressOpen = false; app.openUrl(s.url) }, Modifier.fillMaxWidth().padding(vertical = 5.dp, horizontal = 6.dp).height(62.dp), focusScale = 1.02f) {
                         Row(Modifier.padding(horizontal = 18.dp).align(Alignment.CenterStart), verticalAlignment = Alignment.CenterVertically) {
-                            SiteIcon(s.title, s.icon, 36.dp)
+                            SiteIcon(s.subtitle, s.icon, 36.dp)
                             Column(Modifier.padding(start = 14.dp)) {
                                 Txt(s.title, T.label)
                                 Txt(hostOf(s.url), T.caption)
