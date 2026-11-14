@@ -196,7 +196,18 @@ class AdBlocker(private val ctx: Context) {
         c.readTimeout = 30_000
         c.setRequestProperty("User-Agent", "LunaBrowser/0.2 (Android TV)")
         if (c.responseCode != 200) error("HTTP ${c.responseCode}")
-        val text = c.inputStream.bufferedReader().use { it.readText() }
+        // A list is a few MB at most; refuse anything absurd rather than fill memory or storage.
+        val sink = java.io.ByteArrayOutputStream()
+        c.inputStream.use { input ->
+            val buf = ByteArray(16 * 1024)
+            while (true) {
+                val n = input.read(buf)
+                if (n < 0) break
+                if (sink.size() + n > MAX_LIST_BYTES) error("too large")
+                sink.write(buf, 0, n)
+            }
+        }
+        val text = sink.toString("UTF-8")
         // Guard against captive portals / error pages replacing a real list.
         if (text.lines().count { it.isNotBlank() && !it.startsWith("!") && !it.startsWith("#") } < 50) error("too short")
         val tmp = File(dir, "${l.id}.tmp")
@@ -213,6 +224,7 @@ class AdBlocker(private val ctx: Context) {
     }
 
     companion object {
+        private const val MAX_LIST_BYTES = 25 * 1024 * 1024
         private val scriptExt = Regex("\\.(m?js)(\\?|$)")
         private val imageExt = Regex("\\.(png|jpe?g|gif|webp|avif|svg|ico|bmp)(\\?|$)")
         private val cssExt = Regex("\\.css(\\?|$)")

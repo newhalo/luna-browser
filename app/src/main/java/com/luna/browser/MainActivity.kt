@@ -50,7 +50,8 @@ class MainActivity : ComponentActivity() {
 
     private fun handleIntent(i: Intent?): Boolean {
         val data = i?.data
-        if (i?.action == Intent.ACTION_VIEW && data != null) {
+        // Only web addresses: another app must not be able to point the browser at file:// or content:// URIs.
+        if (i?.action == Intent.ACTION_VIEW && data != null && (data.scheme == "http" || data.scheme == "https")) {
             app.openUrl(data.toString())
             return true
         }

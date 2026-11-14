@@ -5,16 +5,15 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.setValue
 import org.json.JSONObject
 import java.io.ByteArrayOutputStream
-import java.io.InputStream
 import java.net.Inet4Address
-import java.net.InetAddress
 import java.net.NetworkInterface
 import java.net.ServerSocket
 import java.net.Socket
 import java.net.URLDecoder
 import java.security.MessageDigest
 import java.util.concurrent.CountDownLatch
-import java.util.concurrent.Executors
+import java.util.concurrent.ArrayBlockingQueue
+import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 /** What a phone can ask the TV to do. */
@@ -35,13 +34,19 @@ class PhoneRemote(
     private val labels: () -> Map<String, String>,
     /** Runs the action on the UI thread and reports success through the callback. */
     private val perform: (RemoteAction, String, (Boolean) -> Unit) -> Unit,
+    /** Total time one connection may take; a client that trickles bytes can't hold a worker longer. */
+    private val budgetMs: Long = 5000,
 ) {
     /** The port in use, or 0 when stopped. Observable, so Settings shows the live address. */
     var port by mutableIntStateOf(0)
         private set
 
     @Volatile private var server: ServerSocket? = null
-    private val pool = Executors.newFixedThreadPool(3) { r -> Thread(r, "luna-remote").apply { isDaemon = true } }
+    // Three workers and a short queue: when busy, new connections are dropped rather than piling up.
+    private val pool = ThreadPoolExecutor(
+        3, 3, 0L, TimeUnit.MILLISECONDS, ArrayBlockingQueue(6),
+        { r -> Thread(r, "luna-remote").apply { isDaemon = true } }, ThreadPoolExecutor.AbortPolicy(),
+    )
 
     private var failures = 0
     private var lockedUntil = 0L
@@ -84,52 +89,75 @@ class PhoneRemote(
     }
 
     // ---- HTTP ----
+    private class Request(val head: String, val body: String)
+
     private fun serve(c: Socket) {
         c.use {
             try {
-                it.soTimeout = 4000
-                val input = it.getInputStream().buffered()
-                val head = readHead(input) ?: return
-                val lines = head.split("\r\n")
-                val (method, path) = lines[0].split(' ').let { p -> (p.getOrNull(0) ?: "") to (p.getOrNull(1) ?: "/") }
-                val length = lines.drop(1).firstOrNull { l -> l.startsWith("content-length:", ignoreCase = true) }
-                    ?.substringAfter(':')?.trim()?.toIntOrNull() ?: 0
+                // Only devices on the local network may talk to the TV, even if a router forwards the port.
+                val peer = it.inetAddress
+                if (!(peer.isLoopbackAddress || peer.isSiteLocalAddress || peer.isLinkLocalAddress)) return
                 val out = it.getOutputStream()
+                val req = readRequest(it) ?: return
+                val lines = req.head.split("\r\n")
+                val (method, path) = lines[0].split(' ').let { p -> (p.getOrNull(0) ?: "") to (p.getOrNull(1) ?: "/") }
                 when {
                     method == "GET" && (path == "/" || path.startsWith("/?")) -> respond(out, 200, "text/html; charset=utf-8", page())
-                    method == "POST" && path == "/api" && length in 0..MAX_BODY -> {
-                        val body = readBody(input, length)
-                        val (code, json) = api(parseForm(body), it.inetAddress)
+                    method == "POST" && path == "/api" -> {
+                        val (code, json) = api(parseForm(req.body))
                         respond(out, code, "application/json; charset=utf-8", json)
                     }
                     else -> respond(out, 404, "text/plain; charset=utf-8", "Not found")
                 }
-            } catch (e: Exception) { /* a dropped or malformed connection: nothing to do */ }
+            } catch (e: Exception) { /* a dropped, slow or malformed connection: nothing to do */ }
         }
     }
 
-    private fun readHead(input: InputStream): String? {
-        val buf = ByteArrayOutputStream()
-        var tail = 0
-        while (buf.size() < MAX_HEAD) {
-            val b = input.read()
-            if (b < 0) return null
-            buf.write(b)
-            tail = if (b == '\r'.code || b == '\n'.code) tail + 1 else 0
-            if (tail == 4) return buf.toString("ISO-8859-1").trimEnd()
+    /**
+     * Reads one request within [budgetMs] in total (not per read), refusing heads over [MAX_HEAD] and
+     * bodies over [MAX_BODY]. Returns null for anything that doesn't fit.
+     */
+    private fun readRequest(c: Socket): Request? {
+        val deadline = System.currentTimeMillis() + budgetMs
+        val input = c.getInputStream()
+        val data = ByteArrayOutputStream()
+        val chunk = ByteArray(2048)
+        var headEnd = -1
+        var length = 0
+        while (true) {
+            val left = deadline - System.currentTimeMillis()
+            if (left <= 0) return null
+            c.soTimeout = left.toInt()
+            val n = input.read(chunk)
+            if (n < 0) return null
+            data.write(chunk, 0, n)
+            if (data.size() > MAX_HEAD + MAX_BODY) return null
+            val b = data.toByteArray()
+            if (headEnd < 0) {
+                headEnd = indexOfHeadEnd(b)
+                if (headEnd < 0) {
+                    if (b.size > MAX_HEAD) return null
+                    continue
+                }
+                if (headEnd > MAX_HEAD) return null
+                val head = String(b, 0, headEnd, Charsets.ISO_8859_1)
+                length = head.split("\r\n").drop(1)
+                    .firstOrNull { l -> l.startsWith("content-length:", ignoreCase = true) }
+                    ?.substringAfter(':')?.trim()?.toIntOrNull() ?: 0
+                if (length !in 0..MAX_BODY) return Request(head, "")
+            }
+            if (b.size - (headEnd + 4) >= length) {
+                val head = String(b, 0, headEnd, Charsets.ISO_8859_1)
+                return Request(head, String(b, headEnd + 4, length, Charsets.UTF_8))
+            }
         }
-        return null
     }
 
-    private fun readBody(input: InputStream, length: Int): String {
-        val data = ByteArray(length)
-        var n = 0
-        while (n < length) {
-            val r = input.read(data, n, length - n)
-            if (r < 0) break
-            n += r
+    private fun indexOfHeadEnd(b: ByteArray): Int {
+        for (i in 0..b.size - 4) {
+            if (b[i] == 13.toByte() && b[i + 1] == 10.toByte() && b[i + 2] == 13.toByte() && b[i + 3] == 10.toByte()) return i
         }
-        return String(data, 0, n, Charsets.UTF_8)
+        return -1
     }
 
     private fun parseForm(body: String): Map<String, String> = body.split('&').mapNotNull {
@@ -140,14 +168,16 @@ class PhoneRemote(
     private fun respond(out: java.io.OutputStream, code: Int, type: String, body: String) {
         val bytes = body.toByteArray(Charsets.UTF_8)
         val head = "HTTP/1.1 $code ${if (code == 200) "OK" else "Error"}\r\nContent-Type: $type\r\nContent-Length: ${bytes.size}\r\n" +
-            "Cache-Control: no-store\r\nX-Content-Type-Options: nosniff\r\nReferrer-Policy: no-referrer\r\nConnection: close\r\n\r\n"
+            "Cache-Control: no-store\r\nX-Content-Type-Options: nosniff\r\nReferrer-Policy: no-referrer\r\nX-Frame-Options: DENY\r\n" +
+            "Content-Security-Policy: default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'\r\n" +
+            "Connection: close\r\n\r\n"
         out.write(head.toByteArray(Charsets.ISO_8859_1))
         out.write(bytes)
         out.flush()
     }
 
     // ---- API ----
-    private fun api(form: Map<String, String>, from: InetAddress): Pair<Int, String> {
+    private fun api(form: Map<String, String>): Pair<Int, String> {
         val now = System.currentTimeMillis()
         synchronized(this) {
             if (now < lockedUntil) return 429 to reply(false, "locked")

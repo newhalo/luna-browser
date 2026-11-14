@@ -521,7 +521,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         if (youtubeThumb(u) == null) {
             webView.evaluateJavascript(OG_JS) { r ->
                 val img = runCatching { JSONArray("[$r]").optString(0) }.getOrNull()
-                if (img != null && img.startsWith("http")) app.store.updateArt(u, image = img)
+                if (img != null && (img.startsWith("https://") || img.startsWith("http://"))) app.store.updateArt(u, image = img)
             }
         }
         snapshot(u)

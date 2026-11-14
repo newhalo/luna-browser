@@ -233,7 +233,7 @@ class Store(ctx: Context) {
     }
 
     /** Replaces the pairing PIN (phones have to pair again). */
-    fun newPin() = put(K.PHONE_PIN, "%04d".format(java.security.SecureRandom().nextInt(10_000)))
+    fun newPin() = put(K.PHONE_PIN, "%06d".format(java.security.SecureRandom().nextInt(1_000_000)))
 
     fun str(k: String): String = settings[k] ?: defaults[k] ?: ""
     fun bool(k: String): Boolean = str(k) == "true"

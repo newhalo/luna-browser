@@ -148,7 +148,7 @@ Typing with a TV remote is slow. With *Settings → Phone remote* on (the defaul
 while it is on screen:
 
 1. On the TV open **Settings → Phone remote**: it shows a QR code, the address (such as `http://192.168.1.20:8765`)
-   and a 4-digit PIN.
+   and a 6-digit PIN.
 2. On a phone connected to the same Wi-Fi, scan the QR code with the camera: the page opens already paired (or open the
    address by hand and enter the PIN once). The phone remembers the pairing.
 3. Type an address or words and tap **Open on TV** or **Search on TV**. To fill a text box on a page (a film site's

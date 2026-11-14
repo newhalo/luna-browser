@@ -11,14 +11,20 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 /** Runs the real server on the loopback interface and talks to it like a phone would. */
 class PhoneRemoteTest {
+    // Every label the page uses (AppState.labels provides the same ones).
+    private val PAGE_KEYS = listOf(
+        "ph_title", "ph_pin", "ph_pair", "ph_hint", "ph_open", "ph_search", "ph_type", "ph_enter",
+        "ph_sent", "ph_bad_pin", "ph_locked", "ph_nofield",
+    )
     private val calls = CopyOnWriteArrayList<Pair<RemoteAction, String>>()
     private lateinit var remote: PhoneRemote
 
     @Before fun start() {
         remote = PhoneRemote(
             pin = { "4321" },
-            labels = { mapOf("ph_title" to "Luna <remote>", "ph_hint" to "Address \"or\" search") },
+            labels = { PAGE_KEYS.associateWith { "text-$it" } + mapOf("ph_title" to "Luna <remote>", "ph_hint" to "Address \"or\" search") },
             perform = { a, t, done -> calls += a to t; done(a != RemoteAction.Type) },
+            budgetMs = 500,
         )
         remote.start()
         val end = System.currentTimeMillis() + 3000
@@ -75,6 +81,26 @@ class PhoneRemoteTest {
         assertEquals(200, code)
         assertTrue(body.contains("\"ok\":false"))
         assertTrue(body.contains("nofield"))
+    }
+
+    @Test fun clientsThatStallDontBlockTheServer() {
+        // More half-sent requests than there are workers: each is dropped once its time budget is spent.
+        val stalled = List(6) { java.net.Socket("127.0.0.1", remote.port).also { it.getOutputStream().write("GET / HT".toByteArray()) } }
+        Thread.sleep(900)
+        assertEquals(200, get("/").first)
+        stalled.forEach { it.close() }
+    }
+
+    @Test fun oversizedHeadersAreDropped() {
+        java.net.Socket("127.0.0.1", remote.port).use {
+            it.soTimeout = 2000
+            it.getOutputStream().write(("GET / HTTP/1.1
+X: " + "a".repeat(20_000) + "
+
+").toByteArray())
+            assertTrue(it.getInputStream().read() == -1)   // closed without an answer
+        }
+        assertEquals(200, get("/").first)
     }
 
     @Test fun badRequestsAreRefused() {
