@@ -122,13 +122,17 @@ fun HomeScreen(app: AppState) {
         }
     }
     val onCardFocus = remember { { item: MediaItem -> hero.value = item } }
+    // One requester per card: UP from a card goes to the card above it. The default focus search would
+    // skip the (scrolled out of view) row above and land on the search bar.
+    val requesters = remember(rows) {
+        rows.mapIndexed { r, row -> List(row.second.size) { i -> if (r == 0 && i == 0) firstCardFr else FocusRequester() } }
+    }
 
     Box(Modifier.fillMaxSize()) {
         Backdrop({ hero.value?.art }, animated = store.bool(K.ANIMATED_BG))
         Column(Modifier.fillMaxSize().padding(top = Dim.SafeV)) {
             Header(app)
             HeroInfo(app, { hero.value }, app.online)
-            SearchRow(app, searchFr, firstCardFr) { hero.value = null }
             val scope = rememberCoroutineScope()
             val rowY = remember { mutableMapOf<Int, Int>() }
             // The rows are not in a scroll container: Compose's "scroll the focused child into view" would
@@ -136,6 +140,10 @@ fun HomeScreen(app: AppState) {
             // top of this area with a plain translation (focus search still sees the real layout).
             val pivot = remember { Animatable(0f) }
             val pivotMs = ms(260)
+            SearchRow(app, searchFr, firstCardFr) {
+                hero.value = null
+                scope.launch { pivot.animateTo(0f, tween(pivotMs)) }   // back to the first row when leaving the rows
+            }
             Box(Modifier.weight(1f).fillMaxWidth().clipToBounds()) {
                 Column(
                     Modifier.fillMaxWidth().wrapContentHeight(align = Alignment.Top, unbounded = true)
@@ -152,7 +160,7 @@ fun HomeScreen(app: AppState) {
                                     if (f.hasFocus) scope.launch { pivot.animateTo((rowY[r] ?: 0).toFloat(), tween(pivotMs)) }
                                 },
                         ) {
-                            MediaRow(app, title, items, width, if (r == 0) firstCardFr else null, onFocus = onCardFocus) { app.openUrl(it.url) }
+                            MediaRow(app, title, items, width, requesters[r], requesters.getOrNull(r - 1), onFocus = onCardFocus) { app.openUrl(it.url) }
                         }
                     }
                 }
@@ -250,7 +258,8 @@ private fun MediaRow(
     @StringRes title: Int,
     items: List<MediaItem>,
     width: Dp,
-    firstFr: FocusRequester?,
+    mine: List<FocusRequester>,
+    above: List<FocusRequester>?,
     onFocus: (MediaItem) -> Unit,
     onClick: (MediaItem) -> Unit,
 ) {
@@ -294,7 +303,13 @@ private fun MediaRow(
                         item, width, onFocus, { onClick(item) },
                         Modifier.rememberFocus(app, "home", item.key)
                             .onFocusChanged { if (it.isFocused) reveal(i) }
-                            .then(if (i == 0 && firstFr != null) Modifier.focusRequester(firstFr) else Modifier),
+                            .focusRequester(mine[i])
+                            .then(
+                                if (above != null && above.isNotEmpty()) {
+                                    val target = above[minOf(i, above.size - 1)]
+                                    Modifier.focusProperties { up = target }
+                                } else Modifier,
+                            ),
                     )
                 }
             }

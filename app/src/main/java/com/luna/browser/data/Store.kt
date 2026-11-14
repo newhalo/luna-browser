@@ -324,9 +324,12 @@ class Store(ctx: Context) {
     // ---- History ----
     fun recordVisit(title: String, url: String) {
         if (!url.startsWith("http")) return
-        val old = history.firstOrNull { it.url == url }
+        // The same page / video reached through another address form (m. or www., a #fragment, a playlist
+        // parameter) is one history entry.
+        val key = ResumeRules.key(url)
+        val old = history.firstOrNull { ResumeRules.key(it.url) == key }
         val t = cleanTitle(title, url).ifBlank { old?.title ?: hostOf(url) }
-        history.removeAll { it.url == url }
+        history.removeAll { ResumeRules.key(it.url) == key }
         history.add(0, HistoryEntry(t, url, System.currentTimeMillis(), old?.image ?: youtubeThumb(url), old?.snap))
         while (history.size > MAX_HISTORY) history.removeAt(history.size - 1)
         if (old == null) {
