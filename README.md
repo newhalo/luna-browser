@@ -49,6 +49,8 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 > Captured on a Xiaomi TV S Pro 65" (4K, Android 14). Sample content is the open-source Blender movie
 > *Big Buck Bunny* and Wikipedia.
 
+![Home screen with search and Continue watching](docs/screenshots/01-home.jpg)
+
 | | |
 |:--|:--|
 | ![Fullscreen video with seek preview](docs/screenshots/04-video-seek-preview.jpg) | ![Fullscreen video controls](docs/screenshots/05-video-controls.jpg) |
