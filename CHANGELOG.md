@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.3.1] — 2026-11-15
+
 ### Added
 - **Remote pad on the phone page**: a *Remote* tab with D-pad (hold to repeat, so the pointer glides), OK, Back, Home,
   Menu, rewind / play-pause / fast-forward and volume; the typing tools moved to a *Type* tab.
@@ -81,5 +83,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - First version: Jetpack Compose TV UI on the system WebView, virtual cursor, floating toolbar, fullscreen
   video controls, host-based ad blocking, settings, history and favourites.
 
-[Unreleased]: https://github.com/newhalo/luna-browser/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/newhalo/luna-browser/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/newhalo/luna-browser/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/newhalo/luna-browser/releases/tag/v0.3.0
