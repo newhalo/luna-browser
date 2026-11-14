@@ -268,7 +268,7 @@ body{background:radial-gradient(120% 70% at 50% 0%,#1d2347 0%,#0b0d12 62%) no-re
 .app{min-height:100%;min-height:100dvh;display:flex;flex-direction:column;padding:max(10px,env(safe-area-inset-top)) 18px max(12px,env(safe-area-inset-bottom));max-width:480px;margin:0 auto}
 header{display:flex;align-items:center;gap:10px;padding:8px 2px 4px}
 header b{font-size:20px;letter-spacing:.2px}.logo{width:30px;height:30px}
-.dot{margin-left:auto;width:10px;height:10px;border-radius:50%;background:#5b617d;box-shadow:0 0 0 4px rgba(91,97,125,.2)}.dot.ok{background:#4fe3a0;box-shadow:0 0 0 4px rgba(79,227,160,.18)}
+.dot{margin-left:auto;width:10px;height:10px;border-radius:50%;background:#5b617d;box-shadow:0 0 0 4px rgba(91,97,125,.2)}.dot.live{background:#4fe3a0;box-shadow:0 0 0 4px rgba(79,227,160,.18)}
 main{flex:1;display:flex;flex-direction:column;justify-content:center;padding:6px 0}
 .ic{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
 button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
@@ -379,7 +379,7 @@ var L=__LABELS__,pin=null;try{pin=localStorage.getItem('luna.pin')}catch(e){}
 var qr=(location.hash||'').match(/pin=(\d{1,8})/);if(qr){pin=qr[1];try{history.replaceState(null,'',location.pathname)}catch(e){}}
 function $(i){return document.getElementById(i)}
 function say(t,e){var x=$('toast');x.textContent=t||'';x.className='toast'+(t?' show':'')+(e?' err':'');clearTimeout(say.t);if(t)say.t=setTimeout(function(){x.className='toast'},2400)}
-function live(ok){$('dot').className='dot'+(ok?' ok':'')}
+function live(ok){$('dot').className='dot'+(ok?' live':'')}
 function body(act,text){return 'pin='+encodeURIComponent(pin||'')+'&act='+act+'&text='+encodeURIComponent(text||'')}
 function post(act,text){return fetch('/api',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body(act,text)}).then(function(r){return r.json().then(function(j){j.status=r.status;return j})})}
 function show(paired){$('pair').hidden=paired;$('app').hidden=!paired;if(!paired)live(false)}
