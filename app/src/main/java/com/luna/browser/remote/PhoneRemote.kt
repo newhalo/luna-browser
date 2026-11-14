@@ -17,7 +17,12 @@ import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 
 /** What a phone can ask the TV to do. */
-enum class RemoteAction { Ping, Open, Search, Type, TypeEnter }
+enum class RemoteAction {
+    Ping, Open, Search, Type, TypeEnter,
+    /** A remote key: pressed once, or held ([KeyDown] repeated, then [KeyUp]). */
+    Key, KeyDown, KeyUp,
+    Volume, Home,
+}
 
 /**
  * A tiny web server so a phone on the same Wi-Fi can send an address, a search or text to the TV
@@ -197,10 +202,15 @@ class PhoneRemote(
             "search" -> RemoteAction.Search
             "type" -> RemoteAction.Type
             "enter" -> RemoteAction.TypeEnter
+            "key" -> RemoteAction.Key
+            "kd" -> RemoteAction.KeyDown
+            "ku" -> RemoteAction.KeyUp
+            "vol" -> RemoteAction.Volume
+            "home" -> RemoteAction.Home
             else -> return 400 to reply(false, "act")
         }
         val text = (form["text"] ?: "").take(MAX_TEXT)
-        if (action != RemoteAction.Ping && text.isBlank()) return 400 to reply(false, "text")
+        if (action != RemoteAction.Ping && action != RemoteAction.Home && text.isBlank()) return 400 to reply(false, "text")
         val latch = CountDownLatch(1)
         var success = false
         perform(action, text) { success = it; latch.countDown() }
@@ -245,13 +255,27 @@ main{max-width:520px;margin:0 auto}h1{font-size:22px;margin:8px 0 20px;display:f
 h1 span{color:#8aa4ff}.card{background:#171a2b;border:1px solid #262b45;border-radius:18px;padding:16px;margin-bottom:14px}
 input,textarea{width:100%;background:#0c0e18;color:inherit;border:1px solid #333a5c;border-radius:12px;padding:14px;font:inherit}
 input:focus,textarea:focus{outline:2px solid #8aa4ff;border-color:transparent}textarea{min-height:90px;resize:vertical}
-button{width:100%;margin-top:10px;padding:14px;border:0;border-radius:12px;font:inherit;font-weight:600;color:#0c0e18;background:#8aa4ff}
+button{width:100%;margin-top:10px;padding:14px;border:0;border-radius:12px;font:inherit;font-weight:600;color:#0c0e18;background:#8aa4ff;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.tabs{display:flex;gap:8px;margin-bottom:14px}.tabs button{margin:0;background:#171a2b;color:#aab0cc;border:1px solid #262b45}.tabs button.on{background:#8aa4ff;color:#0c0e18;border-color:#8aa4ff}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:330px;margin:4px auto 14px}
+.k{margin:0;padding:0;height:78px;font-size:26px;background:#262b45;color:#f1f3fb;user-select:none;-webkit-user-select:none}
+.k:active,.k.on{background:#8aa4ff;color:#0c0e18}.pad .ok{background:#8aa4ff;color:#0c0e18;font-size:22px;border-radius:50%}
+.pad .u{grid-column:2}.pad .l{grid-column:1;grid-row:2}.pad .ok{grid-column:2;grid-row:2}.pad .r{grid-column:3;grid-row:2}.pad .d{grid-column:2;grid-row:3}
+.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:330px;margin:0 auto 10px}.row3 .k{height:58px;font-size:22px}
 button.alt{background:#262b45;color:#f1f3fb}p{margin:0 0 10px;color:#aab0cc}#msg{min-height:1.4em;color:#9be3b0}#msg.err{color:#ff9a9a}
 </style></head><body><main>
 <h1><span>&#9790;</span> {{ph_title}}</h1>
 <div id="pair" class="card" hidden><p>{{ph_pin}}</p><input id="pin" inputmode="numeric" maxlength="8" autocomplete="off"><button id="go">{{ph_pair}}</button></div>
 <div id="app" hidden>
-<div class="card"><textarea id="text" placeholder="{{ph_hint}}" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
+<div class="tabs"><button id="tabRemote" class="on">{{ph_tab_remote}}</button><button id="tabType">{{ph_tab_type}}</button></div>
+<div id="remote" class="card">
+<div class="pad"><button class="k u hold" data-k="DPAD_UP">&#9650;</button><button class="k l hold" data-k="DPAD_LEFT">&#9664;</button>
+<button class="k ok tap" data-a="key" data-k="DPAD_CENTER">OK</button><button class="k r hold" data-k="DPAD_RIGHT">&#9654;</button><button class="k d hold" data-k="DPAD_DOWN">&#9660;</button></div>
+<div class="row3"><button class="k tap" data-a="key" data-k="BACK">&#8617;</button><button class="k tap" data-a="home" data-k="1">&#8962;</button><button class="k tap" data-a="key" data-k="MENU">&#9776;</button></div>
+<div class="row3"><button class="k tap" data-a="key" data-k="MEDIA_REWIND">&#9194;</button><button class="k tap" data-a="key" data-k="MEDIA_PLAY_PAUSE">&#9199;</button><button class="k tap" data-a="key" data-k="MEDIA_FAST_FORWARD">&#9193;</button></div>
+<div class="row3"><button class="k tap" data-a="vol" data-k="down">&#128265;</button><button class="k tap" data-a="vol" data-k="mute">&#128263;</button><button class="k tap" data-a="vol" data-k="up">&#128266;</button></div>
+</div>
+<div id="typing" class="card" hidden><textarea id="text" placeholder="{{ph_hint}}" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
 <button id="open">{{ph_open}}</button><button id="search" class="alt">{{ph_search}}</button><button id="type" class="alt">{{ph_type}}</button><button id="enter" class="alt">{{ph_enter}}</button></div>
 </div><div id="msg"></div></main><script>
 var L=__LABELS__,pin=null;try{pin=localStorage.getItem('luna.pin')}catch(e){}
@@ -261,6 +285,22 @@ function say(t,e){var m=$('msg');m.textContent=t||'';m.className=e?'err':''}
 function call(act,text){var b='pin='+encodeURIComponent(pin||'')+'&act='+act+'&text='+encodeURIComponent(text||'');
 return fetch('/api',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:b}).then(function(r){return r.json().then(function(j){j.status=r.status;return j})})}
 function show(paired){$('pair').hidden=paired;$('app').hidden=!paired}
+function tab(t){$('remote').hidden=t!=='remote';$('typing').hidden=t!=='type';$('tabRemote').className=t==='remote'?'on':'';$('tabType').className=t==='type'?'on':''}
+$('tabRemote').onclick=function(){tab('remote')};$('tabType').onclick=function(){tab('type')};
+function key(act,k){var b='pin='+encodeURIComponent(pin||'')+'&act='+act+'&text='+encodeURIComponent(k);
+return fetch('/api',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:b}).then(function(r){return r.json()}).then(function(j){if(!j.ok&&(j.error==='pin'||j.error==='locked'))result(j)}).catch(function(){})}
+function buzz(){try{navigator.vibrate&&navigator.vibrate(10)}catch(e){}}
+var holds={};
+function press(el){var k=el.dataset.k;if(holds[k])return;buzz();el.classList.add('on');var h={t0:Date.now()};holds[k]=h;key('kd',k);
+h.delay=setTimeout(function(){h.iv=setInterval(function(){key('kd',k)},110)},380)}
+function release(el){var k=el.dataset.k,h=holds[k];if(!h)return;delete holds[k];el.classList.remove('on');clearTimeout(h.delay);clearInterval(h.iv);
+setTimeout(function(){key('ku',k)},Math.max(0,130-(Date.now()-h.t0)))}
+Array.prototype.forEach.call(document.querySelectorAll('.hold'),function(el){
+el.addEventListener('pointerdown',function(e){e.preventDefault();press(el)});
+['pointerup','pointercancel','pointerleave'].forEach(function(n){el.addEventListener(n,function(){release(el)})});
+el.addEventListener('contextmenu',function(e){e.preventDefault()})});
+Array.prototype.forEach.call(document.querySelectorAll('.tap'),function(el){el.addEventListener('click',function(){buzz();key(el.dataset.a,el.dataset.k)});
+el.addEventListener('contextmenu',function(e){e.preventDefault()})});
 function result(j){if(j.ok){say(L.ph_sent);return}if(j.error==='pin'){try{localStorage.removeItem('luna.pin')}catch(e){}pin=null;show(false);say(L.ph_bad_pin,1)}
 else if(j.error==='locked')say(L.ph_locked,1);else if(j.error==='nofield')say(L.ph_nofield,1);else say('?',1)}
 function send(act){var t=$('text').value;if(!t.trim())return;say('...');call(act,t).then(result).catch(function(){say('?',1)})}

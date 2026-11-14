@@ -7,6 +7,7 @@ import android.net.ConnectivityManager
 import android.net.Network
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.view.KeyEvent
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
@@ -26,6 +27,15 @@ import kotlinx.coroutines.launch
 import java.util.Locale
 
 enum class Screen { Home, Browser, Settings, History, Favorites }
+
+/** The keys the phone pad may press (anything else is refused). */
+private val REMOTE_KEYS = mapOf(
+    "DPAD_UP" to KeyEvent.KEYCODE_DPAD_UP, "DPAD_DOWN" to KeyEvent.KEYCODE_DPAD_DOWN,
+    "DPAD_LEFT" to KeyEvent.KEYCODE_DPAD_LEFT, "DPAD_RIGHT" to KeyEvent.KEYCODE_DPAD_RIGHT,
+    "DPAD_CENTER" to KeyEvent.KEYCODE_DPAD_CENTER, "BACK" to KeyEvent.KEYCODE_BACK, "MENU" to KeyEvent.KEYCODE_MENU,
+    "MEDIA_PLAY_PAUSE" to KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE,
+    "MEDIA_REWIND" to KeyEvent.KEYCODE_MEDIA_REWIND, "MEDIA_FAST_FORWARD" to KeyEvent.KEYCODE_MEDIA_FAST_FORWARD,
+)
 
 /** Single source of truth for navigation, shared services and global key handling. */
 class AppState(val activity: Activity) {
@@ -61,6 +71,7 @@ class AppState(val activity: Activity) {
                 "ph_hint" to s(R.string.ph_hint), "ph_open" to s(R.string.ph_open), "ph_search" to s(R.string.ph_search),
                 "ph_type" to s(R.string.ph_type), "ph_enter" to s(R.string.ph_enter), "ph_sent" to s(R.string.ph_sent),
                 "ph_bad_pin" to s(R.string.ph_bad_pin), "ph_locked" to s(R.string.ph_locked), "ph_nofield" to s(R.string.ph_nofield),
+                "ph_tab_remote" to s(R.string.ph_tab_remote), "ph_tab_type" to s(R.string.ph_tab_type),
             )
         },
         perform = { action, text, done -> main.post { performRemote(action, text, done) } },
@@ -91,7 +102,59 @@ class AppState(val activity: Activity) {
             }
             RemoteAction.Type, RemoteAction.TypeEnter ->
                 if (screen == Screen.Browser) browser.typeIntoFocused(text, action == RemoteAction.TypeEnter, done) else done(false)
+            RemoteAction.Key, RemoteAction.KeyDown, RemoteAction.KeyUp -> {
+                val code = REMOTE_KEYS[text]
+                if (code == null) done(false) else { injectKey(code, action); done(true) }
+            }
+            RemoteAction.Volume -> done(adjustVolume(text))
+            RemoteAction.Home -> { goHome(); done(true) }
         }
+    }
+
+    // Keys from the phone pad go through the activity like the real remote's, so everything (focus
+    // navigation, the pointer, fullscreen video controls) reacts exactly the same.
+    private val padDown = HashMap<Int, Pair<Long, Int>>()   // key code -> (down time, repeat count)
+    private val padRelease = HashMap<Int, Runnable>()
+
+    private fun sendKey(code: Int, action: Int, repeat: Int, downTime: Long) {
+        activity.dispatchKeyEvent(KeyEvent(downTime, SystemClock.uptimeMillis(), action, code, repeat))
+    }
+
+    private fun injectKey(code: Int, action: RemoteAction) {
+        val now = SystemClock.uptimeMillis()
+        when (action) {
+            RemoteAction.Key -> {
+                sendKey(code, KeyEvent.ACTION_DOWN, 0, now)
+                sendKey(code, KeyEvent.ACTION_UP, 0, now)
+            }
+            RemoteAction.KeyDown -> {
+                val held = padDown[code]
+                val (downTime, repeat) = if (held == null) now to 0 else held.first to held.second + 1
+                padDown[code] = downTime to repeat
+                sendKey(code, KeyEvent.ACTION_DOWN, repeat, downTime)
+                // If the phone disappears while a key is held, release it so the pointer doesn't run away.
+                padRelease.remove(code)?.let { main.removeCallbacks(it) }
+                Runnable { injectKey(code, RemoteAction.KeyUp) }.also { padRelease[code] = it; main.postDelayed(it, 1500) }
+            }
+            RemoteAction.KeyUp -> {
+                val held = padDown.remove(code) ?: return
+                padRelease.remove(code)?.let { main.removeCallbacks(it) }
+                sendKey(code, KeyEvent.ACTION_UP, 0, held.first)
+            }
+            else -> Unit
+        }
+    }
+
+    private fun adjustVolume(what: String): Boolean {
+        val am = activity.getSystemService(android.media.AudioManager::class.java) ?: return false
+        val dir = when (what) {
+            "up" -> android.media.AudioManager.ADJUST_RAISE
+            "down" -> android.media.AudioManager.ADJUST_LOWER
+            "mute" -> android.media.AudioManager.ADJUST_TOGGLE_MUTE
+            else -> return false
+        }
+        am.adjustStreamVolume(android.media.AudioManager.STREAM_MUSIC, dir, android.media.AudioManager.FLAG_SHOW_UI)
+        return true
     }
 
     init {

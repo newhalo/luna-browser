@@ -256,4 +256,6 @@
     <string name="ph_locked">Too many attempts. Wait half a minute.</string>
     <string name="ph_nofield">No text field is selected on the TV. Move the pointer onto it and press OK first.</string>
     <string name="set_phone_qr">Scan with your phone camera to open the remote already paired.</string>
+    <string name="ph_tab_remote">Remote</string>
+    <string name="ph_tab_type">Type</string>
 </resources>

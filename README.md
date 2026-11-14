@@ -153,10 +153,12 @@ while it is on screen:
    and a 6-digit PIN.
 2. On a phone connected to the same Wi-Fi, scan the QR code with the camera: the page opens already paired (or open the
    address by hand and enter the PIN once). The phone remembers the pairing.
-3. Type an address or words and tap **Open on TV** or **Search on TV**. To fill a text box on a page (a film site's
-   search, a login), put the TV pointer on the box, press OK, then tap **Type into the page** (or **Type and press Enter**).
+3. The **Remote** tab is a full remote in your hand: D-pad (hold an arrow to keep the pointer moving), **OK**, Back,
+   Home, Menu, rewind / play-pause / fast-forward and volume. The **Type** tab sends text: type an address or words and
+   tap **Open on TV** or **Search on TV**; to fill a text box on a page (a film site's search, a login) put the pointer
+   on the box, press OK, then tap **Type into the page** (or **Type and press Enter**).
 
-It can only open web pages, search, and type into the focused field. Every request needs the PIN, five wrong
+It can only open web pages, search, press the remote's keys inside Luna, change the volume, and type into the focused field. Every request needs the PIN, five wrong
 PINs lock it for 30 seconds, and it stops listening when Luna is not on screen. The traffic is plain HTTP on your
 local network, so turn it off on networks you don't trust. *New PIN* unpairs all phones.
 

@@ -235,4 +235,6 @@
     <string name="ph_locked">Trop de tentatives. Attendez une demi-minute.</string>
     <string name="ph_nofield">Aucun champ de texte n’est sélectionné sur la télé. Placez d’abord le pointeur dessus et appuyez sur OK.</string>
     <string name="set_phone_qr">Scannez avec l’appareil photo du téléphone pour ouvrir la télécommande déjà appairée.</string>
+    <string name="ph_tab_remote">Télécommande</string>
+    <string name="ph_tab_type">Saisie</string>
 </resources>

@@ -14,7 +14,7 @@ class PhoneRemoteTest {
     // Every label the page uses (AppState.labels provides the same ones).
     private val PAGE_KEYS = listOf(
         "ph_title", "ph_pin", "ph_pair", "ph_hint", "ph_open", "ph_search", "ph_type", "ph_enter",
-        "ph_sent", "ph_bad_pin", "ph_locked", "ph_nofield",
+        "ph_sent", "ph_bad_pin", "ph_locked", "ph_nofield", "ph_tab_remote", "ph_tab_type",
     )
     private val calls = CopyOnWriteArrayList<Pair<RemoteAction, String>>()
     private lateinit var remote: PhoneRemote
@@ -99,6 +99,27 @@ class PhoneRemoteTest {
             assertTrue(it.getInputStream().read() == -1)   // closed without an answer
         }
         assertEquals(200, get("/").first)
+    }
+
+    @Test fun padKeysReachTheApp() {
+        assertEquals(200, post("pin=4321&act=kd&text=DPAD_UP").first)
+        assertEquals(200, post("pin=4321&act=ku&text=DPAD_UP").first)
+        assertEquals(200, post("pin=4321&act=key&text=BACK").first)
+        assertEquals(200, post("pin=4321&act=vol&text=up").first)
+        assertEquals(200, post("pin=4321&act=home").first)   // no text needed
+        assertEquals(
+            listOf(
+                RemoteAction.KeyDown to "DPAD_UP", RemoteAction.KeyUp to "DPAD_UP", RemoteAction.Key to "BACK",
+                RemoteAction.Volume to "up", RemoteAction.Home to "",
+            ),
+            calls.toList(),
+        )
+    }
+
+    @Test fun padKeysNeedThePin() {
+        assertEquals(401, post("pin=1&act=kd&text=DPAD_UP").first)
+        assertEquals(400, post("pin=4321&act=key&text=").first)
+        assertTrue(calls.isEmpty())
     }
 
     @Test fun badRequestsAreRefused() {

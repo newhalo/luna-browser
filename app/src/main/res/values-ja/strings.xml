@@ -231,4 +231,6 @@
     <string name="ph_locked">試行回数が多すぎます。30秒ほどお待ちください。</string>
     <string name="ph_nofield">テレビで入力欄が選択されていません。先にポインターを入力欄に合わせてOKを押してください。</string>
     <string name="set_phone_qr">スマホのカメラで読み取ると、ペアリング済みのリモコンが開きます。</string>
+    <string name="ph_tab_remote">リモコン</string>
+    <string name="ph_tab_type">入力</string>
 </resources>

@@ -231,4 +231,6 @@
     <string name="ph_locked">시도 횟수가 너무 많습니다. 30초 후에 다시 시도하세요.</string>
     <string name="ph_nofield">TV에서 선택된 입력란이 없습니다. 먼저 포인터를 입력란에 올리고 OK를 누르세요.</string>
     <string name="set_phone_qr">휴대전화 카메라로 스캔하면 연결된 상태로 리모컨이 열립니다.</string>
+    <string name="ph_tab_remote">리모컨</string>
+    <string name="ph_tab_type">입력</string>
 </resources>

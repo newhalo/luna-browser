@@ -235,4 +235,6 @@
     <string name="ph_locked">Zu viele Versuche. Bitte eine halbe Minute warten.</string>
     <string name="ph_nofield">Auf dem Fernseher ist kein Textfeld ausgewählt. Bewege zuerst den Zeiger darauf und drücke OK.</string>
     <string name="set_phone_qr">Mit der Handykamera scannen, um die Fernbedienung bereits gekoppelt zu öffnen.</string>
+    <string name="ph_tab_remote">Fernbedienung</string>
+    <string name="ph_tab_type">Eingabe</string>
 </resources>

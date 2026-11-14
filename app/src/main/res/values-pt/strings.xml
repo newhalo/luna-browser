@@ -235,4 +235,6 @@
     <string name="ph_locked">Demasiadas tentativas. Aguarde meio minuto.</string>
     <string name="ph_nofield">Nenhum campo de texto está selecionado na TV. Mova primeiro o ponteiro para o campo e prima OK.</string>
     <string name="set_phone_qr">Digitalize com a câmara do telemóvel para abrir o comando já emparelhado.</string>
+    <string name="ph_tab_remote">Comando</string>
+    <string name="ph_tab_type">Escrever</string>
 </resources>

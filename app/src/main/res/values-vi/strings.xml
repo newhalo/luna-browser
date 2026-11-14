@@ -231,4 +231,6 @@
     <string name="ph_locked">Thử quá nhiều lần. Vui lòng đợi nửa phút.</string>
     <string name="ph_nofield">TV chưa chọn ô nhập liệu nào. Hãy đưa con trỏ vào ô đó và nhấn OK trước.</string>
     <string name="set_phone_qr">Quét bằng camera điện thoại để mở trang điều khiển đã ghép nối sẵn.</string>
+    <string name="ph_tab_remote">Điều khiển</string>
+    <string name="ph_tab_type">Nhập</string>
 </resources>

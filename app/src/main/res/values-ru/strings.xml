@@ -243,4 +243,6 @@
     <string name="ph_locked">Слишком много попыток. Подождите полминуты.</string>
     <string name="ph_nofield">На телевизоре не выбрано текстовое поле. Наведите на него курсор и нажмите OK.</string>
     <string name="set_phone_qr">Отсканируйте камерой телефона, чтобы открыть пульт уже подключённым.</string>
+    <string name="ph_tab_remote">Пульт</string>
+    <string name="ph_tab_type">Ввод</string>
 </resources>
