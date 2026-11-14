@@ -49,12 +49,17 @@ class PhoneRemote(
     @Volatile private var server: ServerSocket? = null
     // Three workers and a short queue: when busy, new connections are dropped rather than piling up.
     private val pool = ThreadPoolExecutor(
-        3, 3, 0L, TimeUnit.MILLISECONDS, ArrayBlockingQueue(6),
+        3, 3, 0L, TimeUnit.MILLISECONDS, ArrayBlockingQueue(16),
         { r -> Thread(r, "luna-remote").apply { isDaemon = true } }, ThreadPoolExecutor.AbortPolicy(),
     )
 
-    private var failures = 0
-    private var lockedUntil = 0L
+    /** Wrong-PIN bookkeeping per client address: one stale phone can't lock the others out. */
+    private class Fails(var count: Int = 0, var until: Long = 0L)
+
+    private val fails = HashMap<String, Fails>()
+    private var globalFails = 0
+    private var globalWindow = 0L
+    private var globalUntil = 0L
 
     private var wanted = false
 
@@ -109,7 +114,7 @@ class PhoneRemote(
                 when {
                     method == "GET" && (path == "/" || path.startsWith("/?")) -> respond(out, 200, "text/html; charset=utf-8", page())
                     method == "POST" && path == "/api" -> {
-                        val (code, json) = api(parseForm(req.body))
+                        val (code, json) = api(parseForm(req.body), it.inetAddress?.hostAddress ?: "")
                         respond(out, code, "application/json; charset=utf-8", json)
                     }
                     else -> respond(out, 404, "text/plain; charset=utf-8", "Not found")
@@ -182,19 +187,24 @@ class PhoneRemote(
     }
 
     // ---- API ----
-    private fun api(form: Map<String, String>): Pair<Int, String> {
+    private fun api(form: Map<String, String>, client: String): Pair<Int, String> {
         val now = System.currentTimeMillis()
         synchronized(this) {
-            if (now < lockedUntil) return 429 to reply(false, "locked")
+            if (fails.size > 64) fails.entries.removeAll { it.value.until < now && it.value.count == 0 }
+            if (now < globalUntil || now < (fails[client]?.until ?: 0L)) return 429 to reply(false, "locked")
         }
         val given = form["pin"] ?: ""
         val ok = MessageDigest.isEqual(given.toByteArray(), pin().toByteArray())
         synchronized(this) {
+            val f = fails.getOrPut(client) { Fails() }
             if (!ok) {
-                if (++failures >= MAX_FAILURES) { lockedUntil = now + LOCK_MS; failures = 0 }
+                if (++f.count >= MAX_FAILURES) { f.until = now + LOCK_MS; f.count = 0 }
+                // Many different addresses all guessing: slow everyone down for a while.
+                if (now - globalWindow > 60_000) { globalWindow = now; globalFails = 0 }
+                if (++globalFails >= GLOBAL_FAILURES) { globalUntil = now + 2 * LOCK_MS; globalFails = 0 }
                 return 401 to reply(false, "pin")
             }
-            failures = 0
+            f.count = 0
         }
         val action = when (form["act"]) {
             "ping" -> RemoteAction.Ping
@@ -236,6 +246,7 @@ class PhoneRemote(
         private const val MAX_TEXT = 2000
         private const val MAX_FAILURES = 5
         private const val LOCK_MS = 30_000L
+        private const val GLOBAL_FAILURES = 40
 
         /** The TV's address on the local network (Wi-Fi or Ethernet), or null when offline. */
         fun localAddress(): String? = try {
@@ -246,49 +257,141 @@ class PhoneRemote(
                 .firstOrNull { it.isSiteLocalAddress }?.hostAddress
         } catch (e: Exception) { null }
 
-        private val PAGE = """<!doctype html><html><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="color-scheme" content="dark">
+        private val PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="color-scheme" content="dark"><meta name="theme-color" content="#0b0d12">
 <title>{{ph_title}}</title><style>
-:root{color-scheme:dark}*{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:#0c0e18;color:#f1f3fb;font:17px/1.4 system-ui,-apple-system,Roboto,sans-serif;padding:20px max(16px,env(safe-area-inset-left))}
-main{max-width:520px;margin:0 auto}h1{font-size:22px;margin:8px 0 20px;display:flex;gap:10px;align-items:center}
-h1 span{color:#8aa4ff}.card{background:#171a2b;border:1px solid #262b45;border-radius:18px;padding:16px;margin-bottom:14px}
-input,textarea{width:100%;background:#0c0e18;color:inherit;border:1px solid #333a5c;border-radius:12px;padding:14px;font:inherit}
-input:focus,textarea:focus{outline:2px solid #8aa4ff;border-color:transparent}textarea{min-height:90px;resize:vertical}
-button{width:100%;margin-top:10px;padding:14px;border:0;border-radius:12px;font:inherit;font-weight:600;color:#0c0e18;background:#8aa4ff;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
-.tabs{display:flex;gap:8px;margin-bottom:14px}.tabs button{margin:0;background:#171a2b;color:#aab0cc;border:1px solid #262b45}.tabs button.on{background:#8aa4ff;color:#0c0e18;border-color:#8aa4ff}
-.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:330px;margin:4px auto 14px}
-.k{margin:0;padding:0;height:78px;font-size:26px;background:#262b45;color:#f1f3fb;user-select:none;-webkit-user-select:none}
-.k:active,.k.on{background:#8aa4ff;color:#0c0e18}.pad .ok{background:#8aa4ff;color:#0c0e18;font-size:22px;border-radius:50%}
-.pad .u{grid-column:2}.pad .l{grid-column:1;grid-row:2}.pad .ok{grid-column:2;grid-row:2}.pad .r{grid-column:3;grid-row:2}.pad .d{grid-column:2;grid-row:3}
-.row3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:330px;margin:0 auto 10px}.row3 .k{height:58px;font-size:22px}
-button.alt{background:#262b45;color:#f1f3fb}p{margin:0 0 10px;color:#aab0cc}#msg{min-height:1.4em;color:#9be3b0}#msg.err{color:#ff9a9a}
-</style></head><body><main>
-<h1><span>&#9790;</span> {{ph_title}}</h1>
-<div id="pair" class="card" hidden><p>{{ph_pin}}</p><input id="pin" inputmode="numeric" maxlength="8" autocomplete="off"><button id="go">{{ph_pair}}</button></div>
-<div id="app" hidden>
-<div class="tabs"><button id="tabRemote" class="on">{{ph_tab_remote}}</button><button id="tabType">{{ph_tab_type}}</button></div>
-<div id="remote" class="card">
-<div class="pad"><button class="k u hold" data-k="DPAD_UP">&#9650;</button><button class="k l hold" data-k="DPAD_LEFT">&#9664;</button>
-<button class="k ok tap" data-a="key" data-k="DPAD_CENTER">OK</button><button class="k r hold" data-k="DPAD_RIGHT">&#9654;</button><button class="k d hold" data-k="DPAD_DOWN">&#9660;</button></div>
-<div class="row3"><button class="k tap" data-a="key" data-k="BACK">&#8617;</button><button class="k tap" data-a="home" data-k="1">&#8962;</button><button class="k tap" data-a="key" data-k="MENU">&#9776;</button></div>
-<div class="row3"><button class="k tap" data-a="key" data-k="MEDIA_REWIND">&#9194;</button><button class="k tap" data-a="key" data-k="MEDIA_PLAY_PAUSE">&#9199;</button><button class="k tap" data-a="key" data-k="MEDIA_FAST_FORWARD">&#9193;</button></div>
-<div class="row3"><button class="k tap" data-a="vol" data-k="down">&#128265;</button><button class="k tap" data-a="vol" data-k="mute">&#128263;</button><button class="k tap" data-a="vol" data-k="up">&#128266;</button></div>
+:root{color-scheme:dark;--bg:#0b0d12;--panel:#151826;--panel2:#1c2034;--line:#292e4a;--ink:#f1f3fb;--mute:#9aa3c4;--acc:#8aa4ff;--acc2:#b48cff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+html,body{height:100%;margin:0}
+body{background:radial-gradient(120% 70% at 50% 0%,#1d2347 0%,#0b0d12 62%) no-repeat,#0b0d12;color:var(--ink);font:16px/1.4 system-ui,-apple-system,Roboto,"Segoe UI",sans-serif;-webkit-user-select:none;user-select:none;overscroll-behavior:none}
+.app{min-height:100%;min-height:100dvh;display:flex;flex-direction:column;padding:max(10px,env(safe-area-inset-top)) 18px max(12px,env(safe-area-inset-bottom));max-width:480px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;padding:8px 2px 4px}
+header b{font-size:20px;letter-spacing:.2px}.logo{width:30px;height:30px}
+.dot{margin-left:auto;width:10px;height:10px;border-radius:50%;background:#5b617d;box-shadow:0 0 0 4px rgba(91,97,125,.2)}.dot.ok{background:#4fe3a0;box-shadow:0 0 0 4px rgba(79,227,160,.18)}
+main{flex:1;display:flex;flex-direction:column;justify-content:center;padding:6px 0}
+.ic{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+/* d-pad */
+.dpad{position:relative;width:min(80vw,310px);aspect-ratio:1;margin:6px auto 22px;border-radius:50%;background:radial-gradient(circle at 50% 30%,#262c4d 0%,#161a2e 70%);border:1px solid var(--line);box-shadow:0 18px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.06)}
+.w{position:absolute;inset:0;background:transparent;border-radius:50%;color:#dfe5ff;-webkit-user-select:none;user-select:none}
+.w .ic{position:absolute;width:30px;height:30px}
+.w.up{clip-path:polygon(0 0,100% 0,50% 50%)}.w.up .ic{left:calc(50% - 15px);top:9%}
+.w.down{clip-path:polygon(0 100%,100% 100%,50% 50%)}.w.down .ic{left:calc(50% - 15px);bottom:9%}
+.w.left{clip-path:polygon(0 0,0 100%,50% 50%)}.w.left .ic{top:calc(50% - 15px);left:8%}
+.w.right{clip-path:polygon(100% 0,100% 100%,50% 50%)}.w.right .ic{top:calc(50% - 15px);right:8%}
+.w.on{background:rgba(138,164,255,.24);color:#fff}
+.ok{position:absolute;left:50%;top:50%;width:36%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#0b0d12;font-weight:800;font-size:22px;z-index:2;box-shadow:0 6px 18px rgba(138,164,255,.35)}
+.ok:active{transform:translate(-50%,-50%) scale(.94)}
+/* round buttons */
+.row{display:flex;justify-content:center;gap:20px;margin:0 0 18px}
+.rb{width:66px;height:66px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);display:grid;place-items:center;color:#e8ecff;transition:transform .08s,background .12s}
+.rb:active{transform:scale(.92);background:var(--acc);color:#0b0d12}
+.rb.big{width:78px;height:78px;background:linear-gradient(135deg,var(--acc),var(--acc2));color:#0b0d12;border:0}
+.rb.big .ic{width:32px;height:32px}
+.vol{display:flex;align-items:center;justify-content:space-between;max-width:290px;margin:0 auto;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:4px}
+.vol .rb{width:60px;height:52px;border-radius:999px;background:transparent;border:0}
+.vol .rb:active{background:var(--acc)}
+/* tabs */
+.tabbar{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:6px;margin-top:8px}
+.tabbar button{display:flex;align-items:center;justify-content:center;gap:8px;height:50px;border-radius:15px;background:transparent;color:var(--mute);font-weight:600}
+.tabbar button .ic{width:22px;height:22px}.tabbar button.on{background:var(--panel2);color:#fff;box-shadow:inset 0 0 0 1px var(--line)}
+.tabbar button.on .ic{color:var(--acc)}
+/* typing */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:14px}
+textarea,input{width:100%;background:#0e1120;color:var(--ink);border:1px solid var(--line);border-radius:16px;padding:14px 16px;font:inherit;font-size:18px;-webkit-user-select:text;user-select:text}
+textarea{min-height:128px;resize:none}textarea:focus,input:focus{outline:2px solid var(--acc);border-color:transparent}
+.btn{width:100%;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:10px;font-weight:700;margin-top:10px}
+.btn .ic{width:22px;height:22px}
+.btn.pri{background:linear-gradient(135deg,var(--acc),var(--acc2));color:#0b0d12}
+.btn.sec{background:var(--panel2);color:var(--ink);border:1px solid var(--line);justify-content:flex-start;padding:0 18px;font-weight:600}
+.btn:active{transform:scale(.985);filter:brightness(1.1)}
+.pairc{text-align:center;padding:26px 18px}.pairc p{color:var(--mute);margin:14px 0 16px}
+.pairc input{text-align:center;font-size:28px;letter-spacing:8px;padding:14px 8px}
+.toast{position:fixed;left:50%;top:max(14px,env(safe-area-inset-top));transform:translate(-50%,-90px);background:#1f2540;border:1px solid var(--line);color:var(--ink);padding:11px 18px;border-radius:999px;font-weight:600;max-width:90vw;text-align:center;transition:transform .22s;z-index:9;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.toast.show{transform:translate(-50%,0)}.toast.err{background:#47202a;border-color:#7a3340}
+@media (max-height:640px){.dpad{width:min(62vw,250px);margin-bottom:14px}.rb{width:56px;height:56px}.rb.big{width:66px;height:66px}.row{margin-bottom:12px}}
+</style></head><body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#8aa4ff"/><stop offset="1" stop-color="#be8cff"/></linearGradient>
+<symbol id="i-up" viewBox="0 0 24 24"><path d="M5.5 14.5l6.5-6.5 6.5 6.5"/></symbol>
+<symbol id="i-down" viewBox="0 0 24 24"><path d="M5.5 9.5l6.5 6.5 6.5-6.5"/></symbol>
+<symbol id="i-left" viewBox="0 0 24 24"><path d="M14.5 5.5L8 12l6.5 6.5"/></symbol>
+<symbol id="i-right" viewBox="0 0 24 24"><path d="M9.5 5.5L16 12l-6.5 6.5"/></symbol>
+<symbol id="i-back" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 010 11H11"/></symbol>
+<symbol id="i-home" viewBox="0 0 24 24"><path d="M3.5 11L12 3.5 20.5 11"/><path d="M5.5 9.5V20h4.5v-6h4v6h4.5V9.5"/></symbol>
+<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+<symbol id="i-rew" viewBox="0 0 24 24"><path fill="currentColor" stroke-width="1.4" d="M11.5 6.5v11L4 12l7.5-5.5zM20.5 6.5v11L13 12l7.5-5.5z"/></symbol>
+<symbol id="i-fwd" viewBox="0 0 24 24"><path fill="currentColor" stroke-width="1.4" d="M12.5 6.5v11L20 12l-7.5-5.5zM3.5 6.5v11L11 12 3.5 6.5z"/></symbol>
+<symbol id="i-pp" viewBox="0 0 24 24"><path fill="currentColor" stroke-width="1.4" d="M4.5 5.5v13L13.5 12l-9-6.5z"/><path d="M17.5 6v12M21 6v12"/></symbol>
+<symbol id="i-vdn" viewBox="0 0 24 24"><path fill="currentColor" stroke-width="1.4" d="M4 9.5h3.5L12.5 5.5v13L7.5 14.5H4z"/><path d="M16 9.5a3.5 3.5 0 010 5"/></symbol>
+<symbol id="i-vup" viewBox="0 0 24 24"><path fill="currentColor" stroke-width="1.4" d="M3 9.5h3.5L11.5 5.5v13L6.5 14.5H3z"/><path d="M15 9.5a3.5 3.5 0 010 5M17.8 6.8a7.5 7.5 0 010 10.4"/></symbol>
+<symbol id="i-mute" viewBox="0 0 24 24"><path fill="currentColor" stroke-width="1.4" d="M3 9.5h3.5L11.5 5.5v13L6.5 14.5H3z"/><path d="M15.5 9.5l5 5M20.5 9.5l-5 5"/></symbol>
+<symbol id="i-tv" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="12.5" rx="2.5"/><path d="M8 20.5h8M12 17v3.5"/></symbol>
+<symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></symbol>
+<symbol id="i-type" viewBox="0 0 24 24"><path d="M4.5 6.5h4M6.5 6.5v11M4.5 17.5h4"/><path d="M14 8.5h3.5a2.5 2.5 0 012.5 2.5v2a2.5 2.5 0 01-2.5 2.5H14"/></symbol>
+<symbol id="i-enter" viewBox="0 0 24 24"><path d="M20 5v8a3 3 0 01-3 3H5"/><path d="M9 12l-4 4 4 4"/></symbol>
+<symbol id="i-remote" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="3.5"/><circle cx="12" cy="8.5" r="2.2"/><path d="M10 14.5h4M10 18h4"/></symbol>
+<symbol id="i-kbd" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="3"/><path d="M6.5 10h.01M10 10h.01M14 10h.01M17.5 10h.01M8 14h8"/></symbol>
+</defs></svg>
+<div class="app">
+<header><svg class="logo" viewBox="0 0 108 108"><path d="M60,24 A30,30 0 1,0 84,64 A24,24 0 0,1 60,24 z" fill="url(#g)"/></svg><b>Luna</b><span id="dot" class="dot"></span></header>
+<main>
+<section id="pair" class="card pairc" hidden><p>{{ph_pin}}</p><input id="pin" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"><button id="go" class="btn pri">{{ph_pair}}</button></section>
+<section id="app" hidden>
+<div id="remote">
+<div class="dpad">
+<button class="w up hold" data-k="DPAD_UP" aria-label="Up"><svg class="ic"><use href="#i-up"/></svg></button>
+<button class="w down hold" data-k="DPAD_DOWN" aria-label="Down"><svg class="ic"><use href="#i-down"/></svg></button>
+<button class="w left hold" data-k="DPAD_LEFT" aria-label="Left"><svg class="ic"><use href="#i-left"/></svg></button>
+<button class="w right hold" data-k="DPAD_RIGHT" aria-label="Right"><svg class="ic"><use href="#i-right"/></svg></button>
+<button class="ok tap" data-a="key" data-k="DPAD_CENTER">OK</button>
 </div>
-<div id="typing" class="card" hidden><textarea id="text" placeholder="{{ph_hint}}" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
-<button id="open">{{ph_open}}</button><button id="search" class="alt">{{ph_search}}</button><button id="type" class="alt">{{ph_type}}</button><button id="enter" class="alt">{{ph_enter}}</button></div>
-</div><div id="msg"></div></main><script>
+<div class="row">
+<button class="rb tap" data-a="key" data-k="BACK" aria-label="Back"><svg class="ic"><use href="#i-back"/></svg></button>
+<button class="rb tap" data-a="home" data-k="1" aria-label="Home"><svg class="ic"><use href="#i-home"/></svg></button>
+<button class="rb tap" data-a="key" data-k="MENU" aria-label="Menu"><svg class="ic"><use href="#i-menu"/></svg></button>
+</div>
+<div class="row">
+<button class="rb tap" data-a="key" data-k="MEDIA_REWIND" aria-label="Rewind"><svg class="ic"><use href="#i-rew"/></svg></button>
+<button class="rb big tap" data-a="key" data-k="MEDIA_PLAY_PAUSE" aria-label="Play / pause"><svg class="ic"><use href="#i-pp"/></svg></button>
+<button class="rb tap" data-a="key" data-k="MEDIA_FAST_FORWARD" aria-label="Fast forward"><svg class="ic"><use href="#i-fwd"/></svg></button>
+</div>
+<div class="vol">
+<button class="rb tap" data-a="vol" data-k="down" aria-label="Volume down"><svg class="ic"><use href="#i-vdn"/></svg></button>
+<button class="rb tap" data-a="vol" data-k="mute" aria-label="Mute"><svg class="ic"><use href="#i-mute"/></svg></button>
+<button class="rb tap" data-a="vol" data-k="up" aria-label="Volume up"><svg class="ic"><use href="#i-vup"/></svg></button>
+</div>
+</div>
+<div id="typing" hidden>
+<div class="card"><textarea id="text" placeholder="{{ph_hint}}" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
+<button id="open" class="btn pri"><svg class="ic"><use href="#i-tv"/></svg>{{ph_open}}</button>
+<button id="search" class="btn sec"><svg class="ic"><use href="#i-search"/></svg>{{ph_search}}</button>
+<button id="type" class="btn sec"><svg class="ic"><use href="#i-type"/></svg>{{ph_type}}</button>
+<button id="enter" class="btn sec"><svg class="ic"><use href="#i-enter"/></svg>{{ph_enter}}</button></div>
+</div>
+<nav class="tabbar"><button id="tabRemote" class="on"><svg class="ic"><use href="#i-remote"/></svg>{{ph_tab_remote}}</button><button id="tabType"><svg class="ic"><use href="#i-kbd"/></svg>{{ph_tab_type}}</button></nav>
+</section>
+</main></div>
+<div id="toast" class="toast"></div>
+<script>
 var L=__LABELS__,pin=null;try{pin=localStorage.getItem('luna.pin')}catch(e){}
 var qr=(location.hash||'').match(/pin=(\d{1,8})/);if(qr){pin=qr[1];try{history.replaceState(null,'',location.pathname)}catch(e){}}
 function $(i){return document.getElementById(i)}
-function say(t,e){var m=$('msg');m.textContent=t||'';m.className=e?'err':''}
-function call(act,text){var b='pin='+encodeURIComponent(pin||'')+'&act='+act+'&text='+encodeURIComponent(text||'');
-return fetch('/api',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:b}).then(function(r){return r.json().then(function(j){j.status=r.status;return j})})}
-function show(paired){$('pair').hidden=paired;$('app').hidden=!paired}
+function say(t,e){var x=$('toast');x.textContent=t||'';x.className='toast'+(t?' show':'')+(e?' err':'');clearTimeout(say.t);if(t)say.t=setTimeout(function(){x.className='toast'},2400)}
+function live(ok){$('dot').className='dot'+(ok?' ok':'')}
+function body(act,text){return 'pin='+encodeURIComponent(pin||'')+'&act='+act+'&text='+encodeURIComponent(text||'')}
+function post(act,text){return fetch('/api',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body(act,text)}).then(function(r){return r.json().then(function(j){j.status=r.status;return j})})}
+function show(paired){$('pair').hidden=paired;$('app').hidden=!paired;if(!paired)live(false)}
+function result(j){if(j.ok){live(true);say(L.ph_sent);return}
+if(j.error==='pin'){try{localStorage.removeItem('luna.pin')}catch(e){}pin=null;show(false);say(L.ph_bad_pin,1)}
+else if(j.error==='locked')say(L.ph_locked,1);else if(j.error==='nofield')say(L.ph_nofield,1);else say('?',1)}
+function send(act){var t=$('text').value;if(!t.trim())return;post(act,t).then(result).catch(function(){live(false);say('?',1)})}
 function tab(t){$('remote').hidden=t!=='remote';$('typing').hidden=t!=='type';$('tabRemote').className=t==='remote'?'on':'';$('tabType').className=t==='type'?'on':''}
 $('tabRemote').onclick=function(){tab('remote')};$('tabType').onclick=function(){tab('type')};
-function key(act,k){var b='pin='+encodeURIComponent(pin||'')+'&act='+act+'&text='+encodeURIComponent(k);
-return fetch('/api',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:b}).then(function(r){return r.json()}).then(function(j){if(!j.ok&&(j.error==='pin'||j.error==='locked'))result(j)}).catch(function(){})}
+$('go').onclick=function(){pin=$('pin').value.trim();post('ping','').then(function(j){if(j.ok){try{localStorage.setItem('luna.pin',pin)}catch(e){}show(true);live(true)}else result(j)}).catch(function(){say('?',1)})};
+$('open').onclick=function(){send('open')};$('search').onclick=function(){send('search')};$('type').onclick=function(){send('type')};$('enter').onclick=function(){send('enter')};
+function key(act,k){return post(act,k).then(function(j){live(!!j.ok||j.error==='nofield');if(!j.ok&&(j.error==='pin'||j.error==='locked'))result(j)}).catch(function(){live(false)})}
 function buzz(){try{navigator.vibrate&&navigator.vibrate(10)}catch(e){}}
 var holds={};
 function press(el){var k=el.dataset.k;if(holds[k])return;buzz();el.classList.add('on');var h={t0:Date.now()};holds[k]=h;key('kd',k);
@@ -301,12 +404,8 @@ el.addEventListener('pointerdown',function(e){e.preventDefault();press(el)});
 el.addEventListener('contextmenu',function(e){e.preventDefault()})});
 Array.prototype.forEach.call(document.querySelectorAll('.tap'),function(el){el.addEventListener('click',function(){buzz();key(el.dataset.a,el.dataset.k)});
 el.addEventListener('contextmenu',function(e){e.preventDefault()})});
-function result(j){if(j.ok){say(L.ph_sent);return}if(j.error==='pin'){try{localStorage.removeItem('luna.pin')}catch(e){}pin=null;show(false);say(L.ph_bad_pin,1)}
-else if(j.error==='locked')say(L.ph_locked,1);else if(j.error==='nofield')say(L.ph_nofield,1);else say('?',1)}
-function send(act){var t=$('text').value;if(!t.trim())return;say('...');call(act,t).then(result).catch(function(){say('?',1)})}
-$('go').onclick=function(){pin=$('pin').value.trim();call('ping','').then(function(j){if(j.ok){try{localStorage.setItem('luna.pin',pin)}catch(e){}show(true);say('')}else result(j)})};
-$('open').onclick=function(){send('open')};$('search').onclick=function(){send('search')};$('type').onclick=function(){send('type')};$('enter').onclick=function(){send('enter')};
-if(pin){call('ping','').then(function(j){if(j.ok){try{localStorage.setItem('luna.pin',pin)}catch(e){}show(true)}else{show(false);result(j)}}).catch(function(){show(false)})}else show(false);
+document.addEventListener('visibilitychange',function(){if(document.hidden)Object.keys(holds).forEach(function(k){var el=document.querySelector('.hold[data-k="'+k+'"]');if(el)release(el)})});
+if(pin){post('ping','').then(function(j){if(j.ok){try{localStorage.setItem('luna.pin',pin)}catch(e){}show(true);live(true)}else{show(false);result(j)}}).catch(function(){show(false)})}else show(false);
 </script></body></html>""".replace("__LABELS__", "{{labels}}")
     }
 }

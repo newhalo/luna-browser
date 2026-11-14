@@ -158,7 +158,7 @@ while it is on screen:
    tap **Open on TV** or **Search on TV**; to fill a text box on a page (a film site's search, a login) put the pointer
    on the box, press OK, then tap **Type into the page** (or **Type and press Enter**).
 
-It can only open web pages, search, press the remote's keys inside Luna, change the volume, and type into the focused field. Every request needs the PIN, five wrong
+Several phones can be paired and used at the same time (they share the PIN; wrong guesses are counted per phone, so one stale page can't lock the others out). It can only open web pages, search, press the remote's keys inside Luna, change the volume, and type into the focused field. Every request needs the PIN, five wrong
 PINs lock it for 30 seconds, and it stops listening when Luna is not on screen. The traffic is plain HTTP on your
 local network, so turn it off on networks you don't trust. *New PIN* unpairs all phones.
 

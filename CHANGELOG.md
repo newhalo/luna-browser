@@ -10,7 +10,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - **Remote pad on the phone page**: a *Remote* tab with D-pad (hold to repeat, so the pointer glides), OK, Back, Home,
   Menu, rewind / play-pause / fast-forward and volume; the typing tools moved to a *Type* tab.
 
+### Changed
+- The phone page was redesigned for thumbs: a round D-pad with a large OK, rounded icon buttons (inline SVG instead of
+  text glyphs), a volume pill, bottom tabs, toast messages, haptic feedback, safe-area and small-screen layouts.
+- Wrong-PIN lock-out is counted per phone (with a much higher shared ceiling), and the request queue is longer, so
+  several phones can be used together.
+
 ### Fixed
+- Home: *Up* from a row goes to the row above instead of jumping to the search bar; history merges the `m.` / `www.` /
+  `#fragment` variants of one page into a single entry.
 - Home: moving down to the *Your sites* (or *Favourites*) row no longer slides its first card to the screen edge,
   cuts the row off at the bottom or leaves the previous row peeking under the search bar. Compose's automatic
   "scroll the focused card into view" competed with the row-snap animation; rows now keep a 48 dp margin at both ends.
