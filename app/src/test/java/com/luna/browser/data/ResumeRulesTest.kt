@@ -42,7 +42,10 @@ class ResumeRulesTest {
         assertEquals(1200, ResumeRules.restoreDelta(saved, 0.0, 3600.0))
         assertEquals(1195, ResumeRules.restoreDelta(saved, 5.0, 3601.0))   // tiny differences are fine
         assertNull(ResumeRules.restoreDelta(saved, 0.0, 1800.0))           // a different video
-        assertNull(ResumeRules.restoreDelta(saved, 400.0, 3600.0))         // the viewer already moved on
+        assertEquals(1182, ResumeRules.restoreDelta(saved, 18.0, 3600.0))  // autoplayed a little before fullscreen
+        assertEquals(800, ResumeRules.restoreDelta(saved, 400.0, 3600.0))  // still well before the saved point
+        assertNull(ResumeRules.restoreDelta(saved, 1190.0, 3600.0))        // already (almost) there
+        assertNull(ResumeRules.restoreDelta(saved, 2000.0, 3600.0))        // the viewer is further on
         assertNull(ResumeRules.restoreDelta(saved, 0.0, 60.0))             // an ad is playing first
     }
 

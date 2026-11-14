@@ -43,13 +43,18 @@ object ResumeRules {
     /** Whether the viewer has effectively finished the video, so there is nothing to resume. */
     fun finished(pos: Double, dur: Double) = dur > 0 && (dur - pos < maxOf(30.0, dur * 0.04))
 
+    /** The playing position must be at least this far before the saved one for a seek to be worth it. */
+    private const val MIN_GAP = 20.0
+
     /**
      * How many seconds to seek (relative) to get back to [saved], or null when the video that is
-     * playing is not the one that was saved (different length) or has already moved on.
+     * playing is not the one that was saved (different length), or is already at (or past) that point.
+     * Film sites usually autoplay for a while before the viewer goes fullscreen, so "a little way in"
+     * still counts as the start.
      */
     fun restoreDelta(saved: Resume, pos: Double, dur: Double): Int? {
         if (dur < MIN_DURATION || kotlin.math.abs(saved.dur - dur) > DURATION_TOLERANCE) return null
-        if (pos >= MIN_POSITION || saved.pos < MIN_POSITION) return null
+        if (saved.pos < MIN_POSITION || saved.pos - pos < MIN_GAP) return null
         return (saved.pos - pos).toInt()
     }
 
