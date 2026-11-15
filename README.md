@@ -21,8 +21,8 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 **Play / Pause / Left / Right**, a built-in ad and pop-up blocker, and a home screen that feels like a streaming app.
 
 > **Status:** early (0.x) but daily-driven on a real TV. Latest release:
-> [**v0.7.1**](https://github.com/newhalo/luna-browser/releases/latest) — six themes with their own colours and background motion,
-> a phone remote page that fits the screen, and smoother D-pad navigation; on top of 0.7.0's profile PINs, live tab thumbnails
+> [**v0.8.0**](https://github.com/newhalo/luna-browser/releases/latest) — a pink *Sakura* theme, round background particles and an
+> optional frosted *Glass look*; on top of 0.7's seven themes, phone page that fits the screen, profile PINs, live tab thumbnails
 > and reading mode with read aloud.
 
 ## Features
@@ -253,6 +253,8 @@ Pages are rendered by the Android System WebView and get **no** JavaScript bridg
 - [ ] Emulator-based UI tests for D-pad navigation.
 - [ ] Gradle 9 and the newest Compose, once the plugins catch up.
 - [ ] Google Play listing: Play Console account, 12-tester closed test, then production (see [docs/PUBLISHING.md](docs/PUBLISHING.md)).
+
+**Done in 0.8.0:** the *Sakura* theme, round particles, and the optional *Glass look*.
 
 **Done in 0.7.1:** *themes* (Luna, Dusk, Forest, Ocean, Night sky, Graphite), a phone page that fits the screen, and D-pad fixes on Home and in Settings.
 **Done in 0.7.0:** *profile PINs*, *live tab thumbnails*, *reading text size* (remembered) and *read aloud*.
