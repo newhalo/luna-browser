@@ -51,7 +51,7 @@ A TV has no touch screen, so input is a **key stream**:
 ## Video
 
 `BrowserController` keeps the page's fullscreen `View` (`onShowCustomView`) and draws its own controls on top.
-Commands go through JavaScript. Because film sites put the player in a **cross-origin iframe**, a script injected
+Commands go through JavaScript. Because many video sites put the player in a **cross-origin iframe**, a script injected
 into *every* frame (`VIDEO_BRIDGE_JS`) relays play / pause / seek down with `postMessage` and reports the largest
 video's state back up. Seeking is debounced: key presses accumulate into one pending seek, previewed on the
 progress bar, and sent when the viewer stops pressing.

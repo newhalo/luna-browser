@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed
+- **No third-party icon service**: Home cards for built-in sites show a lettered tile in the site's colours until the site has been opened once; its own icon is then saved on the device. The app no longer contacts `google.com/s2/favicons`.
+- Logo, banner and store graphics re-set in Roboto (open licence); notices for the screenshot artwork added; documentation wording about video sites made neutral.
+
 ## [0.5.0] - 2026-11-15
 
 ### Added

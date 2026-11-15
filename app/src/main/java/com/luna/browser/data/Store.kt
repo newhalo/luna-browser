@@ -437,8 +437,8 @@ class Store(ctx: Context) {
 
     fun iconFor(host: String): Any? {
         if (host in savedIcons) return File(iconsDir, "$host.png")
-        // Curated sites only: a public favicon service, never for the user's own browsing.
-        if (KnownSites.any { it.host == host }) return "https://www.google.com/s2/favicons?domain=$host&sz=128"
+        // No third-party icon service: until the site has been opened once (and its own icon saved), the card shows
+        // a lettered tile in the site's brand colours.
         return null
     }
 

@@ -32,7 +32,7 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 - **Virtual cursor** — accelerates while you hold an arrow, hides itself when idle, scrolls at the screen edge,
   clicks with **OK**. Hold **OK** to switch to link-to-link focus navigation.
 - **Video first** — fullscreen controls for any HTML5 video, **even inside a player iframe from another domain**
-  (where most film sites put it). Hold ← / → to seek: key repeats accumulate, accelerate (10 s → 30 s → 60 s) and
+  (where many video sites put it). Hold ← / → to seek: key repeats accumulate, accelerate (10 s → 30 s → 60 s) and
   are previewed on the progress bar, then sent as **one** seek, so the stream doesn't reload at every step.
 - **Continue where you left off** — videos of three minutes or more remember their position, whether you watch them
   fullscreen or inline on the page; open the page again (or pick it from Home) and Luna jumps back to where you
@@ -182,7 +182,7 @@ Luna listens on your home network while it is on screen:
    address by hand and enter the PIN once). The phone remembers the pairing.
 3. The **Remote** tab is a full remote in your hand: D-pad (hold an arrow to keep the pointer moving), **OK**, Back,
    Home, Menu, rewind / play-pause / fast-forward and volume. The **Type** tab sends text: type an address or words and
-   tap **Open on TV** or **Search on TV**; to fill a text box on a page (a film site's search, a login) put the pointer
+   tap **Open on TV** or **Search on TV**; to fill a text box on a page (a site's search box, a login) put the pointer
    on the box, press OK, then tap **Type into the page** (or **Type and press Enter**).
 
 **Share a page from your phone.** On the **Type** tab, *Copy bookmarklet* gives you a one-line bookmark. Save it in your
@@ -206,7 +206,6 @@ Luna has no accounts, no analytics and no telemetry. The only network traffic be
 |---|---|---|
 | Filter lists: EasyList (`easylist.to`) or, for Vietnamese, ABPVN (`raw.githubusercontent.com`, `abpvn.com`), plus Luna's own `luna.txt` from this repository (`raw.githubusercontent.com`) | first run, then daily | ad-blocking rules (each list can be switched off in Settings) |
 | `api.github.com` (latest release) | once a day, only for builds **not** installed from a store | tells you a newer Luna exists; nothing is downloaded or installed (switch off in Settings → About) |
-| `google.com/s2/favicons` | home screen, only for the built-in quick sites | their icons |
 | Thumbnails (`i.ytimg.com` or the page's own `og:image`) | home / history cards | artwork for pages you visited |
 | Incoming: your phone → the TV on port 8765 (LAN only, PIN-protected) | only while Luna is on screen and *Phone remote* is on | the phone remote |
 

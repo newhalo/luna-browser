@@ -49,7 +49,7 @@ object ResumeRules {
     /**
      * How many seconds to seek (relative) to get back to [saved], or null when the video that is
      * playing is not the one that was saved (different length), or is already at (or past) that point.
-     * Film sites usually autoplay for a while before the viewer goes fullscreen, so "a little way in"
+     * Video sites often autoplay for a while before the viewer goes fullscreen, so "a little way in"
      * still counts as the start.
      */
     fun restoreDelta(saved: Resume, pos: Double, dur: Double): Int? {

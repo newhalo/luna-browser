@@ -4,7 +4,7 @@ import android.net.Uri
 
 /**
  * Defences against the pop-up / pop-under / click-hijack tricks used by free streaming sites.
- * A TV has no tabs, so any "new window" would otherwise replace the film the viewer is watching.
+ * A TV has no tabs, so any "new window" would otherwise replace the video the viewer is watching.
  */
 object PopupGuard {
     /** Sign-in providers that legitimately open in a new window from another site. */
@@ -38,7 +38,7 @@ object PopupGuard {
 
     /**
      * Injected into every frame at document start. Lets the remote control a video that lives in a
-     * cross-site player iframe (common on film sites): the top page relays commands down to every
+     * cross-site player iframe (common on video sites): the top page relays commands down to every
      * frame with postMessage, and the frame that owns the biggest video reports its state back up.
      * State array: [paused, position, duration, buffering, failed, area].
      */

@@ -7,6 +7,16 @@ asks for, what Luna already satisfies, what is missing, and what the maintainer 
 > Store rules change often. Items marked **verify** come from third-party summaries or from memory and must be checked
 > against the store's own current page before acting on them.
 
+## 0. Before any store: the name
+
+"Luna" collides with **Amazon Luna** (cloud gaming; several US trademark applications for LUNA since 2020). A browser is a
+different kind of product, and adding "Browser" helps a little, but trademark offices and courts look at the dominant
+word, and a generic word like "Browser" is usually disregarded, so **"Luna Browser" is not a safe harbour**. The risk is
+highest on the Amazon Appstore and on any store where Amazon can file a complaint. Before publishing: search USPTO,
+EUIPO, WIPO and the Vietnamese IP Office (NOIP) for LUNA in software classes (9, 42); ask an IP lawyer if anything
+relevant appears; consider a more distinctive name while the app has no store users, because renaming later breaks
+installs, reviews and links. This is not legal advice.
+
 ## 1. Which stores matter
 
 | Store | Who it reaches | Cost | Effort | Verdict |

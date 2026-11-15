@@ -37,6 +37,21 @@ Documented in the README under [Privacy](README.md#privacy).
 
 ## Sample content used in screenshots
 
-The videos shown in `docs/screenshots/` are Blender Foundation open movies (*Big Buck Bunny*, © Blender
-Foundation, <https://peach.blender.org>, licensed CC BY 3.0) and Wikipedia pages (CC BY-SA), used for
-illustration only.
+The screenshots in `docs/screenshots/` show Wikipedia pages (text CC BY-SA 4.0) about the Blender Foundation open
+movies and the movies' own artwork, used for illustration only:
+
+| Work | Credit |
+|---|---|
+| *Big Buck Bunny* | © Blender Foundation, <https://peach.blender.org>, CC BY 3.0 |
+| *Elephants Dream* | © Blender Foundation, <https://orange.blender.org>, CC BY 2.5 |
+| *Sintel* | © Blender Foundation, <https://durian.blender.org>, CC BY 3.0 |
+| *Tears of Steel* | © Blender Foundation, <https://mango.blender.org>, CC BY 3.0 |
+| *Caminandes*, *Cosmos Laundromat* | © Blender Foundation / Blender Institute, CC BY |
+
+Some Wikipedia images are hosted under that site's own fair-use or licence terms; if you believe an image should not
+appear here, open an issue and it will be replaced.
+
+## Fonts and artwork
+
+The Luna logo, banner and store graphics are the project's own work. Their text is set in **Roboto** (SIL OFL 1.1 /
+Apache-2.0, © The Roboto Project Authors).

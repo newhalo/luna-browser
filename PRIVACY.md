@@ -24,7 +24,6 @@ browsing history.
 |---|---|---|---|
 | Filter lists from `easylist.to`, `raw.githubusercontent.com` (ABPVN and Luna's own list) and `abpvn.com` | First run, then daily | Ad and tracker blocking rules | Yes, per list (Settings → Ad blocking) |
 | `api.github.com` (latest Luna release) | Once a day, **only for builds not installed from an app store** | To tell you a newer version exists | Yes (Settings → About → Check for updates) |
-| `google.com/s2/favicons` | Home screen, for the built-in quick sites | Site icons | No (only the built-in sites) |
 | Thumbnails from `i.ytimg.com` or the page's own preview image | History and Home cards | Artwork for pages you visited | Clear history to remove |
 
 These servers see your TV's IP address, as any website does. Their own policies apply
