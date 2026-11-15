@@ -83,8 +83,8 @@ class PhoneRemoteTest {
         assertEquals(200, post("pin=4321&act=fa&text=https%3A%2F%2Fexample.com%2Fa%0AMy%20title").first)
         assertEquals(200, post("pin=4321&act=fd&text=https%3A%2F%2Fexample.com%2Fa").first)
         assertEquals(
-            listOf(RemoteAction.FavAdd to "https://example.com/a
-My title", RemoteAction.FavDel to "https://example.com/a"),
+            listOf(RemoteAction.FavAdd to "https://example.com/a" + "
+" + "My title", RemoteAction.FavDel to "https://example.com/a"),
             calls.toList(),
         )
         assertEquals(401, post("pin=1&act=fa&text=https%3A%2F%2Fexample.com%2F").first)
