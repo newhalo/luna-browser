@@ -21,8 +21,9 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 **Play / Pause / Left / Right**, a built-in ad and pop-up blocker, and a home screen that feels like a streaming app.
 
 > **Status:** early (0.x) but daily-driven on a real TV. Latest release:
-> [**v0.7.0**](https://github.com/newhalo/luna-browser/releases/latest) — profile PINs, live tab thumbnails, reading mode that remembers
-> its text size and reads aloud, plus profiles, favourites on your phone and a web-engine check.
+> [**v0.7.1**](https://github.com/newhalo/luna-browser/releases/latest) — six themes with their own colours and background motion,
+> a phone remote page that fits the screen, and smoother D-pad navigation; on top of 0.7.0's profile PINs, live tab thumbnails
+> and reading mode with read aloud.
 
 ## Features
 
@@ -247,6 +248,7 @@ Pages are rendered by the Android System WebView and get **no** JavaScript bridg
 - [ ] Gradle 9 and the newest Compose, once the plugins catch up.
 - [ ] Google Play listing: Play Console account, 12-tester closed test, then production (see [docs/PUBLISHING.md](docs/PUBLISHING.md)).
 
+**Done in 0.7.1:** *themes* (Luna, Dusk, Forest, Ocean, Night sky, Graphite), a phone page that fits the screen, and D-pad fixes on Home and in Settings.
 **Done in 0.7.0:** *profile PINs*, *live tab thumbnails*, *reading text size* (remembered) and *read aloud*.
 **Done in 0.6.0:** *web engine check* (About warns when the TV's WebView is too old, and the Home screen says so), *reading mode*, *favourites from the phone* (a Favorites tab: open, save, remove), and *profiles* with a guest mode.
 **Done in 0.5.0:** an update notice (once a day, builds outside a store only), store-ready packaging, *Report a problem* from the *Site* panel (a QR code opens a pre-filled GitHub report; the page address is cut at the "?" and nothing is sent by the TV), and links shared from the phone's browser.

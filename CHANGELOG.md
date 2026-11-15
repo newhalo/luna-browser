@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-15
+
 ### Added
 - **Themes**: *Luna* (default), *Dusk*, *Forest*, *Ocean*, *Night sky* and *Graphite*, chosen in *Settings → General → Theme*. Each has its own colours (background, surfaces, accent) and background motion: drifting lights, rising embers, fireflies, waves, twinkling stars, or nothing at all (Graphite, pure black). Reduce motion and *Animated background* still freeze them. Measured on the MiTV: idle GPU time per frame is the same as the original background in every theme (12.9 ms), and Graphite draws nothing while idle.
 
