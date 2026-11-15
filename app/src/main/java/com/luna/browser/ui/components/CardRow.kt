@@ -104,12 +104,13 @@ fun CardRow(
                         Modifier.rememberFocus(app, focusScope, item.key)
                             .onFocusChanged { if (it.isFocused) reveal(i) }
                             .focusRequester(mine[i])
-                            .then(
-                                if (above != null && above.isNotEmpty()) {
-                                    val target = above[minOf(i, above.size - 1)]
-                                    Modifier.focusProperties { up = target }
-                                } else Modifier,
-                            ),
+                            .focusProperties {
+                                // Sideways stays inside the row: at either end nothing happens (the default search used to
+                                // jump to a card of the row below, mid-row).
+                                left = if (i > 0) mine[i - 1] else FocusRequester.Cancel
+                                right = if (i < items.size - 1) mine[i + 1] else FocusRequester.Cancel
+                                if (above != null && above.isNotEmpty()) up = above[minOf(i, above.size - 1)]
+                            },
                     )
                 }
             }

@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed
+- Remote navigation: Right on the last card of a Home row no longer jumps into the row below, and Left from a Settings item always returns to the category being shown (it used to land a few categories further down).
+
 ## [0.7.0] - 2026-11-15
 
 ### Added

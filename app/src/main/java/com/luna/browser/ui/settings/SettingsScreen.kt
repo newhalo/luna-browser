@@ -47,6 +47,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
@@ -108,7 +109,8 @@ private const val PHONE = 5
 @Composable
 fun SettingsScreen(app: AppState) {
     var selected by remember { mutableIntStateOf(0) }
-    val firstFr = remember { FocusRequester() }
+    val catFrs = remember { List(categories.size) { FocusRequester() } }
+    val firstFr = catFrs[0]
     LaunchedEffect(Unit) { runCatching { firstFr.requestFocus() } }
 
     Box(Modifier.fillMaxSize()) {
@@ -119,12 +121,14 @@ fun SettingsScreen(app: AppState) {
                 Txt(stringResource(R.string.set_title), T.display.copy(fontSize = 36.sp), Modifier.padding(bottom = 10.dp))
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
                     categories.forEachIndexed { i, c ->
-                        CategoryItem(c, i == selected, if (i == 0) Modifier.focusRequester(firstFr) else Modifier) { selected = i }
+                        CategoryItem(c, i == selected, Modifier.focusRequester(catFrs[i])) { selected = i }
                     }
                 }
             }
             Column(
                 Modifier.weight(1f).fillMaxHeight().clip(RoundedCornerShape(24.dp)).background(Color(0x99121622))
+                    // Left from any row goes back to the category being shown, not to whichever one is geometrically nearest.
+                    .focusProperties { left = catFrs[selected] }
                     .verticalScroll(rememberScrollState()).padding(20.dp),
             ) {
                 Txt(stringResource(categories[selected].name), T.title, Modifier.padding(start = 6.dp, bottom = 14.dp))
