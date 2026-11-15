@@ -356,4 +356,25 @@
     <string name="prof_deleted">Profil supprimé</string>
     <string name="prof_shared">Les connexions sont partagées entre tous les profils de cette TV : son moteur web est trop ancien pour les séparer.</string>
     <string name="prof_edit_sub">Nom, couleur ou suppression</string>
+    <string name="prof_pin_title">PIN</string>
+    <string name="prof_pin_for">PIN de %s</string>
+    <string name="prof_pin_new">Choisissez un PIN à 4 chiffres</string>
+    <string name="prof_pin_again">Saisissez-le à nouveau pour confirmer</string>
+    <string name="prof_pin_wrong">PIN incorrect</string>
+    <string name="prof_pin_locked">Trop d’essais. Attendez %d s.</string>
+    <string name="prof_pin_mismatch">Les PIN ne correspondent pas. Réessayez.</string>
+    <string name="prof_pin_row">PIN</string>
+    <string name="prof_pin_row_d">Demande un PIN à 4 chiffres pour ouvrir ce profil.</string>
+    <string name="prof_pin_remove">Supprimer le PIN</string>
+    <string name="prof_pin_remove_d">Ce profil s’ouvrira sans PIN.</string>
+    <string name="prof_pin_saved">PIN enregistré</string>
+    <string name="prof_pin_removed">PIN supprimé</string>
+    <string name="prof_locked_hint">Saisissez le PIN pour continuer</string>
+    <string name="prof_pin_note">Un PIN évite que les membres de la famille ouvrent les profils des autres. Ce n’est pas du chiffrement.</string>
+    <string name="reader_size">Taille du texte %d %%</string>
+    <string name="reader_hud_idle">OK lit à voix haute · ◀ ▶ taille · ▲ ▼ défiler</string>
+    <string name="reader_hud_speaking">Lecture à voix haute · OK met en pause · ◀ ▶ taille</string>
+    <string name="reader_no_tts">Aucun moteur vocal sur cette TV</string>
+    <string name="set_reader_size">Taille du texte de lecture</string>
+    <string name="set_reader_size_d">Taille du texte en mode lecture. Gauche / Droite la modifient pendant la lecture.</string>
 </resources>

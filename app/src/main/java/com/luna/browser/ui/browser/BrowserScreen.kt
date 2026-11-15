@@ -39,6 +39,8 @@ import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Mouse
 import androidx.compose.material.icons.rounded.MenuBook
+import androidx.compose.material.icons.rounded.Pause
+import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
@@ -142,6 +144,7 @@ private fun BrowserContent(app: AppState, b: BrowserController) {
 
         b.error?.let { ErrorPanel(app, it) }
         if (b.customView != null) FullscreenLayer(b) else OsdFlash(b)
+        if (b.reader) ReaderHud(b)
         Toolbar(app, b)
         if (b.sitePanel) SitePanel(app, b)
     }
@@ -237,7 +240,7 @@ private fun Toolbar(app: AppState, b: BrowserController) {
                     IconLabelButton(stringResource(R.string.tb_forward), Icons.AutoMirrored.Rounded.ArrowForward, { b.goForward() }, enabled = b.canGoForward)
                     IconLabelButton(stringResource(R.string.tb_refresh), Icons.Rounded.Refresh, { b.reload(); b.hideToolbar() })
                     IconLabelButton(stringResource(R.string.tb_home), Icons.Rounded.Home, { app.goHome() })
-                    IconLabelButton(stringResource(R.string.tb_tabs), Icons.Rounded.TabIcon, { b.hideToolbar(); app.navigate(Screen.Tabs) }, highlighted = app.tabs.count > 1)
+                    IconLabelButton(stringResource(R.string.tb_tabs), Icons.Rounded.TabIcon, { app.openTabs() }, highlighted = app.tabs.count > 1)
                     val fav = app.store.isFavorite(b.url)
                     IconLabelButton(stringResource(if (fav) R.string.tb_saved else R.string.tb_save), if (fav) Icons.Rounded.Star else Icons.Rounded.StarBorder, { b.toggleFavorite() }, highlighted = fav)
                     IconLabelButton(
@@ -252,6 +255,33 @@ private fun Toolbar(app: AppState, b: BrowserController) {
                     IconLabelButton(stringResource(R.string.tb_settings), Icons.Rounded.Settings, { app.navigate(Screen.Settings) })
                 }
             }
+        }
+    }
+}
+
+// ---------------------------------------------------------------- Reading mode
+
+/** Key hints over the reading page: for a few seconds after a key press, and all the time while the article is read aloud. */
+@Composable
+private fun BoxScope.ReaderHud(b: BrowserController) {
+    var visible by remember { mutableStateOf(true) }
+    LaunchedEffect(b.readerHudAt) {
+        visible = true
+        delay(5000)
+        visible = false
+    }
+    AnimatedVisibility(
+        visible = visible || b.speaking,
+        modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 36.dp),
+        enter = fadeIn(tween(ms(160))), exit = fadeOut(tween(ms(240))),
+    ) {
+        Row(
+            Modifier.clip(RoundedCornerShape(30.dp)).background(Color(0xE6121622)).border(1.dp, Outline, RoundedCornerShape(30.dp))
+                .padding(horizontal = 26.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            Icon(if (b.speaking) Icons.Rounded.Pause else Icons.Rounded.PlayArrow, null, tint = Accent, modifier = Modifier.size(30.dp))
+            Txt(stringResource(if (b.speaking) R.string.reader_hud_speaking else R.string.reader_hud_idle), T.label)
         }
     }
 }

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.ManageAccounts
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material3.Icon
@@ -80,6 +81,9 @@ import com.luna.browser.ui.theme.TextSecondary
 
 private val Tile = 104.dp
 
+/** A PIN entry the screen is waiting for: [verifyId] set = check that profile's PIN, null = choose a new one. */
+private class PinTask(val title: String, val verifyId: String?, val onOk: (String) -> Unit)
+
 private fun gradientOf(p: Profile?): Pair<Color, Color> {
     if (p == null) return Color(0xFF5B617D) to Color(0xFF2B3046)
     val base = Color(ProfileRules.colors[p.color.coerceIn(0, ProfileRules.colors.size - 1)])
@@ -122,6 +126,14 @@ fun ProfilesScreen(app: AppState) {
     var manage by remember { mutableStateOf(false) }
     var editId by remember { mutableStateOf<String?>(null) }
     var naming by remember { mutableStateOf<String?>(null) }     // "" = a new profile; otherwise the id being renamed
+    var pinTask by remember { mutableStateOf<PinTask?>(null) }
+    val locked = app.locked
+
+    /** Runs [then] after the PIN of [p] was entered; at once when it has none. */
+    fun withPin(p: Profile, then: () -> Unit) {
+        if (!store.hasPin(p.id)) { then(); return }
+        pinTask = PinTask(app.s(R.string.prof_pin_for, app.profileLabel(p)), p.id) { pinTask = null; then() }
+    }
 
     val requesters = remember(profiles.size) { List(profiles.size) { FocusRequester() } }
     LaunchedEffect(Unit) {
@@ -141,7 +153,7 @@ fun ProfilesScreen(app: AppState) {
             Txt(stringResource(if (manage) R.string.prof_manage_title else R.string.prof_title), T.display, Modifier.fillMaxWidth(), align = TextAlign.Center)
             Spacer(Modifier.height(8.dp))
             Txt(
-                stringResource(if (manage) R.string.prof_sub_manage else R.string.prof_sub), T.body, Modifier.fillMaxWidth(),
+                stringResource(if (locked) R.string.prof_locked_hint else if (manage) R.string.prof_sub_manage else R.string.prof_sub), T.body, Modifier.fillMaxWidth(),
                 color = TextSecondary, align = TextAlign.Center,
             )
             Spacer(Modifier.height(44.dp))
@@ -150,17 +162,24 @@ fun ProfilesScreen(app: AppState) {
                     val label = app.profileLabel(p)
                     ProfileTile(
                         label = label, current = p.id == store.profileId, edit = manage, requester = requesters[i],
-                        onClick = { if (manage) editId = p.id else app.switchProfile(p.id) },
+                        locked = store.hasPin(p.id),
+                        onClick = {
+                            when {
+                                manage -> withPin(p) { editId = p.id }
+                                p.id == store.profileId && !locked -> app.switchProfile(p.id)
+                                else -> withPin(p) { app.switchProfile(p.id) }
+                            }
+                        },
                     ) { Avatar(p, label, Tile) }
                 }
                 if (!manage) {
                     ProfileTile(
-                        label = stringResource(R.string.prof_guest), current = store.isGuest, edit = false, requester = null,
+                        label = stringResource(R.string.prof_guest), current = store.isGuest, edit = false, locked = false, requester = null,
                         onClick = { app.switchProfile(ProfileRules.GUEST) },
                     ) { Avatar(null, "", Tile) }
                 }
-                if (profiles.size < ProfileRules.MAX) {
-                    ProfileTile(label = stringResource(R.string.prof_add), current = false, edit = false, requester = null, onClick = { naming = "" }) {
+                if (profiles.size < ProfileRules.MAX && !locked) {
+                    ProfileTile(label = stringResource(R.string.prof_add), current = false, edit = false, locked = false, requester = null, onClick = { naming = "" }) {
                         Box(Modifier.size(Tile).background(Glass), contentAlignment = Alignment.Center) {
                             Icon(Icons.Rounded.Add, null, tint = TextPrimary, modifier = Modifier.size(46.dp))
                         }
@@ -168,7 +187,7 @@ fun ProfilesScreen(app: AppState) {
                 }
             }
             Spacer(Modifier.weight(1f))
-            TvButton(
+            if (!locked) TvButton(
                 stringResource(if (manage) R.string.prof_done else R.string.prof_manage), { manage = !manage },
                 icon = if (manage) Icons.Rounded.Check else Icons.Rounded.ManageAccounts, container = Glass,
             )
@@ -178,7 +197,19 @@ fun ProfilesScreen(app: AppState) {
             }
         }
 
-        editId?.let { id -> EditPanel(app, id) { editId = null } }
+        editId?.let { id ->
+            EditPanel(app, id, onClose = { editId = null }, onSetPin = {
+                pinTask = PinTask(app.s(R.string.prof_pin_new), null) { pin -> store.setPin(id, pin); pinTask = null; app.toast(R.string.prof_pin_saved) }
+            })
+        }
+        pinTask?.let { t ->
+            PinDialog(
+                title = t.title,
+                verify = t.verifyId?.let { id -> { pin: String -> app.tryPin(id, pin) } },
+                onDone = t.onOk,
+                onCancel = { pinTask = null },
+            )
+        }
         // Renaming and creating share one dialog.
         naming?.let { target ->
             NameDialog(
@@ -204,6 +235,7 @@ private fun ProfileTile(
     label: String,
     current: Boolean,
     edit: Boolean,
+    locked: Boolean,
     requester: FocusRequester?,
     onClick: () -> Unit,
     content: @Composable BoxScope.() -> Unit,
@@ -216,11 +248,11 @@ private fun ProfileTile(
             shape = CircleShape, container = Color.Transparent, focusScale = 1.12f,
         ) {
             content()
-            if (edit) {
+            if (edit || locked) {
                 Box(
                     Modifier.align(Alignment.BottomEnd).padding(2.dp).size(32.dp).clip(CircleShape).background(Color(0xF00B0D12)),
                     contentAlignment = Alignment.Center,
-                ) { Icon(Icons.Rounded.Edit, null, tint = TextPrimary, modifier = Modifier.size(18.dp)) }
+                ) { Icon(if (edit) Icons.Rounded.Edit else Icons.Rounded.Lock, null, tint = TextPrimary, modifier = Modifier.size(18.dp)) }
             }
         }
         Spacer(Modifier.height(12.dp))
@@ -234,7 +266,7 @@ private fun ProfileTile(
 }
 
 @Composable
-private fun EditPanel(app: AppState, id: String, onClose: () -> Unit) {
+private fun EditPanel(app: AppState, id: String, onClose: () -> Unit, onSetPin: () -> Unit) {
     val store = app.store
     val p = store.profiles.firstOrNull { it.id == id }
     if (p == null) { LaunchedEffect(Unit) { onClose() }; return }
@@ -275,6 +307,17 @@ private fun EditPanel(app: AppState, id: String, onClose: () -> Unit) {
                             if (p.color == i) Icon(Icons.Rounded.Check, null, tint = Color(0xFF0B0D12), modifier = Modifier.align(Alignment.Center).size(26.dp))
                         }
                     }
+                }
+            }
+            // PIN: set, change or remove. (Reaching this panel already needed the current PIN.)
+            val hasPin = store.hasPin(id)
+            SettingRow(
+                stringResource(R.string.prof_pin_row), stringResource(R.string.prof_pin_row_d),
+                if (hasPin) stringResource(R.string.set_on) else stringResource(R.string.set_off), hasPin,
+            ) { onSetPin() }
+            if (hasPin) {
+                SettingRow(stringResource(R.string.prof_pin_remove), stringResource(R.string.prof_pin_remove_d), "", false, danger = true) {
+                    store.setPin(id, null); app.toast(R.string.prof_pin_removed)
                 }
             }
             if (id != ProfileRules.DEFAULT && id != store.profileId) {

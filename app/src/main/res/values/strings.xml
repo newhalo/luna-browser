@@ -377,4 +377,25 @@
     <string name="prof_deleted">Profile deleted</string>
     <string name="prof_shared">Sign-ins are shared by all profiles on this TV: its web engine is too old to keep them apart.</string>
     <string name="prof_edit_sub">Name, colour or delete</string>
+    <string name="prof_pin_title">PIN</string>
+    <string name="prof_pin_for">PIN for %s</string>
+    <string name="prof_pin_new">Choose a 4-digit PIN</string>
+    <string name="prof_pin_again">Enter it again to confirm</string>
+    <string name="prof_pin_wrong">Wrong PIN</string>
+    <string name="prof_pin_locked">Too many tries. Wait %d s.</string>
+    <string name="prof_pin_mismatch">The PINs didn’t match. Try again.</string>
+    <string name="prof_pin_row">PIN</string>
+    <string name="prof_pin_row_d">Ask for a 4-digit PIN to open this profile.</string>
+    <string name="prof_pin_remove">Remove PIN</string>
+    <string name="prof_pin_remove_d">This profile will open without a PIN.</string>
+    <string name="prof_pin_saved">PIN saved</string>
+    <string name="prof_pin_removed">PIN removed</string>
+    <string name="prof_locked_hint">Enter the PIN to continue</string>
+    <string name="prof_pin_note">A PIN keeps family members out of each other’s profiles. It is not encryption.</string>
+    <string name="reader_size">Text size %d%%</string>
+    <string name="reader_hud_idle">OK read aloud · ◀ ▶ text size · ▲ ▼ scroll</string>
+    <string name="reader_hud_speaking">Reading aloud · OK pauses · ◀ ▶ text size</string>
+    <string name="reader_no_tts">No speech engine found on this TV</string>
+    <string name="set_reader_size">Reading text size</string>
+    <string name="set_reader_size_d">Text size in reading mode. Left / Right change it while reading.</string>
 </resources>

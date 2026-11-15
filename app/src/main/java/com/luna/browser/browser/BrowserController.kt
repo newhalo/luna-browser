@@ -14,6 +14,8 @@ import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.PixelCopy
+import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.view.View
 import android.view.ViewConfiguration
 import android.webkit.CookieManager
@@ -275,10 +277,13 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             }
         }
         held.clear()
+        if (speaking) stopSpeaking(keepPlace = true)
         webView.onPause()
     }
 
     fun destroy() {
+        runCatching { tts?.stop(); tts?.shutdown() }
+        tts = null
         active = false
         handler.removeCallbacksAndMessages(null)
         (webView.parent as? android.view.ViewGroup)?.removeView(webView)
@@ -333,6 +338,24 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         private set
     private var readerPending = false
     private var readerOrigin = ""
+    private var article: Article? = null
+
+    /** The reading page's text size (an index into [ReaderMode.sizes]); remembered for every article. */
+    var readerSize by mutableIntStateOf(ReaderMode.clampSize(app.store.int(K.READER_SIZE)))
+        private set
+
+    /** True while the article is being read aloud. */
+    var speaking by mutableStateOf(false)
+        private set
+
+    /** Bumped on every key in the reading page: the on-screen hints show for a few seconds after it. */
+    var readerHudAt by mutableLongStateOf(0L)
+        private set
+    private var tts: TextToSpeech? = null
+    private var ttsReady = false
+    private var resumeAt = -1       // block to continue from after a pause
+    private var spokenNow = -1
+    private var lastUtterance = ""
 
     fun toggleReader() {
         if (reader) exitReader() else enterReader()
@@ -347,19 +370,23 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             readerOrigin = url
             readerPending = true
             reader = true
+            this.article = article
+            resumeAt = -1
             held.clear()
             // No base address: the reading page gets an opaque origin of its own, never the site's (it has no scripts
             // anyway). The history entry keeps the article's address, so Back and the history behave.
             webView.loadDataWithBaseURL(
                 null,
-                ReaderMode.html(article, app.s(R.string.reader_minutes, ReaderMode.minutes(article))),
+                ReaderMode.html(article, app.s(R.string.reader_minutes, ReaderMode.minutes(article)), readerSize),
                 "text/html", "utf-8", readerOrigin,
             )
-            app.toast(R.string.reader_hint)
+            readerHudAt = SystemClock.uptimeMillis()
         }
     }
 
     private fun exitReader() {
+        stopSpeaking(keepPlace = false)
+        article = null
         reader = false
         readerPending = false
         error = null
@@ -371,15 +398,92 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     /** The reading page is a data: document; the address shown, saved and filtered stays that of the article. */
     private fun pageAddress(u: String) { if (!u.startsWith("data:")) { url = u; filterPageUrl = u } }
 
-    /** Up / Down scroll by a third of the screen (hold to keep going); Up at the very top opens the toolbar. */
+    /** Up / Down scroll by a third of the screen (hold to keep going); Up at the very top opens the toolbar. Left / Right change the text size. */
     private fun readerKey(e: KeyEvent): Boolean {
         if (e.action != KeyEvent.ACTION_DOWN) return true
+        readerHudAt = SystemClock.uptimeMillis()
         val step = (viewH * 0.34f).toInt().coerceAtLeast((120 * density).toInt())
         when (e.keyCode) {
             KeyEvent.KEYCODE_DPAD_DOWN -> webView.scrollBy(0, step)
             KeyEvent.KEYCODE_DPAD_UP -> if (webView.canScrollVertically(-1)) webView.scrollBy(0, -step) else if (e.repeatCount == 0) showToolbar()
+            KeyEvent.KEYCODE_DPAD_LEFT -> if (e.repeatCount == 0) changeReaderSize(-1)
+            KeyEvent.KEYCODE_DPAD_RIGHT -> if (e.repeatCount == 0) changeReaderSize(+1)
         }
         return true
+    }
+
+    private fun changeReaderSize(delta: Int) {
+        val next = ReaderMode.clampSize(readerSize + delta)
+        if (next == readerSize) { app.toast(app.s(R.string.reader_size, ReaderMode.sizePercent(next))); return }
+        readerSize = next
+        app.store.put(K.READER_SIZE, next)
+        webView.evaluateJavascript(ReaderMode.setSizeJs(next), null)
+        app.toast(app.s(R.string.reader_size, ReaderMode.sizePercent(next)))
+    }
+
+    // ---- Read aloud ----
+    /** OK in the reading page: start reading from the top (or from where it was paused), or pause. */
+    fun toggleSpeak() {
+        readerHudAt = SystemClock.uptimeMillis()
+        if (!reader || article == null) return
+        if (speaking) { stopSpeaking(keepPlace = true); return }
+        startSpeaking()
+    }
+
+    private fun startSpeaking() {
+        val engine = tts
+        if (engine == null) {
+            // The engine starts up in the background the first time (a moment on a TV): speak as soon as it is ready.
+            tts = TextToSpeech(activity) { status ->
+                handler.post {
+                    ttsReady = status == TextToSpeech.SUCCESS
+                    if (ttsReady) { tts?.setOnUtteranceProgressListener(ttsListener); if (reader) speakFrom() }
+                    else { tts?.shutdown(); tts = null; app.toast(R.string.reader_no_tts) }
+                }
+            }
+            return
+        }
+        if (!ttsReady) return
+        speakFrom()
+    }
+
+    private fun speakFrom() {
+        val a = article ?: return
+        val engine = tts ?: return
+        val loc = runCatching { java.util.Locale.forLanguageTag(a.lang.replace('_', '-')) }.getOrNull()
+        val use = if (loc != null && a.lang.isNotEmpty() && engine.isLanguageAvailable(loc) >= TextToSpeech.LANG_AVAILABLE) loc else app.locale
+        if (engine.isLanguageAvailable(use) >= TextToSpeech.LANG_AVAILABLE) engine.language = use
+        val items = ReaderMode.speakable(a).filter { it.first >= maxOf(resumeAt, 0) }
+        if (items.isEmpty()) { resumeAt = -1; return }
+        engine.stop()
+        var n = 0
+        val all = items.flatMap { (i, t) -> ReaderMode.chunks(t).map { i to it } }
+        all.forEachIndexed { k, (i, chunk) ->
+            val id = "$i:$k" + if (k == all.lastIndex) ":end" else ""
+            if (k == all.lastIndex) lastUtterance = id
+            engine.speak(chunk, if (n++ == 0) TextToSpeech.QUEUE_FLUSH else TextToSpeech.QUEUE_ADD, null, id)
+        }
+        speaking = true
+    }
+
+    private val ttsListener = object : UtteranceProgressListener() {
+        override fun onStart(utteranceId: String?) {
+            val i = utteranceId?.substringBefore(':')?.toIntOrNull() ?: return
+            handler.post { if (reader) { spokenNow = i; webView.evaluateJavascript(ReaderMode.highlightJs(i), null) } }
+        }
+        override fun onDone(utteranceId: String?) {
+            if (utteranceId == lastUtterance) handler.post { speaking = false; resumeAt = -1; spokenNow = -1; if (reader) webView.evaluateJavascript(ReaderMode.CLEAR_HIGHLIGHT_JS, null) }
+        }
+        @Deprecated("Deprecated in Java")
+        override fun onError(utteranceId: String?) { handler.post { speaking = false } }
+    }
+
+    /** Stops speaking; with [keepPlace] the next OK carries on from the paragraph being read. */
+    private fun stopSpeaking(keepPlace: Boolean) {
+        runCatching { tts?.stop() }
+        if (speaking && keepPlace) resumeAt = spokenNow.coerceAtLeast(0) else resumeAt = -1
+        speaking = false
+        if (!keepPlace && reader) webView.evaluateJavascript(ReaderMode.CLEAR_HIGHLIGHT_JS, null)
     }
 
     fun toggleMode() {
@@ -700,6 +804,46 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         }, 80)
     }
 
+    /**
+     * A fresh screenshot of the page for the tab switcher, then [done] (always called, at most about half a second later).
+     * The toolbar is hidden first so it is not in the picture.
+     */
+    fun captureTabThumb(done: () -> Unit) {
+        val u = url
+        var called = false
+        fun finish() { if (!called) { called = true; done() } }
+        if (!u.startsWith("http") || error != null || customView != null || webView.width == 0 || !webView.isAttachedToWindow || reader) { finish(); return }
+        val wasToolbar = toolbarVisible
+        toolbarVisible = false
+        capturing = true
+        handler.postDelayed({ finish() }, 600)        // never keep the viewer waiting
+        handler.postDelayed({
+            val loc = IntArray(2)
+            webView.getLocationInWindow(loc)
+            val w = 480
+            val h = (w.toFloat() * webView.height / webView.width).toInt().coerceAtLeast(1)
+            val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+            try {
+                PixelCopy.request(
+                    activity.window, Rect(loc[0], loc[1], loc[0] + webView.width, loc[1] + webView.height), bmp,
+                    { res ->
+                        capturing = false
+                        if (res == PixelCopy.SUCCESS) {
+                            val f = app.store.tabThumbFile(u)
+                            Thread {
+                                runCatching { f.outputStream().use { bmp.compress(Bitmap.CompressFormat.JPEG, 80, it) } }
+                                handler.post { app.store.tabThumbSaved(); finish() }
+                            }.start()
+                        } else finish()
+                    }, handler,
+                )
+            } catch (e: Exception) {
+                capturing = false
+                finish()
+            }
+        }, if (wasToolbar) 320L else 60L)
+    }
+
     private fun saveSnap(u: String, bmp: Bitmap) {
         val f = File(app.store.thumbsDir, "${u.hashCode().toUInt()}.jpg")
         Thread {
@@ -729,12 +873,12 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         when (code) {
             KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, KeyEvent.KEYCODE_MEDIA_PLAY, KeyEvent.KEYCODE_MEDIA_PAUSE,
             KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, KeyEvent.KEYCODE_MEDIA_REWIND -> {
-                if (down && e.repeatCount == 0) mediaKey(code)
+                if (down && e.repeatCount == 0) { if (reader) toggleSpeak() else mediaKey(code) }
                 return true
             }
             KeyEvent.KEYCODE_PAGE_DOWN, KeyEvent.KEYCODE_CHANNEL_DOWN -> { if (down) webView.pageDown(false); return true }
             KeyEvent.KEYCODE_PAGE_UP, KeyEvent.KEYCODE_CHANNEL_UP -> { if (down) webView.pageUp(false); return true }
-            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> return if (reader) true else handleOk(e)
+            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> return if (reader) { if (e.action == KeyEvent.ACTION_DOWN && e.repeatCount == 0) toggleSpeak(); true } else handleOk(e)
             KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT ->
                 return if (reader) readerKey(e) else if (cursorMode) handleCursorKey(e) else focusModeKey(e)
         }

@@ -187,6 +187,7 @@ class AppState(val activity: Activity) {
     }
 
     private fun performRemote(action: RemoteAction, text: String, done: (Boolean) -> Unit) {
+        if (locked && action != RemoteAction.Ping) return done(false)    // the PIN picker is showing: the phone can't open anything
         when (action) {
             RemoteAction.Ping -> done(true)
             RemoteAction.Open, RemoteAction.Search -> {
@@ -395,8 +396,16 @@ class AppState(val activity: Activity) {
         if (to == Screen.Browser) { val b = browser; shownBrowser = b; b.onEnter() }
     }
 
+    /** The tab switcher; from a page it first takes a fresh thumbnail of that page (a moment, never more than half a second). */
+    fun openTabs() {
+        val b = if (screen == Screen.Browser) shownBrowser else null
+        if (b == null) { navigate(Screen.Tabs); return }
+        b.captureTabThumb { if (screen == Screen.Browser) navigate(Screen.Tabs) }
+    }
+
     /** Opens a URL or search query in the browser. */
     fun openUrl(input: String) {
+        if (locked) return
         val url = store.resolve(input)
         if (url.isEmpty()) return
         browser.load(url)
@@ -440,7 +449,27 @@ class AppState(val activity: Activity) {
         addressOpen = true
     }
 
-    // ---- Profiles ----
+    // ---- Profile PINs ----
+    /** True from start-up until the PIN of the remembered profile has been entered: nothing opens meanwhile. */
+    var locked by mutableStateOf(false)
+        private set
+    private var pinFails = 0
+    private var pinUntil = 0L
+
+    /** Checks [pin] for profile [id]: null when right, otherwise the message to show (wrong, or how long to wait). */
+    fun tryPin(id: String, pin: String): String? {
+        val now = SystemClock.elapsedRealtime()
+        if (now < pinUntil) return s(R.string.prof_pin_locked, ((pinUntil - now + 999) / 1000).toInt())
+        if (store.checkPin(id, pin)) { pinFails = 0; return null }
+        pinFails++
+        val wait = com.luna.browser.data.PinRules.lockSeconds(pinFails)
+        if (wait > 0) { pinUntil = now + wait * 1000L; return s(R.string.prof_pin_locked, wait) }
+        return s(R.string.prof_pin_wrong)
+    }
+
+    /** The picker's way in: the remembered profile's PIN was right (or it has none). */
+    fun unlock() { locked = false }
+
     /** The name shown for a profile: the default one has no name of its own until it is renamed. */
     fun profileLabel(p: com.luna.browser.data.Profile) = p.name.ifEmpty { s(R.string.prof_main) }
 
@@ -449,6 +478,7 @@ class AppState(val activity: Activity) {
      * favourites, positions and tabs are loaded, and Home opens. Leaving the guest erases its data and web sign-ins.
      */
     fun switchProfile(id: String) {
+        locked = false
         if (id == store.profileId) { goHome(); return }
         val leavingGuest = store.isGuest
         tabs.destroyAll()
@@ -467,7 +497,8 @@ class AppState(val activity: Activity) {
     }
 
     fun launch() {
-        // "Who's watching?" first, when the viewer asked for it and there is more than one profile.
+        // A profile with a PIN opens behind the picker; "Who's watching?" can also be asked for at every start.
+        if (store.hasPin(store.profileId)) { locked = true; show(Screen.Profiles); return }
         if (store.profiles.size > 1 && store.bool(K.ASK_PROFILE)) { show(Screen.Profiles); return }
         val last = store.lastSession
         if (store.str(K.LAUNCH) == "resume" && last != null) openUrl(last.url)
@@ -503,6 +534,7 @@ class AppState(val activity: Activity) {
             addressOpen -> addressOpen = false
             screen == Screen.Browser && browser.onBack() -> Unit
             stack.isNotEmpty() -> show(stack.removeLast())
+            locked -> onExit()                       // no way past the PIN picker with Back
             screen != Screen.Home -> show(Screen.Home)
             else -> onExit()
         }

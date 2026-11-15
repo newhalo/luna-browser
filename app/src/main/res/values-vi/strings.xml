@@ -352,4 +352,25 @@
     <string name="prof_deleted">Đã xóa hồ sơ</string>
     <string name="prof_shared">Đăng nhập được dùng chung cho mọi hồ sơ trên TV này: bộ máy web quá cũ để tách riêng.</string>
     <string name="prof_edit_sub">Tên, màu hoặc xóa</string>
+    <string name="prof_pin_title">PIN</string>
+    <string name="prof_pin_for">PIN của %s</string>
+    <string name="prof_pin_new">Chọn mã PIN 4 số</string>
+    <string name="prof_pin_again">Nhập lại để xác nhận</string>
+    <string name="prof_pin_wrong">Sai PIN</string>
+    <string name="prof_pin_locked">Thử quá nhiều lần. Chờ %d giây.</string>
+    <string name="prof_pin_mismatch">Hai mã PIN không khớp. Thử lại.</string>
+    <string name="prof_pin_row">PIN</string>
+    <string name="prof_pin_row_d">Hỏi mã PIN 4 số để mở hồ sơ này.</string>
+    <string name="prof_pin_remove">Xóa PIN</string>
+    <string name="prof_pin_remove_d">Hồ sơ này sẽ mở không cần PIN.</string>
+    <string name="prof_pin_saved">Đã lưu PIN</string>
+    <string name="prof_pin_removed">Đã xóa PIN</string>
+    <string name="prof_locked_hint">Nhập PIN để tiếp tục</string>
+    <string name="prof_pin_note">PIN giúp các thành viên không vào nhầm hồ sơ của nhau. Đây không phải mã hóa.</string>
+    <string name="reader_size">Cỡ chữ %d%%</string>
+    <string name="reader_hud_idle">OK đọc to · ◀ ▶ cỡ chữ · ▲ ▼ cuộn</string>
+    <string name="reader_hud_speaking">Đang đọc to · OK để tạm dừng · ◀ ▶ cỡ chữ</string>
+    <string name="reader_no_tts">TV không có bộ đọc giọng nói</string>
+    <string name="set_reader_size">Cỡ chữ chế độ đọc</string>
+    <string name="set_reader_size_d">Cỡ chữ trong chế độ đọc. Bấm Trái / Phải để đổi khi đang đọc.</string>
 </resources>

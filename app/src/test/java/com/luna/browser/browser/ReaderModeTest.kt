@@ -91,6 +91,54 @@ class ReaderModeTest {
         assertTrue(ReaderMode.minutes(a) >= 2)
     }
 
+    @Test fun sizesAreClampedAndLabelled() {
+        assertEquals(19, ReaderMode.sizePx(ReaderMode.DEFAULT_SIZE))
+        assertEquals(17, ReaderMode.sizePx(-5))
+        assertEquals(30, ReaderMode.sizePx(99))
+        assertEquals(100, ReaderMode.sizePercent(ReaderMode.DEFAULT_SIZE))
+        assertTrue(ReaderMode.sizePercent(0) < 100 && ReaderMode.sizePercent(4) > 100)
+        assertEquals(1, ReaderMode.clampSize(1))
+        assertEquals(0, ReaderMode.clampSize(-1))
+    }
+
+    @Test fun pageCarriesTheSizeAndBlockNumbers() {
+        val a = ReaderMode.parse(json(p(longText), """{"k":"img","t":"","u":"https://e.com/a.jpg"}""", p("second"), p("third")))!!
+        val html = ReaderMode.html(a, "1 min", 3)
+        assertTrue(html.contains("--fs:26px"))
+        assertTrue(html.contains("<p data-i=\"0\">"))
+        assertTrue("block numbers count pictures too", html.contains("<p data-i=\"2\">second</p>"))
+        assertTrue(ReaderMode.setSizeJs(0).contains("17px"))
+        assertTrue(ReaderMode.highlightJs(7).endsWith("(7)"))
+        assertTrue("a negative index can't break the script", ReaderMode.highlightJs(-3).endsWith("(0)"))
+    }
+
+    @Test fun speakableSkipsPicturesAndKeepsTheBlockIndex() {
+        val a = ReaderMode.parse(json(p(longText), """{"k":"img","t":"cap","u":"https://e.com/a.jpg"}""", p("two"), p("three")))!!
+        assertEquals(listOf(0, 2, 3), ReaderMode.speakable(a).map { it.first })
+    }
+
+    @Test fun longTextIsCutAtSentencesForTheSpeechEngine() {
+        val sentence = "This is a sentence of moderate length. "
+        val text = sentence.repeat(300)
+        val parts = ReaderMode.chunks(text, 1000)
+        assertTrue(parts.size > 5)
+        assertTrue(parts.all { it.length <= 1000 })
+        assertTrue("every piece ends at a sentence", parts.dropLast(1).all { it.endsWith(".") })
+        assertEquals(text.trim().replace(Regex("\s+"), " "), parts.joinToString(" ").replace(Regex("\s+"), " "))
+        assertEquals(listOf("short"), ReaderMode.chunks("  short ", 1000))
+        assertTrue(ReaderMode.chunks("   ").isEmpty())
+        val noSpaces = "x".repeat(2500)
+        assertTrue(ReaderMode.chunks(noSpaces, 1000).all { it.length <= 1000 })
+        assertEquals(noSpaces, ReaderMode.chunks(noSpaces, 1000).joinToString(""))
+    }
+
+    @Test fun languageIsKeptOnlyWhenItLooksLikeOne() {
+        assertEquals("vi", ReaderMode.parse("""{"title":"t","site":"s","lang":"vi","blocks":[${p(longText)},${p("a")},${p("b")}]}""")!!.lang)
+        assertEquals("en-US", ReaderMode.parse("""{"title":"t","site":"s","lang":"en-US","blocks":[${p(longText)},${p("a")},${p("b")}]}""")!!.lang)
+        assertEquals("", ReaderMode.parse("""{"title":"t","site":"s","lang":"<script>","blocks":[${p(longText)},${p("a")},${p("b")}]}""")!!.lang)
+        assertEquals("", ReaderMode.parse(json(p(longText), p("a"), p("b")))!!.lang)
+    }
+
     @Test fun extractionScriptIsSelfContained() {
         // The script is injected as one expression: it must be an IIFE that returns JSON text or null.
         val js = ReaderMode.EXTRACT_JS

@@ -364,4 +364,25 @@
     <string name="prof_deleted">Профиль удалён</string>
     <string name="prof_shared">Входы в аккаунты общие для всех профилей на этом ТВ: его веб-движок слишком старый, чтобы их разделить.</string>
     <string name="prof_edit_sub">Имя, цвет или удаление</string>
+    <string name="prof_pin_title">PIN</string>
+    <string name="prof_pin_for">PIN: %s</string>
+    <string name="prof_pin_new">Выберите PIN из 4 цифр</string>
+    <string name="prof_pin_again">Введите ещё раз для подтверждения</string>
+    <string name="prof_pin_wrong">Неверный PIN</string>
+    <string name="prof_pin_locked">Слишком много попыток. Подождите %d с.</string>
+    <string name="prof_pin_mismatch">PIN-коды не совпали. Попробуйте ещё раз.</string>
+    <string name="prof_pin_row">PIN</string>
+    <string name="prof_pin_row_d">Запрашивать PIN из 4 цифр для входа в этот профиль.</string>
+    <string name="prof_pin_remove">Удалить PIN</string>
+    <string name="prof_pin_remove_d">Этот профиль будет открываться без PIN.</string>
+    <string name="prof_pin_saved">PIN сохранён</string>
+    <string name="prof_pin_removed">PIN удалён</string>
+    <string name="prof_locked_hint">Введите PIN, чтобы продолжить</string>
+    <string name="prof_pin_note">PIN не пускает членов семьи в чужие профили. Это не шифрование.</string>
+    <string name="reader_size">Размер текста %d%%</string>
+    <string name="reader_hud_idle">OK — читать вслух · ◀ ▶ размер · ▲ ▼ прокрутка</string>
+    <string name="reader_hud_speaking">Чтение вслух · OK — пауза · ◀ ▶ размер</string>
+    <string name="reader_no_tts">На этом ТВ нет синтезатора речи</string>
+    <string name="set_reader_size">Размер текста при чтении</string>
+    <string name="set_reader_size_d">Размер текста в режиме чтения. Влево / Вправо меняют его во время чтения.</string>
 </resources>

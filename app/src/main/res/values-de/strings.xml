@@ -356,4 +356,25 @@
     <string name="prof_deleted">Profil gelöscht</string>
     <string name="prof_shared">Anmeldungen werden von allen Profilen auf diesem Fernseher geteilt: Seine Web-Engine ist zu alt, um sie zu trennen.</string>
     <string name="prof_edit_sub">Name, Farbe oder löschen</string>
+    <string name="prof_pin_title">PIN</string>
+    <string name="prof_pin_for">PIN für %s</string>
+    <string name="prof_pin_new">Wähle eine 4-stellige PIN</string>
+    <string name="prof_pin_again">Zur Bestätigung noch einmal eingeben</string>
+    <string name="prof_pin_wrong">Falsche PIN</string>
+    <string name="prof_pin_locked">Zu viele Versuche. Warte %d s.</string>
+    <string name="prof_pin_mismatch">Die PINs stimmen nicht überein. Versuche es erneut.</string>
+    <string name="prof_pin_row">PIN</string>
+    <string name="prof_pin_row_d">Verlangt eine 4-stellige PIN zum Öffnen dieses Profils.</string>
+    <string name="prof_pin_remove">PIN entfernen</string>
+    <string name="prof_pin_remove_d">Dieses Profil öffnet sich ohne PIN.</string>
+    <string name="prof_pin_saved">PIN gespeichert</string>
+    <string name="prof_pin_removed">PIN entfernt</string>
+    <string name="prof_locked_hint">PIN zum Fortfahren eingeben</string>
+    <string name="prof_pin_note">Eine PIN hält Familienmitglieder aus den Profilen der anderen heraus. Sie ist keine Verschlüsselung.</string>
+    <string name="reader_size">Textgröße %d %%</string>
+    <string name="reader_hud_idle">OK liest vor · ◀ ▶ Textgröße · ▲ ▼ scrollen</string>
+    <string name="reader_hud_speaking">Wird vorgelesen · OK pausiert · ◀ ▶ Textgröße</string>
+    <string name="reader_no_tts">Auf diesem Fernseher gibt es keine Sprachausgabe</string>
+    <string name="set_reader_size">Textgröße im Lesemodus</string>
+    <string name="set_reader_size_d">Textgröße im Lesemodus. Links / Rechts ändern sie beim Lesen.</string>
 </resources>

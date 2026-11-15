@@ -7,7 +7,7 @@ import org.json.JSONTokener
 /** One piece of an article: kind is h2, h3, p, li, quote, pre or img (then [url] is the image address). */
 class Block(val kind: String, val text: String, val url: String? = null)
 
-class Article(val title: String, val site: String, val blocks: List<Block>)
+class Article(val title: String, val site: String, val blocks: List<Block>, val lang: String = "")
 
 /**
  * Reading mode: a clean, large-type, dark view of the article on the current page, made for reading from the sofa.
@@ -44,11 +44,45 @@ object ReaderMode {
                 }
             }
             val chars = blocks.filter { it.kind != "img" }.sumOf { it.text.length }
-            val article = Article(o.optString("title").trim().take(300), o.optString("site").trim().take(120), blocks)
+            val lang = o.optString("lang").trim().take(20).takeIf { l -> l.matches(Regex("[A-Za-z]{2,3}([-_][A-Za-z0-9]{2,8})*")) } ?: ""
+            val article = Article(o.optString("title").trim().take(300), o.optString("site").trim().take(120), blocks, lang)
             if (chars < MIN_CHARS || blocks.count { it.kind != "img" } < 3) null else article
         } catch (e: Exception) {
             null
         }
+    }
+
+    /** Text sizes of the reading page in px; the middle-low one is the original size. */
+    val sizes = listOf(17, 19, 22, 26, 30)
+    const val DEFAULT_SIZE = 1
+
+    fun clampSize(level: Int) = level.coerceIn(0, sizes.lastIndex)
+
+    fun sizePx(level: Int) = sizes[clampSize(level)]
+
+    /** The size as a percentage of the default, for display ("116%"). */
+    fun sizePercent(level: Int) = Math.round(sizePx(level) * 100f / sizes[DEFAULT_SIZE])
+
+    /** The blocks that are read aloud: (index in [Article.blocks], text). Pictures are skipped. */
+    fun speakable(a: Article): List<Pair<Int, String>> = a.blocks.mapIndexedNotNull { i, b -> if (b.kind == "img") null else i to b.text }
+
+    /** Splits [text] into pieces of at most [max] characters, at sentence ends where possible (speech engines refuse long input). */
+    fun chunks(text: String, max: Int = 3500): List<String> {
+        val t = text.trim()
+        if (t.isEmpty()) return emptyList()
+        if (t.length <= max) return listOf(t)
+        val out = ArrayList<String>()
+        var rest = t
+        while (rest.length > max) {
+            val window = rest.substring(0, max)
+            var cut = maxOf(window.lastIndexOf(". "), window.lastIndexOf("? "), window.lastIndexOf("! "), window.lastIndexOf("。"))
+            if (cut < max / 2) cut = window.lastIndexOf(' ')
+            if (cut < max / 4) cut = max - 1
+            out.add(rest.substring(0, cut + 1).trim())
+            rest = rest.substring(cut + 1).trim()
+        }
+        if (rest.isNotEmpty()) out.add(rest)
+        return out.filter { it.isNotEmpty() }
     }
 
     private fun isWeb(u: String) = u.startsWith("https://") || u.startsWith("http://")
@@ -76,25 +110,25 @@ object ReaderMode {
         return out.toString()
     }
 
-    /** The reading page. [minutesLabel] is already translated ("5 min read"). */
-    fun html(a: Article, minutesLabel: String): String {
+    /** The reading page. [minutesLabel] is already translated ("5 min read"); [sizeLevel] indexes [sizes]. */
+    fun html(a: Article, minutesLabel: String, sizeLevel: Int = DEFAULT_SIZE): String {
         val sb = StringBuilder(4096)
         sb.append("<!doctype html><html dir=\"auto\"><head><meta charset=\"utf-8\">")
         sb.append("<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"color-scheme\" content=\"dark\">")
-        sb.append("<title>").append(esc(a.title)).append("</title><style>").append(CSS).append("</style></head><body><main>")
+        sb.append("<title>").append(esc(a.title)).append("</title><style>:root{--fs:").append(sizePx(sizeLevel)).append("px}").append(CSS).append("</style></head><body><main>")
         if (a.site.isNotEmpty()) sb.append("<div class=\"site\">").append(esc(a.site)).append("</div>")
         if (a.title.isNotEmpty()) sb.append("<h1>").append(esc(a.title)).append("</h1>")
         sb.append("<div class=\"meta\">").append(esc(minutesLabel)).append("</div>")
         var inList = false
-        for (b in a.blocks) {
+        for ((i, b) in a.blocks.withIndex()) {
             if (b.kind != "li" && inList) { sb.append("</ul>"); inList = false }
             when (b.kind) {
-                "h2" -> sb.append("<h2>").append(esc(b.text)).append("</h2>")
-                "h3" -> sb.append("<h3>").append(esc(b.text)).append("</h3>")
-                "p" -> sb.append("<p>").append(esc(b.text)).append("</p>")
-                "quote" -> sb.append("<blockquote>").append(esc(b.text)).append("</blockquote>")
-                "pre" -> sb.append("<pre>").append(esc(b.text)).append("</pre>")
-                "li" -> { if (!inList) { sb.append("<ul>"); inList = true }; sb.append("<li>").append(esc(b.text)).append("</li>") }
+                "h2" -> sb.append("<h2 data-i=\"").append(i).append("\">").append(esc(b.text)).append("</h2>")
+                "h3" -> sb.append("<h3 data-i=\"").append(i).append("\">").append(esc(b.text)).append("</h3>")
+                "p" -> sb.append("<p data-i=\"").append(i).append("\">").append(esc(b.text)).append("</p>")
+                "quote" -> sb.append("<blockquote data-i=\"").append(i).append("\">").append(esc(b.text)).append("</blockquote>")
+                "pre" -> sb.append("<pre data-i=\"").append(i).append("\">").append(esc(b.text)).append("</pre>")
+                "li" -> { if (!inList) { sb.append("<ul>"); inList = true }; sb.append("<li data-i=\"").append(i).append("\">").append(esc(b.text)).append("</li>") }
                 "img" -> {
                     sb.append("<figure><img src=\"").append(esc(b.url ?: "")).append("\" alt=\"\">")
                     if (b.text.isNotEmpty()) sb.append("<figcaption>").append(esc(b.text)).append("</figcaption>")
@@ -108,17 +142,27 @@ object ReaderMode {
     }
 
     private const val CSS =
-        "html{background:#0b0d12}body{margin:0;color:#e9ecf7;font:19px/1.75 Roboto,'Segoe UI',system-ui,sans-serif;-webkit-font-smoothing:antialiased}" +
-            "main{max-width:660px;margin:0 auto;padding:44px 28px 140px}" +
-            ".site{color:#8aa4ff;font-size:14px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}" +
-            "h1{font-size:32px;line-height:1.25;margin:10px 0 8px;color:#fff}" +
-            ".meta{color:#9aa3c4;font-size:15px;margin:0 0 28px;padding-bottom:20px;border-bottom:1px solid #292e4a}" +
-            "h2{font-size:25px;line-height:1.3;margin:36px 0 8px;color:#fff}h3{font-size:21px;line-height:1.3;margin:28px 0 6px;color:#f1f3fb}" +
-            "p{margin:0 0 18px}ul{margin:0 0 18px;padding-left:26px}li{margin:6px 0}" +
-            "blockquote{margin:22px 0;padding:4px 0 4px 20px;border-left:4px solid #8aa4ff;color:#c9d1ee}" +
-            "pre{background:#151826;padding:16px;border-radius:12px;font-size:15px;line-height:1.5;white-space:pre-wrap;word-break:break-word}" +
-            "figure{margin:26px 0}img{max-width:100%;height:auto;border-radius:12px;display:block}" +
-            "figcaption{color:#9aa3c4;font-size:14px;line-height:1.5;margin-top:8px}"
+        "html{background:#0b0d12}body{margin:0;color:#e9ecf7;font-size:var(--fs,19px);line-height:1.75;font-family:Roboto,'Segoe UI',system-ui,sans-serif;-webkit-font-smoothing:antialiased}" +
+            "main{max-width:34em;margin:0 auto;padding:44px 28px 140px}" +
+            ".site{color:#8aa4ff;font-size:.74em;letter-spacing:.08em;text-transform:uppercase;font-weight:600}" +
+            "h1{font-size:1.68em;line-height:1.25;margin:.3em 0 .25em;color:#fff}" +
+            ".meta{color:#9aa3c4;font-size:.8em;margin:0 0 1.4em;padding-bottom:1em;border-bottom:1px solid #292e4a}" +
+            "h2{font-size:1.32em;line-height:1.3;margin:1.4em 0 .3em;color:#fff}h3{font-size:1.1em;line-height:1.3;margin:1.2em 0 .25em;color:#f1f3fb}" +
+            "p{margin:0 0 .95em}ul{margin:0 0 .95em;padding-left:1.4em}li{margin:.3em 0}" +
+            "blockquote{margin:1.1em 0;padding:.2em 0 .2em 1em;border-left:4px solid #8aa4ff;color:#c9d1ee}" +
+            "pre{background:#151826;padding:.9em;border-radius:12px;font-size:.8em;line-height:1.5;white-space:pre-wrap;word-break:break-word}" +
+            "figure{margin:1.4em 0}img{max-width:100%;height:auto;border-radius:12px;display:block}" +
+            "figcaption{color:#9aa3c4;font-size:.74em;line-height:1.5;margin-top:.5em}" +
+            "[data-i]{transition:background .25s,box-shadow .25s}.now{background:#1c2244;box-shadow:-14px 0 0 #1c2244,14px 0 0 #1c2244;border-radius:6px}"
+
+    /** Script that sets the text size of the open reading page (no reload, the scroll position stays). */
+    fun setSizeJs(level: Int) = "document.documentElement.style.setProperty('--fs','" + sizePx(level) + "px')"
+
+    /** Script that marks block [i] as the one being read aloud and scrolls it to the middle of the screen. */
+    fun highlightJs(i: Int) = "(function(i){var o=document.querySelector('.now');if(o)o.classList.remove('now');" +
+        "var e=document.querySelector('[data-i=\"'+i+'\"]');if(e){e.classList.add('now');e.scrollIntoView({block:'center',behavior:'smooth'})}})(" + i.coerceAtLeast(0) + ")"
+
+    const val CLEAR_HIGHLIGHT_JS = "(function(){var o=document.querySelector('.now');if(o)o.classList.remove('now')})()"
 
     /**
      * Runs in the page. Finds the block of the page that holds most of the running text (paragraph length, discounted by
@@ -156,6 +200,6 @@ else walk(c)}}
 walk(best);
 if(chars<500||blocks.length<3)return null;
 var h=best.querySelector('h1')||document.querySelector('h1');
-return JSON.stringify({title:(h?T(h):document.title||'').slice(0,200),site:location.hostname.replace(/^www\./,''),blocks:blocks})
+return JSON.stringify({title:(h?T(h):document.title||'').slice(0,200),site:location.hostname.replace(/^www\./,''),lang:(document.documentElement.lang||'').slice(0,20),blocks:blocks})
 }catch(e){return null}})()"""
 }

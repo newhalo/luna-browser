@@ -304,6 +304,10 @@ private fun rows(category: Int, app: AppState): List<SRow> {
             Choice(K.CURSOR_SPEED, app.s(R.string.set_cursor_speed), app.s(R.string.set_cursor_speed_d), (1..5).map { it.toString() to app.s(R.string.level_n, it) }),
             Toggle(K.DESKTOP, app.s(R.string.set_desktop), app.s(R.string.set_desktop_d)),
             Choice(K.ZOOM, app.s(R.string.set_zoom), app.s(R.string.set_zoom_d), listOf("100", "125", "150", "175").map { it to "$it%" }),
+            Choice(
+                K.READER_SIZE, app.s(R.string.set_reader_size), app.s(R.string.set_reader_size_d),
+                com.luna.browser.browser.ReaderMode.sizes.indices.map { it.toString() to "${com.luna.browser.browser.ReaderMode.sizePercent(it)}%" },
+            ),
             Info(app.s(R.string.set_sites), if (s.siteOverrideCount == 0) app.s(R.string.site_none) else s.siteOverrideCount.toString()),
             if (s.siteOverrideCount > 0) {
                 Action(app.s(R.string.set_sites_reset), app.s(R.string.set_sites_reset_d), danger = true, confirm = true) {
@@ -357,6 +361,7 @@ private fun rows(category: Int, app: AppState): List<SRow> {
                 app.navigate(Screen.Profiles)
             },
             Toggle(K.ASK_PROFILE, app.s(R.string.set_ask_prof), app.s(R.string.set_ask_prof_d)),
+            Info(app.s(R.string.prof_pin_row), app.s(R.string.prof_pin_note)),
             Info(app.s(R.string.prof_signins), app.s(if (com.luna.browser.browser.WebProfiles.supported()) R.string.prof_signins_sep else R.string.prof_signins_shared)),
         )
         else -> {

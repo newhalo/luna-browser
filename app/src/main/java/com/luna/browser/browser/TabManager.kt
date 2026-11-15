@@ -110,6 +110,7 @@ class TabManager(private val app: AppState) {
 
     fun close(i: Int) {
         if (i !in tabs.indices) return
+        tabs[i].url.takeIf { it.startsWith("http") }?.let { app.store.deleteTabThumb(it) }
         tabs[i].freeze()
         tabs.removeAt(i)
         if (tabs.isEmpty()) tabs.add(Tab())

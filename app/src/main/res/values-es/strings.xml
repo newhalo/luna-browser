@@ -356,4 +356,25 @@
     <string name="prof_deleted">Perfil eliminado</string>
     <string name="prof_shared">Los inicios de sesión se comparten entre todos los perfiles de esta TV: su motor web es demasiado antiguo para separarlos.</string>
     <string name="prof_edit_sub">Nombre, color o eliminar</string>
+    <string name="prof_pin_title">PIN</string>
+    <string name="prof_pin_for">PIN de %s</string>
+    <string name="prof_pin_new">Elige un PIN de 4 dígitos</string>
+    <string name="prof_pin_again">Introdúcelo otra vez para confirmar</string>
+    <string name="prof_pin_wrong">PIN incorrecto</string>
+    <string name="prof_pin_locked">Demasiados intentos. Espera %d s.</string>
+    <string name="prof_pin_mismatch">Los PIN no coinciden. Inténtalo de nuevo.</string>
+    <string name="prof_pin_row">PIN</string>
+    <string name="prof_pin_row_d">Pide un PIN de 4 dígitos para abrir este perfil.</string>
+    <string name="prof_pin_remove">Quitar PIN</string>
+    <string name="prof_pin_remove_d">Este perfil se abrirá sin PIN.</string>
+    <string name="prof_pin_saved">PIN guardado</string>
+    <string name="prof_pin_removed">PIN eliminado</string>
+    <string name="prof_locked_hint">Introduce el PIN para continuar</string>
+    <string name="prof_pin_note">Un PIN evita que los miembros de la familia entren en los perfiles de otros. No es cifrado.</string>
+    <string name="reader_size">Tamaño del texto %d%%</string>
+    <string name="reader_hud_idle">OK lee en voz alta · ◀ ▶ tamaño · ▲ ▼ desplazar</string>
+    <string name="reader_hud_speaking">Leyendo en voz alta · OK pausa · ◀ ▶ tamaño</string>
+    <string name="reader_no_tts">No hay motor de voz en esta TV</string>
+    <string name="set_reader_size">Tamaño del texto de lectura</string>
+    <string name="set_reader_size_d">Tamaño del texto en modo lectura. Izquierda / Derecha lo cambian al leer.</string>
 </resources>

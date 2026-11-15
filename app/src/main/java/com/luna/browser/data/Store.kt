@@ -186,6 +186,8 @@ object K {
     const val PROFILE = "profile"
     /** Show "Who's watching?" when Luna opens (only matters with more than one profile). */
     const val ASK_PROFILE = "askProfile"
+    /** Text size of the reading page: an index into [com.luna.browser.browser.ReaderMode.sizes]. */
+    const val READER_SIZE = "readerSize"
 }
 
 /** Languages the UI is translated into (code to its own name, never translated). Keep in sync with res/xml/locales_config.xml. */
@@ -219,6 +221,8 @@ class Store(ctx: Context) {
     private val sp = ctx.getSharedPreferences("luna", Context.MODE_PRIVATE)
     val thumbsDir = File(ctx.filesDir, "thumbs").apply { mkdirs() }
     val iconsDir = File(ctx.filesDir, "icons").apply { mkdirs() }
+    /** A fresh screenshot of each open tab (taken when the viewer leaves the page for the tab switcher). */
+    val tabThumbsDir = File(ctx.filesDir, "tabthumbs").apply { mkdirs() }
 
     private val lowEnd = DeviceProfile.isLowEnd(ctx)
 
@@ -235,7 +239,7 @@ class Store(ctx: Context) {
         K.PHONE to "true", K.PHONE_PIN to "",
         K.TILE_SIZE to TileSize.LARGE, K.HISTORY_VIEW to "list",
         K.UPDATE_CHECK to "true", K.UPDATE_LAST to "0", K.UPDATE_LATEST to "", K.UPDATE_URL to "",
-        K.PROFILE to ProfileRules.DEFAULT, K.ASK_PROFILE to "false",
+        K.PROFILE to ProfileRules.DEFAULT, K.ASK_PROFILE to "false", K.READER_SIZE to "1",
     )
 
     val settings = mutableStateMapOf<String, String>().apply {
@@ -268,6 +272,22 @@ class Store(ctx: Context) {
 
     val isGuest: Boolean get() = profileId == ProfileRules.GUEST
     val currentProfile: Profile get() = profiles.firstOrNull { it.id == profileId } ?: profiles.first()
+
+    // ---- Profile PINs (a salted hash per profile, see PinRules) ----
+    private val pins = mutableStateMapOf<String, String>().apply {
+        profiles.forEach { p -> sp.getString("pin.${p.id}", null)?.let { put(p.id, it) } }
+    }
+
+    fun hasPin(id: String) = id != ProfileRules.GUEST && pins.containsKey(id)
+
+    fun checkPin(id: String, pin: String) = PinRules.verify(pin, pins[id])
+
+    /** Sets (or, with null, removes) a profile's PIN. */
+    fun setPin(id: String, pin: String?) {
+        if (id == ProfileRules.GUEST || profiles.none { it.id == id }) return
+        if (pin == null) { pins.remove(id); sp.edit().remove("pin.$id").apply() }
+        else if (PinRules.valid(pin)) { val e = PinRules.encode(pin); pins[id] = e; sp.edit().putString("pin.$id", e).apply() }
+    }
 
     /** The storage key of [name] for the active profile. */
     private fun pk(name: String) = ProfileRules.key(profileId, name)
@@ -459,6 +479,7 @@ class Store(ctx: Context) {
         visits.clear()
         lastSession = null
         version++
+        clearTabThumbs()
         // Only this profile's thumbnails: the other profiles' cards still need theirs.
         io.execute { snaps.forEach { runCatching { File(it).delete() } } }
         synchronized(positions) { positions.clear() }
@@ -483,6 +504,21 @@ class Store(ctx: Context) {
         // a lettered tile in the site's brand colours.
         return null
     }
+
+    /** Bumped when a tab thumbnail is written, so the tab switcher shows it at once. */
+    var tabThumbRev by mutableIntStateOf(0)
+        private set
+
+    fun tabThumbFile(url: String) = File(tabThumbsDir, "${url.hashCode().toUInt()}.jpg")
+
+    /** The tab's own screenshot when there is one; reads [tabThumbRev] so Compose refreshes. */
+    fun tabThumb(url: String): File? { tabThumbRev; return tabThumbFile(url).takeIf { it.exists() } }
+
+    fun tabThumbSaved() { tabThumbRev++ }
+
+    fun deleteTabThumb(url: String) { io.execute { runCatching { tabThumbFile(url).delete() } } }
+
+    fun clearTabThumbs() { io.execute { tabThumbsDir.listFiles()?.forEach { it.delete() } } }
 
     fun artForUrl(url: String): Any? = history.firstOrNull { it.url == url }?.art
 
@@ -599,6 +635,7 @@ class Store(ctx: Context) {
         if (id == profileId) return
         if (id != ProfileRules.GUEST && profiles.none { it.id == id }) return
         val leaving = profileId
+        clearTabThumbs()
         profileId = id
         if (leaving == ProfileRules.GUEST) wipeData(ProfileRules.GUEST)
         if (id != ProfileRules.GUEST) put(K.PROFILE, id)
@@ -664,6 +701,8 @@ class Store(ctx: Context) {
         val i = profiles.indexOfFirst { it.id == id }
         if (i < 0) return false
         profiles.removeAt(i)
+        pins.remove(id)
+        sp.edit().remove("pin.$id").apply()
         saveProfiles()
         wipeData(id)
         return true

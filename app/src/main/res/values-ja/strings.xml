@@ -352,4 +352,25 @@
     <string name="prof_deleted">プロフィールを削除しました</string>
     <string name="prof_shared">サインインはこのテレビのすべてのプロフィールで共通です。ウェブエンジンが古く、分けられません。</string>
     <string name="prof_edit_sub">名前・色・削除</string>
+    <string name="prof_pin_title">PIN</string>
+    <string name="prof_pin_for">%s のPIN</string>
+    <string name="prof_pin_new">4桁のPINを選んでください</string>
+    <string name="prof_pin_again">確認のためもう一度入力</string>
+    <string name="prof_pin_wrong">PINが違います</string>
+    <string name="prof_pin_locked">試行回数が多すぎます。%d 秒お待ちください。</string>
+    <string name="prof_pin_mismatch">PINが一致しません。もう一度お試しください。</string>
+    <string name="prof_pin_row">PIN</string>
+    <string name="prof_pin_row_d">このプロフィールを開くときに4桁のPINを求めます。</string>
+    <string name="prof_pin_remove">PINを削除</string>
+    <string name="prof_pin_remove_d">このプロフィールはPINなしで開きます。</string>
+    <string name="prof_pin_saved">PINを保存しました</string>
+    <string name="prof_pin_removed">PINを削除しました</string>
+    <string name="prof_locked_hint">続けるにはPINを入力</string>
+    <string name="prof_pin_note">PINは家族が互いのプロフィールを開かないようにするものです。暗号化ではありません。</string>
+    <string name="reader_size">文字サイズ %d%%</string>
+    <string name="reader_hud_idle">OKで読み上げ · ◀ ▶ 文字サイズ · ▲ ▼ スクロール</string>
+    <string name="reader_hud_speaking">読み上げ中 · OKで一時停止 · ◀ ▶ 文字サイズ</string>
+    <string name="reader_no_tts">このテレビには音声合成エンジンがありません</string>
+    <string name="set_reader_size">リーダーの文字サイズ</string>
+    <string name="set_reader_size_d">リーダーモードの文字サイズ。読むときに左右キーで変更できます。</string>
 </resources>

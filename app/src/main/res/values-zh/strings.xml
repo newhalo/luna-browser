@@ -352,4 +352,25 @@
     <string name="prof_deleted">已删除档案</string>
     <string name="prof_shared">此电视上的所有档案共用登录状态：其网页引擎太旧，无法分开。</string>
     <string name="prof_edit_sub">名称、颜色或删除</string>
+    <string name="prof_pin_title">PIN</string>
+    <string name="prof_pin_for">%s 的 PIN</string>
+    <string name="prof_pin_new">选择 4 位 PIN</string>
+    <string name="prof_pin_again">再输入一次以确认</string>
+    <string name="prof_pin_wrong">PIN 错误</string>
+    <string name="prof_pin_locked">尝试次数过多，请等待 %d 秒。</string>
+    <string name="prof_pin_mismatch">两次 PIN 不一致，请重试。</string>
+    <string name="prof_pin_row">PIN</string>
+    <string name="prof_pin_row_d">打开此档案时要求输入 4 位 PIN。</string>
+    <string name="prof_pin_remove">移除 PIN</string>
+    <string name="prof_pin_remove_d">此档案将无需 PIN 即可打开。</string>
+    <string name="prof_pin_saved">已保存 PIN</string>
+    <string name="prof_pin_removed">已移除 PIN</string>
+    <string name="prof_locked_hint">输入 PIN 以继续</string>
+    <string name="prof_pin_note">PIN 可防止家人互相进入对方的档案，但它不是加密。</string>
+    <string name="reader_size">文字大小 %d%%</string>
+    <string name="reader_hud_idle">确定键朗读 · ◀ ▶ 文字大小 · ▲ ▼ 滚动</string>
+    <string name="reader_hud_speaking">正在朗读 · 确定键暂停 · ◀ ▶ 文字大小</string>
+    <string name="reader_no_tts">此电视上没有语音引擎</string>
+    <string name="set_reader_size">阅读文字大小</string>
+    <string name="set_reader_size_d">阅读模式的文字大小。阅读时可用左/右键调整。</string>
 </resources>

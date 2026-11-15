@@ -108,7 +108,7 @@ private fun tabItem(app: AppState, index: Int, t: Tab): MediaItem {
         title = if (t.isEmpty) app.s(R.string.tabs_new) else t.title.ifBlank { host },
         subtitle = host,
         url = t.url,
-        art = if (t.isEmpty) null else store.artForUrl(t.url) ?: store.artForHost(host),
+        art = if (t.isEmpty) null else store.tabThumb(t.url) ?: store.artForUrl(t.url) ?: store.artForHost(host),
         icon = if (host.isEmpty()) null else store.iconFor(host),
         brand = brandOf(host),
     )

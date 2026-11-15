@@ -352,4 +352,25 @@
     <string name="prof_deleted">프로필을 삭제했습니다</string>
     <string name="prof_shared">이 TV의 모든 프로필이 로그인을 공유합니다. 웹 엔진이 너무 오래되어 분리할 수 없습니다.</string>
     <string name="prof_edit_sub">이름, 색상 또는 삭제</string>
+    <string name="prof_pin_title">PIN</string>
+    <string name="prof_pin_for">%s의 PIN</string>
+    <string name="prof_pin_new">4자리 PIN을 선택하세요</string>
+    <string name="prof_pin_again">확인을 위해 다시 입력</string>
+    <string name="prof_pin_wrong">PIN이 틀렸습니다</string>
+    <string name="prof_pin_locked">시도가 너무 많습니다. %d초 기다리세요.</string>
+    <string name="prof_pin_mismatch">PIN이 일치하지 않습니다. 다시 시도하세요.</string>
+    <string name="prof_pin_row">PIN</string>
+    <string name="prof_pin_row_d">이 프로필을 열 때 4자리 PIN을 요구합니다.</string>
+    <string name="prof_pin_remove">PIN 삭제</string>
+    <string name="prof_pin_remove_d">이 프로필은 PIN 없이 열립니다.</string>
+    <string name="prof_pin_saved">PIN을 저장했습니다</string>
+    <string name="prof_pin_removed">PIN을 삭제했습니다</string>
+    <string name="prof_locked_hint">계속하려면 PIN을 입력하세요</string>
+    <string name="prof_pin_note">PIN은 가족이 서로의 프로필을 열지 못하게 합니다. 암호화는 아닙니다.</string>
+    <string name="reader_size">글자 크기 %d%%</string>
+    <string name="reader_hud_idle">OK 소리 내어 읽기 · ◀ ▶ 글자 크기 · ▲ ▼ 스크롤</string>
+    <string name="reader_hud_speaking">소리 내어 읽는 중 · OK 일시정지 · ◀ ▶ 글자 크기</string>
+    <string name="reader_no_tts">이 TV에 음성 엔진이 없습니다</string>
+    <string name="set_reader_size">읽기 모드 글자 크기</string>
+    <string name="set_reader_size_d">읽기 모드의 글자 크기. 읽는 중 왼쪽/오른쪽으로 바꿀 수 있습니다.</string>
 </resources>
