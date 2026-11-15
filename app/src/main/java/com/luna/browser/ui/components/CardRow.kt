@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -79,6 +80,13 @@ fun CardRow(
         if (delta != 0f && viewW > 0) {
             scope.launch { offset.animateTo((offset.value + delta).coerceIn(0f, maxOffset), tween(slideMs)) }
         }
+    }
+
+    // When cards disappear (a tab is closed) the row may be shorter than the current scroll: bring it back.
+    LaunchedEffect(items.size, viewW) {
+        val total = 2 * margin + items.size * cardW + (items.size - 1).coerceAtLeast(0) * gap
+        val maxOffset = (total - viewW).coerceAtLeast(0f)
+        if (offset.value > maxOffset) offset.snapTo(maxOffset)
     }
 
     Column {

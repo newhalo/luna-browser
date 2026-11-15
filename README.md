@@ -76,6 +76,8 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 | Language picker (Automatic follows the TV), search engine, background | Filter lists with rule counts and update dates |
 | ![Browsing settings](docs/screenshots/08-settings-browsing.jpg) | ![Error screen](docs/screenshots/09-error-state.jpg) |
 | Pointer speed, desktop sites, page text size | Clear errors with one-press recovery |
+| ![Tab switcher](docs/screenshots/12-tabs.jpg) | ![Per-site settings](docs/screenshots/13-site-settings.jpg) |
+| **Tabs:** the same 16:9 cards as Home; **Down** for close / new tab | **Site** button: desktop mode, text size, ad blocking and pointer mode for one site only |
 
 ### Your phone as a remote
 
