@@ -21,8 +21,9 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 **Play / Pause / Left / Right**, a built-in ad and pop-up blocker, and a home screen that feels like a streaming app.
 
 > **Status:** early (0.x) but daily-driven on a real TV. Latest release:
-> [**v0.5.1**](https://github.com/newhalo/luna-browser/releases/latest) — report a page problem with a QR code, send links
-> from your phone's browser, an update notice, history as a grid, and store-ready packaging ([docs/PUBLISHING.md](docs/PUBLISHING.md)).
+> [**v0.6.0**](https://github.com/newhalo/luna-browser/releases/latest) — profiles with a guest mode, reading mode, favourites on
+> your phone, a web-engine check, report-a-problem by QR, link sharing, an update notice and store-ready packaging
+> ([docs/PUBLISHING.md](docs/PUBLISHING.md)).
 
 ## Features
 
@@ -86,8 +87,10 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 | **Tabs:** the same 16:9 cards as Home; **Down** for close / new tab | **Site** button: desktop mode, text size, ad blocking and pointer mode for one site only |
 | ![Home with small thumbnails](docs/screenshots/14-home-small-tiles.jpg) | ![History as a grid](docs/screenshots/15-history-grid.jpg) |
 | **Thumbnail size** (Settings → Home): small tiles fit more on Home | **History** as a list or a grid, one button to switch |
-| ![Report a problem](docs/screenshots/17-report-problem.jpg) | |
-| **Report a problem** (Site panel): scan the QR code with your phone to open a pre-filled GitHub report | |
+| ![Report a problem](docs/screenshots/17-report-problem.jpg) | ![Profiles](docs/screenshots/20-profiles.jpg) |
+| **Report a problem** (Site panel): scan the QR code with your phone to open a pre-filled GitHub report | **Profiles:** who's watching, with a guest mode that keeps nothing |
+| ![Reading mode](docs/screenshots/18-reading-mode.jpg) | ![Reading mode text](docs/screenshots/19-reading-text.jpg) |
+| **Reading mode** (toolbar *Read*): the article, large type, reading time | Up / Down scroll, Back returns to the page |
 
 ### Your phone as a remote
 

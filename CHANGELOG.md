@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-15
+
 ### Added
 - **Web engine check**: *Settings → About* grades the TV's system WebView (up to date / outdated / too old) with how to update it; Home shows a line when it is outdated. (Chromium 110+ is "up to date".)
 - **Reading mode**: a *Read* button on the toolbar rebuilds the page's article as a clean dark reading page (large type, reading time, headings, lists, quotes, pictures). Up / Down scroll, Back returns to the page. The reading page is built from escaped text in a separate document: nothing from the page runs in it.
@@ -142,7 +144,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - First version: Jetpack Compose TV UI on the system WebView, virtual cursor, floating toolbar, fullscreen
   video controls, host-based ad blocking, settings, history and favourites.
 
-[Unreleased]: https://github.com/newhalo/luna-browser/compare/v0.5.1...HEAD
+[Unreleased]: https://github.com/newhalo/luna-browser/compare/v0.6.0...HEAD
+[0.6.0]: https://github.com/newhalo/luna-browser/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/newhalo/luna-browser/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/newhalo/luna-browser/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/newhalo/luna-browser/compare/v0.4.0...v0.4.1
