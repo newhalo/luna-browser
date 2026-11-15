@@ -373,4 +373,5 @@
     <string name="reader_no_tts">このテレビには音声合成エンジンがありません</string>
     <string name="set_reader_size">リーダーの文字サイズ</string>
     <string name="set_reader_size_d">リーダーモードの文字サイズ。読むときに左右キーで変更できます。</string>
+    <string name="reader_tts_starting">音声エンジンを起動しています…</string>
 </resources>

@@ -398,4 +398,5 @@
     <string name="reader_no_tts">No speech engine found on this TV</string>
     <string name="set_reader_size">Reading text size</string>
     <string name="set_reader_size_d">Text size in reading mode. Left / Right change it while reading.</string>
+    <string name="reader_tts_starting">Starting the speech engine…</string>
 </resources>

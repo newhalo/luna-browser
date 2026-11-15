@@ -373,4 +373,5 @@
     <string name="reader_no_tts">TV không có bộ đọc giọng nói</string>
     <string name="set_reader_size">Cỡ chữ chế độ đọc</string>
     <string name="set_reader_size_d">Cỡ chữ trong chế độ đọc. Bấm Trái / Phải để đổi khi đang đọc.</string>
+    <string name="reader_tts_starting">Đang khởi động bộ đọc giọng nói…</string>
 </resources>

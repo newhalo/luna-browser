@@ -373,4 +373,5 @@
     <string name="reader_no_tts">이 TV에 음성 엔진이 없습니다</string>
     <string name="set_reader_size">읽기 모드 글자 크기</string>
     <string name="set_reader_size_d">읽기 모드의 글자 크기. 읽는 중 왼쪽/오른쪽으로 바꿀 수 있습니다.</string>
+    <string name="reader_tts_starting">음성 엔진을 시작하는 중…</string>
 </resources>

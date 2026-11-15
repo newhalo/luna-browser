@@ -434,6 +434,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         val engine = tts
         if (engine == null) {
             // The engine starts up in the background the first time (a moment on a TV): speak as soon as it is ready.
+            app.toast(R.string.reader_tts_starting)
             tts = TextToSpeech(activity) { status ->
                 handler.post {
                     ttsReady = status == TextToSpeech.SUCCESS

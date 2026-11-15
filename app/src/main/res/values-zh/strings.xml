@@ -373,4 +373,5 @@
     <string name="reader_no_tts">此电视上没有语音引擎</string>
     <string name="set_reader_size">阅读文字大小</string>
     <string name="set_reader_size_d">阅读模式的文字大小。阅读时可用左/右键调整。</string>
+    <string name="reader_tts_starting">正在启动语音引擎…</string>
 </resources>

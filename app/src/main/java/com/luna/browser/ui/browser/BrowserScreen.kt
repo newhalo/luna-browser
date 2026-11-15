@@ -272,7 +272,7 @@ private fun BoxScope.ReaderHud(b: BrowserController) {
     }
     AnimatedVisibility(
         visible = visible || b.speaking,
-        modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 36.dp),
+        modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 120.dp),
         enter = fadeIn(tween(ms(160))), exit = fadeOut(tween(ms(240))),
     ) {
         Row(

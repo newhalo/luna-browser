@@ -377,4 +377,5 @@
     <string name="reader_no_tts">No hay motor de voz en esta TV</string>
     <string name="set_reader_size">Tamaño del texto de lectura</string>
     <string name="set_reader_size_d">Tamaño del texto en modo lectura. Izquierda / Derecha lo cambian al leer.</string>
+    <string name="reader_tts_starting">Iniciando el motor de voz…</string>
 </resources>
