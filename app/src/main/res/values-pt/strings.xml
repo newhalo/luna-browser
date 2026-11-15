@@ -386,4 +386,7 @@
     <string name="theme_ocean">Oceano</string>
     <string name="theme_night">Céu estrelado</string>
     <string name="theme_graphite">Grafite</string>
+    <string name="theme_sakura">Sakura</string>
+    <string name="set_glass">Visual de vidro</string>
+    <string name="set_glass_d">Botões e cartões translúcidos, como vidro fosco, com borda clara. Quase não pesa em TVs fracas.</string>
 </resources>

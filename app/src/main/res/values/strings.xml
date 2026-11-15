@@ -407,4 +407,7 @@
     <string name="theme_ocean">Ocean</string>
     <string name="theme_night">Night sky</string>
     <string name="theme_graphite">Graphite</string>
+    <string name="theme_sakura">Sakura</string>
+    <string name="set_glass">Glass look</string>
+    <string name="set_glass_d">Frosted, see-through buttons and cards with a light edge. Costs almost nothing on weak TVs.</string>
 </resources>

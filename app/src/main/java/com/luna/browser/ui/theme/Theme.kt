@@ -50,15 +50,18 @@ object T {
 
 val LocalReduceMotion = compositionLocalOf { false }
 
+/** Frosted "glass" look for buttons, cards and rows (see `FocusSurface`). Off by default. */
+val LocalGlass = compositionLocalOf { false }
+
 /** Duration helper: animations are 100-250 ms, or instant when reduced motion is on. */
 @Composable
 fun ms(value: Int): Int = if (LocalReduceMotion.current) 0 else value
 
 @Composable
-fun LunaTheme(themeId: String, reduceMotion: Boolean, content: @Composable () -> Unit) {
+fun LunaTheme(themeId: String, reduceMotion: Boolean, glass: Boolean = false, content: @Composable () -> Unit) {
     // Selected before any child reads a colour token (a write that no earlier read in this composition saw).
     remember(themeId) { Themes.select(themeId) }
-    androidx.compose.runtime.CompositionLocalProvider(LocalReduceMotion provides reduceMotion) {
+    androidx.compose.runtime.CompositionLocalProvider(LocalReduceMotion provides reduceMotion, LocalGlass provides glass) {
         MaterialTheme(
             colorScheme = darkColorScheme(
                 primary = Accent, background = Bg, surface = Surface,

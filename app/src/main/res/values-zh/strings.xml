@@ -382,4 +382,7 @@
     <string name="theme_ocean">海洋</string>
     <string name="theme_night">星空</string>
     <string name="theme_graphite">石墨</string>
+    <string name="theme_sakura">樱花</string>
+    <string name="set_glass">玻璃质感</string>
+    <string name="set_glass_d">磨砂玻璃般的半透明按钮和卡片，边缘明亮。在配置较低的电视上几乎不占资源。</string>
 </resources>

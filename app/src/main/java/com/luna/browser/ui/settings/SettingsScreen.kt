@@ -295,9 +295,11 @@ private fun rows(category: Int, app: AppState): List<SRow> {
                     K.THEME, app.s(R.string.set_theme), app.s(R.string.set_theme_d),
                     listOf(
                         "luna" to app.s(R.string.theme_luna), "dusk" to app.s(R.string.theme_dusk), "forest" to app.s(R.string.theme_forest),
-                        "ocean" to app.s(R.string.theme_ocean), "night" to app.s(R.string.theme_night), "graphite" to app.s(R.string.theme_graphite),
+                        "ocean" to app.s(R.string.theme_ocean), "night" to app.s(R.string.theme_night), "sakura" to app.s(R.string.theme_sakura),
+                        "graphite" to app.s(R.string.theme_graphite),
                     ),
                 ),
+                Toggle(K.GLASS, app.s(R.string.set_glass), app.s(R.string.set_glass_d)),
                 Toggle(K.ANIMATED_BG, app.s(R.string.set_anim_bg), app.s(R.string.set_anim_bg_d)),
                 Toggle(K.REDUCE_MOTION, app.s(R.string.set_reduce), app.s(R.string.set_reduce_d)),
             )

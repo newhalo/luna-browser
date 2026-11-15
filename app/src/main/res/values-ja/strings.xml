@@ -382,4 +382,7 @@
     <string name="theme_ocean">海</string>
     <string name="theme_night">星空</string>
     <string name="theme_graphite">グラファイト</string>
+    <string name="theme_sakura">桜</string>
+    <string name="set_glass">ガラス風デザイン</string>
+    <string name="set_glass_d">すりガラスのような半透明のボタンとカード。縁は明るく、低性能のテレビでもほとんど負荷がありません。</string>
 </resources>

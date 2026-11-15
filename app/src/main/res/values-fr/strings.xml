@@ -386,4 +386,7 @@
     <string name="theme_ocean">Océan</string>
     <string name="theme_night">Ciel étoilé</string>
     <string name="theme_graphite">Graphite</string>
+    <string name="theme_sakura">Sakura</string>
+    <string name="set_glass">Aspect verre</string>
+    <string name="set_glass_d">Boutons et cartes translucides, façon verre dépoli, avec un bord clair. Presque sans coût sur les TV modestes.</string>
 </resources>

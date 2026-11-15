@@ -394,4 +394,7 @@
     <string name="theme_ocean">Океан</string>
     <string name="theme_night">Звёздное небо</string>
     <string name="theme_graphite">Графит</string>
+    <string name="theme_sakura">Сакура</string>
+    <string name="set_glass">Стеклянный вид</string>
+    <string name="set_glass_d">Матовые полупрозрачные кнопки и карточки со светлой кромкой. Почти не нагружает слабые ТВ.</string>
 </resources>

@@ -17,6 +17,8 @@ enum class Motion {
     Waves,
     /** A faint glow and twinkling stars. */
     Stars,
+    /** Drifting lights plus petals that tumble down slowly. */
+    Petals,
     /** Nothing moves: a plain background (cheapest, and AMOLED-black for Graphite). */
     Still,
 }
@@ -85,6 +87,15 @@ object Themes {
                 ThemeLight(Color(0x99466CD8), 160f, 440f, 380f, 180f, -80f),
             ),
             Motion.Stars, particle = Color(0xFFF4F1FF),
+        ),
+        Palette(
+            "sakura", Color(0xFF150A14), Color(0xFF24141F), Color(0xFF331E2E), Color(0xFF4D2C45), Color(0xFFFFA6C9), Color(0xFF8C3B63),
+            listOf(
+                ThemeLight(Color(0xCCE0508F), 220f, 150f, 400f, 250f, 130f),
+                ThemeLight(Color(0xCCB04DC9), 860f, 390f, 330f, -200f, -110f),
+                ThemeLight(Color(0xCCFF8FA3), 470f, 620f, 300f, 240f, -190f),
+            ),
+            Motion.Petals, particle = Color(0xFFFFC2D9),
         ),
         Palette(
             "graphite", Color(0xFF000000), Color(0xFF0E0E11), Color(0xFF18181C), Color(0xFF2A2A30), Color(0xFFE6E8EE), Color(0xFF5A5E6B),

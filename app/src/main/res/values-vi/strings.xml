@@ -382,4 +382,7 @@
     <string name="theme_ocean">Đại dương</string>
     <string name="theme_night">Trời sao</string>
     <string name="theme_graphite">Graphite</string>
+    <string name="theme_sakura">Hoa anh đào</string>
+    <string name="set_glass">Giao diện kính</string>
+    <string name="set_glass_d">Nút và thẻ trong mờ như kính, viền sáng. Gần như không tốn tài nguyên trên TV yếu.</string>
 </resources>

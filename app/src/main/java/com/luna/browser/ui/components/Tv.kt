@@ -56,6 +56,7 @@ import com.luna.browser.ui.theme.Danger
 import com.luna.browser.ui.theme.Dim
 import com.luna.browser.ui.theme.FocusRing
 import com.luna.browser.ui.theme.Glass
+import com.luna.browser.ui.theme.LocalGlass
 import com.luna.browser.ui.theme.Outline
 import com.luna.browser.ui.theme.Success
 import com.luna.browser.ui.theme.Surface
@@ -96,17 +97,34 @@ fun FocusSurface(
 ) {
     var focused by remember { mutableStateOf(false) }
     val scale by animateFloatAsState(if (focused) focusScale else 1f, tween(ms(160)), label = "focusScale")
-    Box(
-        modifier = modifier
+    val glass = LocalGlass.current
+    // Glass: a see-through fill with a light top edge and a diagonal sheen, no shadow. It is only paint
+    // (no blur, no offscreen layer), so it costs the weak TV GPUs next to nothing.
+    val base = if (glass) {
+        modifier
+            .graphicsLayer { scaleX = scale; scaleY = scale }
+            .clip(shape)
+            .then(if (container.alpha < 0.99f && container != Glass) Modifier.background(container) else Modifier)
+            .background(if (focused) GlassFocusFill else GlassFill)
+            .border(if (focused) BorderStroke(3.dp, FocusRing) else BorderStroke(1.5.dp, GlassRim), shape)
+    } else {
+        modifier
             .graphicsLayer { scaleX = scale; scaleY = scale }
             .shadow(if (focused) 18.dp else 0.dp, shape)
             .clip(shape)
             .background(if (focused) SurfaceFocus else container)
             .border(if (focused) BorderStroke(3.dp, FocusRing) else BorderStroke(1.dp, Outline), shape)
+    }
+    Box(
+        modifier = base
             .onFocusChanged { focused = it.isFocused }
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null, role = Role.Button, onClick = onClick),
     ) { content(focused) }
 }
+
+private val GlassFill = Brush.linearGradient(listOf(Color(0x30FFFFFF), Color(0x0DFFFFFF), Color(0x1FFFFFFF)))
+private val GlassFocusFill = Brush.linearGradient(listOf(Color(0x59FFFFFF), Color(0x2EFFFFFF), Color(0x40FFFFFF)))
+private val GlassRim = Brush.verticalGradient(listOf(Color(0x8CFFFFFF), Color(0x14FFFFFF), Color(0x38FFFFFF)))
 
 /** Remembers the last focused item of a screen so focus returns to it after menus. */
 @Composable

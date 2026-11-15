@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.ImageBitmap
@@ -112,14 +113,127 @@ private class Dots(val n: Int, seed: Int) {
     val y = FloatArray(n) { r.nextFloat() * BH }
     val v = FloatArray(n) { 0.6f + r.nextFloat() * 1.4f }      // speed / frequency factor
     val ph = FloatArray(n) { r.nextFloat() * 6.2832f }
-    val size = FloatArray(n) { 0.5f + r.nextFloat() * 0.8f }   // radius in bitmap pixels
+    val size = FloatArray(n) { 0.5f + r.nextFloat() * 0.8f }   // relative size 0.5..1.3
 }
 
 private fun dotsFor(m: Motion) = when (m) {
     Motion.Embers -> Dots(26, 11)
     Motion.Fireflies -> Dots(20, 23)
-    Motion.Stars -> Dots(70, 5)
+    Motion.Stars -> Dots(60, 5)
+    Motion.Petals -> Dots(16, 31)
     else -> Dots(0, 1)
+}
+
+/** Soft white sprites (stamped at full resolution and tinted), so particles stay round instead of turning into blocks. */
+private fun sprite(n: Int, f: (Float, Float) -> Float): ImageBitmap {
+    val bmp = android.graphics.Bitmap.createBitmap(n, n, android.graphics.Bitmap.Config.ARGB_8888)
+    for (y in 0 until n) for (x in 0 until n) {
+        val a = f((x + 0.5f) / n * 2f - 1f, (y + 0.5f) / n * 2f - 1f).coerceIn(0f, 1f)
+        bmp.setPixel(x, y, ((a * 255).toInt() shl 24) or 0xFFFFFF)
+    }
+    return bmp.asImageBitmap()
+}
+
+private object Sprites {
+    /** A round glow with a brighter core. */
+    val glow: ImageBitmap by lazy {
+        sprite(48) { x, y ->
+            val d = kotlin.math.sqrt(x * x + y * y)
+            val g = (1f - d).coerceAtLeast(0f)
+            g * g * 0.8f + (1f - d * 3f).coerceAtLeast(0f) * 0.5f
+        }
+    }
+
+    /** A four-pointed twinkle. */
+    val star: ImageBitmap by lazy {
+        sprite(48) { x, y ->
+            val ax = kotlin.math.abs(x)
+            val ay = kotlin.math.abs(y)
+            val d = kotlin.math.sqrt(x * x + y * y)
+            val core = (1f - d * 2.6f).coerceAtLeast(0f)
+            val rayH = (1f - ay * 9f).coerceAtLeast(0f) * (1f - ax).coerceAtLeast(0f)
+            val rayV = (1f - ax * 9f).coerceAtLeast(0f) * (1f - ay).coerceAtLeast(0f)
+            core * core + rayH * rayH + rayV * rayV
+        }
+    }
+
+    /** A petal: a rounded teardrop, a little darker at the tip. Drawn rotated. */
+    val petal: ImageBitmap by lazy {
+        sprite(48) { x, y ->
+            val u = (x + 1f) / 2f
+            val half = 0.55f * (1f - 0.55f * u) * kotlin.math.sqrt((1f - ((x * 0.95f)).let { it * it }).coerceAtLeast(0f))
+            val edge = (half - kotlin.math.abs(y)) * 9f
+            edge.coerceIn(0f, 1f) * (0.75f + 0.25f * (1f - u))
+        }
+    }
+}
+
+/** Stamps the active theme's particles at screen resolution. Positions are in the 160×90 backdrop grid. */
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.drawParticles(
+    motion: Motion, dots: Dots, t: Float, tint: ColorFilter,
+) {
+    if (dots.n == 0) return
+    val sx = size.width / BW
+    val sy = size.height / BH
+    val w = size.width
+    val bh = BH.toFloat()
+    val pi = Math.PI.toFloat()
+    for (i in 0 until dots.n) {
+        val v = dots.v[i]
+        val ph = dots.ph[i]
+        val s = dots.size[i]
+        when (motion) {
+            Motion.Embers -> {
+                val yy = (((dots.y[i] - t * v * 2.0f) % bh) + bh) % bh
+                val xx = dots.x[i] + kotlin.math.sin(t * 0.35f * v + ph) * 3f
+                val a = 0.75f * kotlin.math.sin(pi * yy / bh) * (0.65f + 0.35f * kotlin.math.sin(t * v + ph))
+                if (a > 0.02f) stamp(Sprites.glow, xx * sx, yy * sy, w * (0.006f + 0.008f * s), a, tint)
+            }
+            Motion.Fireflies -> {
+                val xx = dots.x[i] + kotlin.math.sin(t * 0.18f * v + ph) * 10f
+                val yy = dots.y[i] + kotlin.math.cos(t * 0.15f * v + ph * 1.7f) * 6f
+                val blink = kotlin.math.sin(t * 0.55f * v + ph)
+                val a = if (blink > 0f) blink * blink else 0f
+                if (a > 0.02f) stamp(Sprites.glow, xx * sx, yy * sy, w * (0.009f + 0.010f * s), a, tint)
+            }
+            Motion.Stars -> {
+                val a = 0.25f + 0.75f * (0.5f + 0.5f * kotlin.math.sin(t * 0.8f * v + ph))
+                stamp(Sprites.star, dots.x[i] * sx, dots.y[i] * sy, w * (0.007f + 0.008f * s), a, tint)
+            }
+            Motion.Petals -> {
+                val yy = (((dots.y[i] + t * v * 1.5f) % bh) + bh) % bh
+                val xx = dots.x[i] + kotlin.math.sin(t * 0.3f * v + ph) * 7f + yy / bh * 10f
+                val a = 0.8f * kotlin.math.sin(pi * yy / bh)
+                val flutter = 0.35f + 0.65f * kotlin.math.abs(kotlin.math.cos(t * 0.9f * v + ph))
+                if (a > 0.02f) {
+                    val d = w * (0.012f + 0.012f * s)
+                    val cx = xx * sx
+                    val cy = yy * sy
+                    withTransform({
+                        translate(cx, cy)
+                        rotate((t * 25f * v + ph * 57f) % 360f, Offset.Zero)
+                        scale(1f, flutter, Offset.Zero)
+                    }) {
+                        drawImage(Sprites.petal, dstOffset = androidx.compose.ui.unit.IntOffset((-d / 2f).toInt(), (-d / 2f).toInt()),
+                            dstSize = IntSize(d.toInt(), d.toInt()), alpha = a, colorFilter = tint, filterQuality = FilterQuality.Low)
+                    }
+                }
+            }
+            else -> {}
+        }
+    }
+}
+
+private fun androidx.compose.ui.graphics.drawscope.DrawScope.stamp(img: ImageBitmap, cx: Float, cy: Float, dia: Float, alpha: Float, tint: ColorFilter) {
+    val d = dia.toInt().coerceAtLeast(2)
+    drawImage(
+        img,
+        dstOffset = androidx.compose.ui.unit.IntOffset((cx - d / 2f).toInt(), (cy - d / 2f).toInt()),
+        dstSize = IntSize(d, d),
+        alpha = alpha.coerceIn(0f, 1f),
+        colorFilter = tint,
+        filterQuality = FilterQuality.Low,
+    )
 }
 
 /** One wave layer: baseline (0..1 of the height), amplitude, spatial frequency, speed, alpha and which colour. */
@@ -159,6 +273,7 @@ fun Aurora(modifier: Modifier = Modifier, animated: Boolean = true, dim: Float =
         }
     }
     val dots = remember(pal.id) { dotsFor(pal.motion) }
+    val tint = remember(pal.id) { ColorFilter.tint(pal.particle) }
     val bitmap = remember { ImageBitmap(BW, BH) }
     val canvas = remember { androidx.compose.ui.graphics.Canvas(bitmap) }
     val paint = remember { Paint() }
@@ -180,29 +295,6 @@ fun Aurora(modifier: Modifier = Modifier, animated: Boolean = true, dim: Float =
             }
             paint.shader = null
             when (pal.motion) {
-                Motion.Embers -> for (i in 0 until dots.n) {
-                    val yy = (((dots.y[i] - t * dots.v[i] * 2.0f) % bh) + bh) % bh          // rising
-                    val xx = dots.x[i] + kotlin.math.sin(t * 0.35f * dots.v[i] + dots.ph[i]) * 3f
-                    val edge = kotlin.math.sin(Math.PI.toFloat() * yy / bh)                  // fades in and out at the ends
-                    val a = 0.6f * edge * (0.65f + 0.35f * kotlin.math.sin(t * dots.v[i] + dots.ph[i]))
-                    paint.color = pal.particle.copy(alpha = a.coerceIn(0f, 1f))
-                    canvas.drawCircle(Offset(xx, yy), dots.size[i] * 1.3f, paint)
-                }
-                Motion.Fireflies -> for (i in 0 until dots.n) {
-                    val xx = dots.x[i] + kotlin.math.sin(t * 0.18f * dots.v[i] + dots.ph[i]) * 10f
-                    val yy = dots.y[i] + kotlin.math.cos(t * 0.15f * dots.v[i] + dots.ph[i] * 1.7f) * 6f
-                    val blink = kotlin.math.sin(t * 0.55f * dots.v[i] + dots.ph[i])
-                    val a = if (blink > 0f) blink * blink * 0.9f else 0f
-                    if (a > 0.02f) {
-                        paint.color = pal.particle.copy(alpha = a)
-                        canvas.drawCircle(Offset(xx, yy), dots.size[i] * 1.2f, paint)
-                    }
-                }
-                Motion.Stars -> for (i in 0 until dots.n) {
-                    val a = 0.2f + 0.6f * (0.5f + 0.5f * kotlin.math.sin(t * 0.8f * dots.v[i] + dots.ph[i]))
-                    paint.color = pal.particle.copy(alpha = a)
-                    canvas.drawCircle(Offset(dots.x[i], dots.y[i]), dots.size[i] * 0.8f, paint)
-                }
                 Motion.Waves -> waves.forEach { w ->
                     path.reset()
                     path.moveTo(0f, bh)
@@ -228,6 +320,7 @@ fun Aurora(modifier: Modifier = Modifier, animated: Boolean = true, dim: Float =
                 dstSize = IntSize(size.width.toInt(), size.height.toInt()),
                 filterQuality = FilterQuality.Low, // bilinear: smooth when stretched
             )
+            drawParticles(pal.motion, dots, t, tint)
         },
     )
 }

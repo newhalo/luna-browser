@@ -386,4 +386,7 @@
     <string name="theme_ocean">Ozean</string>
     <string name="theme_night">Sternenhimmel</string>
     <string name="theme_graphite">Graphit</string>
+    <string name="theme_sakura">Sakura</string>
+    <string name="set_glass">Glas-Look</string>
+    <string name="set_glass_d">Milchglasartige, durchscheinende Schaltflächen und Karten mit hellem Rand. Kostet auf schwachen Fernsehern fast nichts.</string>
 </resources>

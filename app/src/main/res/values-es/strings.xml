@@ -386,4 +386,7 @@
     <string name="theme_ocean">Océano</string>
     <string name="theme_night">Cielo nocturno</string>
     <string name="theme_graphite">Grafito</string>
+    <string name="theme_sakura">Sakura</string>
+    <string name="set_glass">Aspecto de cristal</string>
+    <string name="set_glass_d">Botones y tarjetas translúcidos como cristal esmerilado, con borde claro. Casi no consume en TV modestas.</string>
 </resources>
