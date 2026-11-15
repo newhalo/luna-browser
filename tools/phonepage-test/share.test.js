@@ -6,9 +6,11 @@ let html = kt.slice(kt.indexOf('private val PAGE = """') + 'private val PAGE = "
 html = html.slice(0, html.indexOf('""".replace("__LABELS__"'));
 const labels = {};
 html = html.replace(/\{\{(\w+)\}\}/g, (m, k) => { labels[k] = 'T-' + k; return k === 'labels' ? '__L__' : 'T-' + k; });
+// Labels that only the script uses (AppState supplies every label to the page).
+for (const k of ['ph_sent', 'ph_bad_pin', 'ph_locked', 'ph_nofield', 'ph_copied', 'ph_fav_saved', 'ph_fav_remove', 'ph_fav_confirm', 'ph_fav_err']) labels[k] = 'T-' + k;
 html = html.replace('__LABELS__', JSON.stringify(labels));
 
-function run(hash, pin, fetchOk = true) {
+function run(hash, pin, reply = () => ({ ok: true })) {
   return new Promise((resolve) => {
     const calls = [];
     const dom = new JSDOM(html, {
@@ -17,7 +19,7 @@ function run(hash, pin, fetchOk = true) {
       pretendToBeVisual: true,
       beforeParse(w) {
         if (pin) w.localStorage.setItem('luna.pin', pin);
-        w.fetch = (u, o) => { calls.push(o.body); return Promise.resolve({ status: 200, json: () => Promise.resolve({ ok: fetchOk }) }); };
+        w.fetch = (u, o) => { calls.push(o.body); return Promise.resolve({ status: 200, json: () => Promise.resolve(reply(o.body)) }); };
         w.document.execCommand = () => true;
       },
     });
@@ -72,6 +74,54 @@ function run(hash, pin, fetchOk = true) {
   d.execCommand = (c) => { const t = d.querySelector('textarea[style*="fixed"]'); copied = t && t.value; return true; };
   d.getElementById('bmcopy').click();
   check(copied && copied.startsWith("javascript:location.href='http://192.168.1.20:8765/#open='+encodeURIComponent(location.href)"), 'bookmarklet points back to this TV page: ' + copied);
+
+  // 7. favourites tab
+  const FAVS = [{ t: '<img src=x onerror=alert(1)>', u: 'https://example.com/a' }, { t: 'Second', u: 'https://example.com/b' }];
+  const reply = (b) => (b.includes('act=favs') ? { ok: true, error: '', favs: FAVS } : { ok: true });
+  ({ dom, calls } = await run('', '123456', reply));
+  d = dom.window.document;
+  d.getElementById('tabFavs').click();
+  await new Promise(r => setTimeout(r, 60));
+  check(calls.some(b => b.includes('act=favs') && b.includes('pin=123456')), 'opening the tab asks the TV for the list');
+  check(d.querySelectorAll('.frow').length === 2, 'two favourites listed');
+  check(!d.querySelector('#flist img') && d.querySelector('.fopen b').textContent === '<img src=x onerror=alert(1)>', 'titles are shown as text, never as markup');
+  check(d.getElementById('favs').hidden === false && d.getElementById('remote').hidden === true, 'favourites panel replaces the remote');
+  d.querySelector('.fopen').click();
+  await new Promise(r => setTimeout(r, 30));
+  check(calls.some(b => b.includes('act=open') && b.includes(encodeURIComponent('https://example.com/a'))), 'tapping a favourite opens it on the TV');
+
+  const del = d.querySelector('.fdel');
+  const before = calls.length;
+  del.click();
+  check(del.classList.contains('sure') && calls.length === before, 'first tap on remove only asks for confirmation');
+  del.click();
+  await new Promise(r => setTimeout(r, 30));
+  check(calls.some(b => b.includes('act=fd') && b.includes(encodeURIComponent('https://example.com/a'))), 'second tap removes it');
+
+  // 8. saving a link: from the share card and from the Type tab
+  ({ dom, calls } = await run('#open=https%3A%2F%2Fexample.com%2Fsave', '123456'));
+  d = dom.window.document;
+  d.getElementById('shareFav').click();
+  await new Promise(r => setTimeout(r, 30));
+  check(calls.some(b => b.includes('act=fa') && b.includes(encodeURIComponent('https://example.com/save'))), 'share card: Save to favorites sends act=fa');
+  check(d.getElementById('share').hidden, 'share card closes after saving');
+  ({ dom, calls } = await run('', '123456'));
+  d = dom.window.document;
+  d.getElementById('text').value = 'example.org/page';
+  d.getElementById('favsave').click();
+  await new Promise(r => setTimeout(r, 30));
+  check(calls.some(b => b.includes('act=fa') && b.includes('example.org%2Fpage')), 'Type tab: save sends the typed address');
+  ({ dom, calls } = await run('', '123456'));
+  dom.window.document.getElementById('favsave').click();
+  check(!calls.some(b => b.includes('act=fa')), 'empty text saves nothing');
+
+  // 9. an error from the TV is reported
+  ({ dom, calls } = await run('', '123456', (b) => (b.includes('act=fa') ? { ok: false, error: 'fav' } : { ok: true })));
+  d = dom.window.document;
+  d.getElementById('text').value = 'not a link';
+  d.getElementById('favsave').click();
+  await new Promise(r => setTimeout(r, 30));
+  check(d.getElementById('toast').textContent === 'T-ph_fav_err' && d.getElementById('toast').className.includes('err'), 'save failure shows the error toast');
 
   console.log(fails ? fails + ' FAILED' : 'ALL PASSED');
   process.exit(fails ? 1 : 0);

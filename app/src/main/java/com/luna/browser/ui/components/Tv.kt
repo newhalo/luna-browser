@@ -158,7 +158,7 @@ fun IconLabelButton(
 ) {
     FocusSurface(
         onClick = { if (enabled) onClick() },
-        modifier = modifier.width(84.dp).height(66.dp),
+        modifier = modifier.width(78.dp).height(66.dp),
         shape = RoundedCornerShape(14.dp),
         container = if (highlighted) Accent.copy(alpha = 0.2f) else Surface,
         focusScale = 1.08f,

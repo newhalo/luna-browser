@@ -58,6 +58,16 @@ class TabManager(private val app: AppState) {
         index = cur.coerceIn(0, tabs.lastIndex)
     }
 
+    /** Loads the tabs of the (new) active profile; the caller has already released the old ones with [destroyAll]. */
+    fun reload() {
+        tabs.forEach { it.freeze() }
+        tabs.clear()
+        val (saved, cur) = TabPolicy.fromJson(app.store.readTabs())
+        saved.forEach { (u, t) -> tabs.add(Tab(u, t)) }
+        if (tabs.isEmpty()) tabs.add(Tab())
+        index = cur.coerceIn(0, tabs.lastIndex)
+    }
+
     val count: Int get() = tabs.size
     val current: Tab get() = tabs[index.coerceIn(0, tabs.lastIndex)]
 

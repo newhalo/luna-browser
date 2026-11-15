@@ -24,6 +24,8 @@ enum class RemoteAction {
     Volume, Home,
     /** Touchpad: pointer movement and scroll in per-mille of the pad ("dx,dy"), and a tap (click). */
     Move, Scroll, Tap,
+    /** Favourites from the phone: save an address ("address", optionally a newline and a title) or remove one. Listing is [PhoneRemote]'s own `favs` answer. */
+    FavAdd, FavDel,
 }
 
 /**
@@ -45,6 +47,8 @@ class PhoneRemote(
     private val budgetMs: Long = 5000,
     /** How long a connection may sit idle between two requests (keep-alive) before it is closed. */
     private val idleMs: Long = 8000,
+    /** The favourites as JSON text (an array of {t, u}); a snapshot, safe to call from the server thread. */
+    private val favorites: () -> String = { "[]" },
 ) {
     /** The port in use, or 0 when stopped. Observable, so Settings shows the live address. */
     var port by mutableIntStateOf(0)
@@ -228,6 +232,10 @@ class PhoneRemote(
             }
             f.count = 0
         }
+        if (form["act"] == "favs") {
+            // Read-only list for the phone's Favorites tab: what the PIN holder could see on the TV anyway.
+            return 200 to JSONObject().put("ok", true).put("error", "").put("favs", org.json.JSONArray(favorites())).toString()
+        }
         val action = when (form["act"]) {
             "ping" -> RemoteAction.Ping
             "open" -> RemoteAction.Open
@@ -242,6 +250,8 @@ class PhoneRemote(
             "mv" -> RemoteAction.Move
             "sc" -> RemoteAction.Scroll
             "tap" -> RemoteAction.Tap
+            "fa" -> RemoteAction.FavAdd
+            "fd" -> RemoteAction.FavDel
             else -> return 400 to reply(false, "act")
         }
         val text = (form["text"] ?: "").take(MAX_TEXT)
@@ -250,7 +260,8 @@ class PhoneRemote(
         var success = false
         perform(action, text) { success = it; latch.countDown() }
         latch.await(3, TimeUnit.SECONDS)
-        return 200 to reply(success, if (success) "" else "nofield")
+        val failure = if (action == RemoteAction.FavAdd || action == RemoteAction.FavDel) "fav" else "nofield"
+        return 200 to reply(success, if (success) "" else failure)
     }
 
     private fun reply(ok: Boolean, error: String) = JSONObject().put("ok", ok).put("error", error).toString()
@@ -328,8 +339,8 @@ button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulat
 .clickbar{display:block;width:min(80vw,310px);height:54px;margin:0 auto 18px;border-radius:18px;background:var(--panel2);border:1px solid var(--line);font-weight:700;font-size:18px;color:#e8ecff}
 .clickbar:active{background:var(--acc);color:#0b0d12}
 /* tabs */
-.tabbar{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:6px;margin-top:8px}
-.tabbar button{display:flex;align-items:center;justify-content:center;gap:8px;height:50px;border-radius:15px;background:transparent;color:var(--mute);font-weight:600}
+.tabbar{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:6px;margin-top:8px}
+.tabbar button{display:flex;align-items:center;justify-content:center;gap:6px;height:50px;border-radius:15px;background:transparent;color:var(--mute);font-weight:600;font-size:15px;min-width:0}
 .tabbar button .ic{width:22px;height:22px}.tabbar button.on{background:var(--panel2);color:#fff;box-shadow:inset 0 0 0 1px var(--line)}
 .tabbar button.on .ic{color:var(--acc)}
 /* typing */
@@ -344,6 +355,9 @@ textarea{min-height:128px;resize:none}textarea:focus,input:focus{outline:2px sol
 .pairc{text-align:center;padding:26px 18px}.pairc p{color:var(--mute);margin:14px 0 16px}
 .pairc input{text-align:center;font-size:28px;letter-spacing:8px;padding:14px 8px}
 .mute{color:var(--mute);font-size:14px;line-height:1.5;margin:8px 0 4px}.surl{word-break:break-all;background:#0e1120;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:15px;margin:6px 0 4px;-webkit-user-select:text;user-select:text}
+.frow{display:flex;align-items:center;gap:8px;padding:4px;border-bottom:1px solid var(--line)}.frow:last-child{border-bottom:0}
+.fopen{flex:1;min-width:0;text-align:left;background:transparent;padding:10px 8px;border-radius:12px}.fopen b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fopen span{display:block;color:var(--mute);font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fdel{min-width:50px;height:46px;border-radius:12px;background:var(--panel2);color:var(--mute);display:grid;place-items:center;padding:0 10px;font-weight:600;font-size:14px}.fdel.sure{background:#47202a;color:#ffb4bf}
 .toast{position:fixed;left:50%;top:max(14px,env(safe-area-inset-top));transform:translate(-50%,-90px);background:#1f2540;border:1px solid var(--line);color:var(--ink);padding:11px 18px;border-radius:999px;font-weight:600;max-width:90vw;text-align:center;transition:transform .22s;z-index:9;box-shadow:0 8px 24px rgba(0,0,0,.5)}
 .toast.show{transform:translate(-50%,0)}.toast.err{background:#47202a;border-color:#7a3340}
 @media (max-height:760px){.dpad{width:min(62vw,250px);margin-bottom:14px}.tpad{height:min(46vw,185px)}.rb{width:56px;height:56px}.rb.big{width:66px;height:66px}.row{margin-bottom:12px}.seg{margin-bottom:10px}.clickbar{height:46px;margin-bottom:12px}.vol .rb{height:44px}header{padding-top:0}}
@@ -370,6 +384,8 @@ textarea{min-height:128px;resize:none}textarea:focus,input:focus{outline:2px sol
 <symbol id="i-dpad" viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><path d="M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/></symbol>
 <symbol id="i-touch" viewBox="0 0 24 24"><rect x="3" y="4.5" width="18" height="15" rx="3.5"/><path d="M3 14.5h18M12 14.5v5"/></symbol>
 <symbol id="i-remote" viewBox="0 0 24 24"><rect x="7" y="2.5" width="10" height="19" rx="3.5"/><circle cx="12" cy="8.5" r="2.2"/><path d="M10 14.5h4M10 18h4"/></symbol>
+<symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.8l2.5 5.2 5.7.8-4.1 4 1 5.7-5.1-2.7-5.1 2.7 1-5.7-4.1-4 5.7-.8z"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V4.5h4V7M7 7l.8 12.5h8.4L17 7M10.5 11v5M13.5 11v5"/></symbol>
 <symbol id="i-kbd" viewBox="0 0 24 24"><rect x="2.5" y="6" width="19" height="12" rx="3"/><path d="M6.5 10h.01M10 10h.01M14 10h.01M17.5 10h.01M8 14h8"/></symbol>
 </defs></svg>
 <div class="app">
@@ -377,7 +393,7 @@ textarea{min-height:128px;resize:none}textarea:focus,input:focus{outline:2px sol
 <main>
 <section id="pair" class="card pairc" hidden><p>{{ph_pin}}</p><input id="pin" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"><button id="go" class="btn pri">{{ph_pair}}</button></section>
 <section id="app" hidden>
-<div id="share" class="card" hidden><p class="mute">{{ph_share_ask}}</p><div id="shareUrl" class="surl"></div><button id="shareGo" class="btn pri"><svg class="ic"><use href="#i-tv"/></svg>{{ph_open}}</button><button id="shareNo" class="btn sec">{{ph_share_no}}</button></div>
+<div id="share" class="card" hidden><p class="mute">{{ph_share_ask}}</p><div id="shareUrl" class="surl"></div><button id="shareGo" class="btn pri"><svg class="ic"><use href="#i-tv"/></svg>{{ph_open}}</button><button id="shareFav" class="btn sec"><svg class="ic"><use href="#i-star"/></svg>{{ph_fav_save}}</button><button id="shareNo" class="btn sec">{{ph_share_no}}</button></div>
 <div id="remote">
 <div class="seg"><button id="segD" class="on"><svg class="ic"><use href="#i-dpad"/></svg>{{ph_pad_dpad}}</button><button id="segT"><svg class="ic"><use href="#i-touch"/></svg>{{ph_pad_touch}}</button></div>
 <div id="dpadwrap">
@@ -414,10 +430,11 @@ textarea{min-height:128px;resize:none}textarea:focus,input:focus{outline:2px sol
 <button id="open" class="btn pri"><svg class="ic"><use href="#i-tv"/></svg>{{ph_open}}</button>
 <button id="search" class="btn sec"><svg class="ic"><use href="#i-search"/></svg>{{ph_search}}</button>
 <button id="type" class="btn sec"><svg class="ic"><use href="#i-type"/></svg>{{ph_type}}</button>
-<button id="enter" class="btn sec"><svg class="ic"><use href="#i-enter"/></svg>{{ph_enter}}</button></div>
+<button id="enter" class="btn sec"><svg class="ic"><use href="#i-enter"/></svg>{{ph_enter}}</button><button id="favsave" class="btn sec"><svg class="ic"><use href="#i-star"/></svg>{{ph_fav_save}}</button></div>
 <div class="card" style="margin-top:12px"><b>{{ph_bm_title}}</b><p class="mute">{{ph_bm_text}}</p><button id="bmcopy" class="btn sec"><svg class="ic"><use href="#i-search"/></svg>{{ph_bm_copy}}</button></div>
 </div>
-<nav class="tabbar"><button id="tabRemote" class="on"><svg class="ic"><use href="#i-remote"/></svg>{{ph_tab_remote}}</button><button id="tabType"><svg class="ic"><use href="#i-kbd"/></svg>{{ph_tab_type}}</button></nav>
+<div id="favs" hidden><div class="card" style="padding:6px"><div id="flist"></div><p id="fempty" class="mute" style="padding:8px 10px" hidden>{{ph_fav_empty}}</p></div></div>
+<nav class="tabbar"><button id="tabRemote" class="on"><svg class="ic"><use href="#i-remote"/></svg>{{ph_tab_remote}}</button><button id="tabType"><svg class="ic"><use href="#i-kbd"/></svg>{{ph_tab_type}}</button><button id="tabFavs"><svg class="ic"><use href="#i-star"/></svg>{{ph_tab_favs}}</button></nav>
 </section>
 </main></div>
 <div id="toast" class="toast"></div>
@@ -433,10 +450,24 @@ function post(act,text){return fetch('/api',{method:'POST',headers:{'Content-Typ
 function show(paired){$('pair').hidden=paired;$('app').hidden=!paired;if(!paired)live(false);$('shareUrl').textContent=share||'';$('share').hidden=!(paired&&share)}
 function result(j){if(j.ok){live(true);say(L.ph_sent);return}
 if(j.error==='pin'){try{localStorage.removeItem('luna.pin')}catch(e){}pin=null;show(false);say(L.ph_bad_pin,1)}
-else if(j.error==='locked')say(L.ph_locked,1);else if(j.error==='nofield')say(L.ph_nofield,1);else say('?',1)}
+else if(j.error==='locked')say(L.ph_locked,1);else if(j.error==='nofield')say(L.ph_nofield,1);else if(j.error==='fav')say(L.ph_fav_err,1);else say('?',1)}
 function send(act){var t=$('text').value;if(!t.trim())return;post(act,t).then(result).catch(function(){live(false);say('?',1)})}
-function tab(t){$('remote').hidden=t!=='remote';$('typing').hidden=t!=='type';$('tabRemote').className=t==='remote'?'on':'';$('tabType').className=t==='type'?'on':''}
-$('tabRemote').onclick=function(){tab('remote')};$('tabType').onclick=function(){tab('type')};
+function tab(t){$('remote').hidden=t!=='remote';$('typing').hidden=t!=='type';$('favs').hidden=t!=='favs';$('tabRemote').className=t==='remote'?'on':'';$('tabType').className=t==='type'?'on':'';$('tabFavs').className=t==='favs'?'on':'';if(t==='favs')loadFavs()}
+$('tabRemote').onclick=function(){tab('remote')};$('tabType').onclick=function(){tab('type')};$('tabFavs').onclick=function(){tab('favs')};
+function hostOf(u){try{return new URL(u).hostname.replace(/^www\./,'')}catch(e){return u}}
+function saveFav(u){return post('fa',u).then(function(j){if(j.ok){live(true);say(L.ph_fav_saved)}else result(j)}).catch(function(){live(false);say('?',1)})}
+var TRASH='<svg class="ic"><use href="#i-trash"/></svg>';
+function loadFavs(){post('favs','').then(function(j){if(j.ok===true&&j.favs){live(true);renderFavs(j.favs)}else result(j)}).catch(function(){live(false)})}
+function renderFavs(list){var box=$('flist');box.textContent='';$('fempty').hidden=list.length>0;
+list.forEach(function(f){var r=document.createElement('div');r.className='frow';
+var o=document.createElement('button');o.className='fopen';var b=document.createElement('b');b.textContent=f.t||hostOf(f.u);var sp=document.createElement('span');sp.textContent=hostOf(f.u);o.appendChild(b);o.appendChild(sp);
+o.onclick=function(){buzz();post('open',f.u).then(result).catch(function(){live(false);say('?',1)})};
+var d=document.createElement('button');d.className='fdel';d.setAttribute('aria-label',L.ph_fav_remove);d.innerHTML=TRASH;
+d.onclick=function(){if(!d.classList.contains('sure')){d.classList.add('sure');d.textContent=L.ph_fav_confirm;setTimeout(function(){d.classList.remove('sure');d.innerHTML=TRASH},3000);return}
+post('fd',f.u).then(function(j){if(j.ok)loadFavs();else result(j)}).catch(function(){live(false)})};
+r.appendChild(o);r.appendChild(d);box.appendChild(r)})}
+$('favsave').onclick=function(){var t=$('text').value.trim();if(t)saveFav(t)};
+$('shareFav').onclick=function(){var u=share;share=null;$('share').hidden=true;if(u)saveFav(u)};
 $('shareGo').onclick=function(){var u=share;share=null;$('share').hidden=true;if(u)post('open',u).then(result).catch(function(){live(false);say('?',1)})};
 $('shareNo').onclick=function(){share=null;$('share').hidden=true};
 $('bmcopy').onclick=function(){var c="javascript:location.href='"+location.origin+"/#open='+encodeURIComponent(location.href)";var t=document.createElement('textarea');t.value=c;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();var ok=false;try{ok=document.execCommand('copy')}catch(e){}document.body.removeChild(t);say(ok?L.ph_copied:c,!ok)};

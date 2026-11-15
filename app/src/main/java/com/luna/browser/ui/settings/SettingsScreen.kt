@@ -23,6 +23,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Group
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Lock
@@ -54,6 +55,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.luna.browser.AppState
+import com.luna.browser.Screen
 import com.luna.browser.R
 import com.luna.browser.data.FilterLists
 import com.luna.browser.data.K
@@ -96,6 +98,7 @@ private val categories = listOf(
     Cat(R.string.set_cat_video, Icons.Rounded.Videocam),
     Cat(R.string.set_cat_phone, Icons.Rounded.PhoneAndroid),
     Cat(R.string.set_cat_privacy, Icons.Rounded.Lock),
+    Cat(R.string.set_cat_profiles, Icons.Rounded.Group),
     Cat(R.string.set_cat_about, Icons.Rounded.Info),
 )
 
@@ -237,6 +240,23 @@ private fun QrRow(text: String, caption: String) {
     }
 }
 
+/** The web engine with a verdict: an old WebView is the most common reason a modern site breaks on a TV. */
+private fun webEngineRow(app: AppState): SRow {
+    val v = app.webViewVersion
+    val level = app.webViewLevel
+    val howTo = app.s(R.string.web_desc_old)
+    return when (level) {
+        com.luna.browser.data.WebViewCheck.Level.Ok ->
+            Action(app.s(R.string.about_engine), app.s(R.string.web_desc_ok), v ?: "", false, false) { app.toast(R.string.web_ok_toast) }
+        com.luna.browser.data.WebViewCheck.Level.Old ->
+            Action(app.s(R.string.about_engine), howTo, app.s(R.string.web_val_old, v ?: ""), true, false) { app.toast(howTo) }
+        com.luna.browser.data.WebViewCheck.Level.VeryOld ->
+            Action(app.s(R.string.about_engine), app.s(R.string.web_desc_vold), app.s(R.string.web_val_vold, v ?: ""), true, false) { app.toast(app.s(R.string.web_desc_vold)) }
+        com.luna.browser.data.WebViewCheck.Level.Unknown ->
+            Info(app.s(R.string.about_engine), app.s(R.string.about_unknown))
+    }
+}
+
 private fun updateRows(app: AppState): List<SRow> {
     if (app.storeInstall) return listOf(Info(app.s(R.string.set_upd), app.s(R.string.upd_store_v)))
     val latest = app.updateAvailable
@@ -323,20 +343,28 @@ private fun rows(category: Int, app: AppState): List<SRow> {
                 s.clearHistory(); app.toast(R.string.toast_history_cleared)
             },
             Action(app.s(R.string.set_clear_cookies), app.s(R.string.set_clear_cookies_d), danger = true, confirm = true) {
-                CookieManager.getInstance().removeAllCookies(null)
-                WebStorage.getInstance().deleteAllData()
+                // This profile's cookies and site data (all of them when the web engine can't separate profiles).
+                com.luna.browser.browser.WebProfiles.cookies(s.profileId).removeAllCookies(null)
+                com.luna.browser.browser.WebProfiles.storage(s.profileId).deleteAllData()
                 app.toast(R.string.toast_cookies_cleared)
             },
             Action(app.s(R.string.set_clear_cache), app.s(R.string.set_clear_cache_d)) {
                 app.browser.webView.clearCache(true); app.toast(R.string.toast_cache_cleared)
             },
         )
+        7 -> listOfNotNull(
+            Action(app.s(R.string.set_prof_open), app.s(R.string.set_prof_open_d), app.profileLabel(s.currentProfile).let { if (s.isGuest) app.s(R.string.prof_guest) else it }) {
+                app.navigate(Screen.Profiles)
+            },
+            Toggle(K.ASK_PROFILE, app.s(R.string.set_ask_prof), app.s(R.string.set_ask_prof_d)),
+            Info(app.s(R.string.prof_signins), app.s(if (com.luna.browser.browser.WebProfiles.supported()) R.string.prof_signins_sep else R.string.prof_signins_shared)),
+        )
         else -> {
             val version = runCatching { app.activity.packageManager.getPackageInfo(app.activity.packageName, 0).versionName }.getOrNull() ?: "?"
             listOf(
                 Info(app.s(R.string.about_luna), app.s(R.string.about_version, version)),
                 *updateRows(app).toTypedArray(),
-                Info(app.s(R.string.about_engine), runCatching { WebView.getCurrentWebViewPackage()?.versionName }.getOrNull() ?: app.s(R.string.about_unknown)),
+                webEngineRow(app),
                 Info(app.s(R.string.about_device), "${Build.MANUFACTURER} ${Build.MODEL}"),
                 Info(app.s(R.string.about_menu), app.s(R.string.about_menu_v)),
                 Info(app.s(R.string.about_hold_ok), app.s(R.string.about_hold_ok_v)),

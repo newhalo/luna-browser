@@ -16,6 +16,7 @@ class PhoneRemoteTest {
         "ph_title", "ph_pin", "ph_pair", "ph_hint", "ph_open", "ph_search", "ph_type", "ph_enter",
         "ph_sent", "ph_bad_pin", "ph_locked", "ph_nofield", "ph_tab_remote", "ph_tab_type", "ph_pad_dpad", "ph_pad_touch", "ph_pad_hint",
         "ph_share_ask", "ph_share_no", "ph_bm_title", "ph_bm_text", "ph_bm_copy", "ph_copied",
+        "ph_tab_favs", "ph_fav_save", "ph_fav_saved", "ph_fav_empty", "ph_fav_remove", "ph_fav_confirm", "ph_fav_err",
     )
     private val calls = CopyOnWriteArrayList<Pair<RemoteAction, String>>()
     private lateinit var remote: PhoneRemote
@@ -27,6 +28,7 @@ class PhoneRemoteTest {
             perform = { a, t, done -> calls += a to t; done(a != RemoteAction.Type) },
             budgetMs = 500,
             idleMs = 1500,
+            favorites = { """[{"t":"Sintel <1>","u":"https://example.com/sintel"}]""" },
         )
         remote.start()
         val end = System.currentTimeMillis() + 3000
@@ -64,6 +66,29 @@ class PhoneRemoteTest {
         assertTrue(html.contains("open=([^&]+)"))
         assertTrue(html.contains("/^https?:"))
         assertTrue(html.contains("location.origin"))
+    }
+
+    @Test fun favoritesAreListedOnlyForAPairedPhone() {
+        val (code, body) = post("pin=4321&act=favs")
+        assertEquals(200, code)
+        val o = org.json.JSONObject(body)
+        assertTrue(o.getBoolean("ok"))
+        assertEquals("https://example.com/sintel", o.getJSONArray("favs").getJSONObject(0).getString("u"))
+        assertEquals(401, post("pin=0000&act=favs").first)
+        assertEquals(401, post("act=favs").first)
+        assertTrue("listing never runs an app action", calls.isEmpty())
+    }
+
+    @Test fun savingAndRemovingFavoritesReachTheApp() {
+        assertEquals(200, post("pin=4321&act=fa&text=https%3A%2F%2Fexample.com%2Fa%0AMy%20title").first)
+        assertEquals(200, post("pin=4321&act=fd&text=https%3A%2F%2Fexample.com%2Fa").first)
+        assertEquals(
+            listOf(RemoteAction.FavAdd to "https://example.com/a
+My title", RemoteAction.FavDel to "https://example.com/a"),
+            calls.toList(),
+        )
+        assertEquals(401, post("pin=1&act=fa&text=https%3A%2F%2Fexample.com%2F").first)
+        assertEquals(400, post("pin=4321&act=fa&text=").first)
     }
 
     @Test fun unknownPathsAre404() = assertEquals(404, get("/admin").first)

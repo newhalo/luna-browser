@@ -74,7 +74,9 @@ data class Osd(val label: String, val icon: ImageVector?, val id: Long)
  * the virtual cursor, and remote-control handling for pages and fullscreen video.
  */
 class BrowserController(private val activity: Activity, private val app: AppState) {
-    val webView = WebView(activity)
+    // Each profile has its own cookies and site data (where the web engine can separate them): set before anything loads.
+    val webView = WebView(activity).also { WebProfiles.apply(it, app.store.profileId) }
+    private val cookies = WebProfiles.cookies(app.store.profileId)
     private val handler = Handler(Looper.getMainLooper())
     private val density = activity.resources.displayMetrics.density
 
@@ -147,7 +149,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         if ((activity.applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0) {
             WebView.setWebContentsDebuggingEnabled(true)
         }
-        CookieManager.getInstance().setAcceptCookie(true)
+        cookies.setAcceptCookie(true)
         webView.apply {
             // Pages assume a white canvas; a dark one makes dark text unreadable (seen on 24h.com.vn).
             setBackgroundColor(Color.WHITE)
@@ -183,7 +185,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         }
         s.textZoom = if (ref.startsWith("http")) app.store.zoomFor(ref) else app.store.int(K.ZOOM)
         s.javaScriptCanOpenWindowsAutomatically = !app.store.bool(K.BLOCK_POPUPS)
-        CookieManager.getInstance().setAcceptThirdPartyCookies(webView, app.store.bool(K.THIRD_PARTY))
+        cookies.setAcceptThirdPartyCookies(webView, app.store.bool(K.THIRD_PARTY))
     }
 
     // ---- Per-site settings ----
@@ -325,6 +327,54 @@ class BrowserController(private val activity: Activity, private val app: AppStat
 
     fun touchToolbar() { toolbarTouch = SystemClock.uptimeMillis() }
 
+    // ---- Reading mode ----
+    /** True while the clean reading view of the page is shown (it replaces the page; Back leaves it). */
+    var reader by mutableStateOf(false)
+        private set
+    private var readerPending = false
+    private var readerOrigin = ""
+
+    fun toggleReader() {
+        if (reader) exitReader() else enterReader()
+    }
+
+    private fun enterReader() {
+        if (!url.startsWith("http") || error != null || customView != null) { app.toast(R.string.reader_none); return }
+        hideToolbar()
+        webView.evaluateJavascript(ReaderMode.EXTRACT_JS) { raw ->
+            val article = ReaderMode.parse(raw)
+            if (article == null) { app.toast(R.string.reader_none); return@evaluateJavascript }
+            readerOrigin = url
+            readerPending = true
+            reader = true
+            held.clear()
+            webView.loadDataWithBaseURL(
+                readerOrigin,
+                ReaderMode.html(article, app.s(R.string.reader_minutes, ReaderMode.minutes(article))),
+                "text/html", "utf-8", readerOrigin,
+            )
+            app.toast(R.string.reader_hint)
+        }
+    }
+
+    private fun exitReader() {
+        reader = false
+        readerPending = false
+        val origin = readerOrigin
+        if (origin.startsWith("http")) { error = null; webView.loadUrl(origin) }
+    }
+
+    /** Up / Down scroll by a third of the screen (hold to keep going); Up at the very top opens the toolbar. */
+    private fun readerKey(e: KeyEvent): Boolean {
+        if (e.action != KeyEvent.ACTION_DOWN) return true
+        val step = (viewH * 0.34f).toInt().coerceAtLeast((120 * density).toInt())
+        when (e.keyCode) {
+            KeyEvent.KEYCODE_DPAD_DOWN -> webView.scrollBy(0, step)
+            KeyEvent.KEYCODE_DPAD_UP -> if (webView.canScrollVertically(-1)) webView.scrollBy(0, -step) else if (e.repeatCount == 0) showToolbar()
+        }
+        return true
+    }
+
     fun toggleMode() {
         cursorMode = !cursorMode
         held.clear()
@@ -340,6 +390,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         }
         if (sitePanel) { hideSitePanel(); return true }
         if (toolbarVisible) { hideToolbar(); return true }
+        if (reader) { exitReader(); return true }
         if (webView.canGoBack()) { webView.goBack(); return true }
         return false
     }
@@ -394,6 +445,8 @@ class BrowserController(private val activity: Activity, private val app: AppStat
 
         override fun onPageStarted(view: WebView, pageUrl: String?, favicon: Bitmap?) {
             pageStartedAt = SystemClock.uptimeMillis()
+            // The reading view is a page of its own: any other navigation (a link, Back) ends it.
+            if (readerPending) readerPending = false else if (reader) reader = false
             resumeTried = null   // a new document: the saved position may apply again
             pageUrl?.let { u ->
                 val want = uaFor(u)
@@ -674,9 +727,9 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             }
             KeyEvent.KEYCODE_PAGE_DOWN, KeyEvent.KEYCODE_CHANNEL_DOWN -> { if (down) webView.pageDown(false); return true }
             KeyEvent.KEYCODE_PAGE_UP, KeyEvent.KEYCODE_CHANNEL_UP -> { if (down) webView.pageUp(false); return true }
-            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> return handleOk(e)
+            KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> return if (reader) true else handleOk(e)
             KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT ->
-                return if (cursorMode) handleCursorKey(e) else focusModeKey(e)
+                return if (reader) readerKey(e) else if (cursorMode) handleCursorKey(e) else focusModeKey(e)
         }
         return false
     }
@@ -756,7 +809,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     // ---- Phone touchpad ----
     /** True when the pointer is what a touchpad should move: pointer mode with nothing on top of the page. */
     val pointerInteractive: Boolean
-        get() = cursorMode && customView == null && !toolbarVisible && !sitePanel && error == null
+        get() = cursorMode && !reader && customView == null && !toolbarVisible && !sitePanel && error == null
 
     /** Moves the pointer by fractions of the view size (so a phone of any size feels alike), honouring the speed setting. */
     fun moveCursorBy(dx: Float, dy: Float) {

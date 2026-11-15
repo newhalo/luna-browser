@@ -38,6 +38,7 @@ import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Mouse
+import androidx.compose.material.icons.rounded.MenuBook
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
@@ -129,7 +130,7 @@ private fun BrowserContent(app: AppState, b: BrowserController) {
             modifier = Modifier.fillMaxSize().onSizeChanged { b.onViewSize(it.width, it.height) },
         )
 
-        if (b.cursorMode && b.customView == null && !b.toolbarVisible && !b.sitePanel && b.error == null && !b.capturing) CursorOverlay(b)
+        if (b.cursorMode && !b.reader && b.customView == null && !b.toolbarVisible && !b.sitePanel && b.error == null && !b.capturing) CursorOverlay(b)
 
         // Slim progress bar
         if (b.loading && b.error == null && b.customView == null) {
@@ -239,6 +240,10 @@ private fun Toolbar(app: AppState, b: BrowserController) {
                     IconLabelButton(stringResource(R.string.tb_tabs), Icons.Rounded.TabIcon, { b.hideToolbar(); app.navigate(Screen.Tabs) }, highlighted = app.tabs.count > 1)
                     val fav = app.store.isFavorite(b.url)
                     IconLabelButton(stringResource(if (fav) R.string.tb_saved else R.string.tb_save), if (fav) Icons.Rounded.Star else Icons.Rounded.StarBorder, { b.toggleFavorite() }, highlighted = fav)
+                    IconLabelButton(
+                        stringResource(R.string.tb_read), Icons.Rounded.MenuBook, { b.toggleReader() },
+                        enabled = b.url.startsWith("http"), highlighted = b.reader,
+                    )
                     IconLabelButton(stringResource(if (b.cursorMode) R.string.tb_mode_pointer else R.string.tb_mode_links), if (b.cursorMode) Icons.Rounded.Mouse else Icons.Rounded.TouchApp, { b.toggleMode() })
                     IconLabelButton(
                         stringResource(R.string.tb_site), Icons.Rounded.Tune, { b.showSitePanel() },

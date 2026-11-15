@@ -182,6 +182,10 @@ object K {
     const val UPDATE_LAST = "updateLast"
     const val UPDATE_LATEST = "updateLatest"
     const val UPDATE_URL = "updateUrl"
+    /** The active profile's id (never the guest: a guest session is not remembered). */
+    const val PROFILE = "profile"
+    /** Show "Who's watching?" when Luna opens (only matters with more than one profile). */
+    const val ASK_PROFILE = "askProfile"
 }
 
 /** Languages the UI is translated into (code to its own name, never translated). Keep in sync with res/xml/locales_config.xml. */
@@ -231,6 +235,7 @@ class Store(ctx: Context) {
         K.PHONE to "true", K.PHONE_PIN to "",
         K.TILE_SIZE to TileSize.LARGE, K.HISTORY_VIEW to "list",
         K.UPDATE_CHECK to "true", K.UPDATE_LAST to "0", K.UPDATE_LATEST to "", K.UPDATE_URL to "",
+        K.PROFILE to ProfileRules.DEFAULT, K.ASK_PROFILE to "false",
     )
 
     val settings = mutableStateMapOf<String, String>().apply {
@@ -254,21 +259,25 @@ class Store(ctx: Context) {
         sp.edit().putString("s.$k", v.toString()).apply()
     }
 
-    val favorites = mutableStateListOf<Site>().apply { addAll(readSites("favorites")) }
+    // ---- Profiles ----
+    val profiles = mutableStateListOf<Profile>().apply { addAll(ProfileRules.parse(sp.getString("profiles", null))) }
+
+    /** The active profile's id: "0" (the original data), "1".."9", or "guest" (erased when the session ends). */
+    var profileId by mutableStateOf(str(K.PROFILE).takeIf { id -> profiles.any { it.id == id } } ?: ProfileRules.DEFAULT)
+        private set
+
+    val isGuest: Boolean get() = profileId == ProfileRules.GUEST
+    val currentProfile: Profile get() = profiles.firstOrNull { it.id == profileId } ?: profiles.first()
+
+    /** The storage key of [name] for the active profile. */
+    private fun pk(name: String) = ProfileRules.key(profileId, name)
+
+    val favorites = mutableStateListOf<Site>().apply { addAll(readSites(pk("favorites"))) }
     val history = mutableStateListOf<HistoryEntry>().apply { addAll(readHistory()) }
-    private val visits = mutableStateMapOf<String, Int>().apply {
-        runCatching {
-            val o = JSONObject(sp.getString("visits", "{}")!!)
-            o.keys().forEach { put(it, o.getInt(it)) }
-        }
-    }
+
+    private val visits = mutableStateMapOf<String, Int>().apply { putAll(readVisits()) }
     // ---- Resume positions ("continue where you left off") ----
-    private val positions = HashMap<String, Resume>().apply {
-        runCatching {
-            val o = JSONObject(sp.getString("positions", "{}")!!)
-            o.keys().forEach { k -> o.getJSONArray(k).let { a -> put(k, Resume(a.getDouble(0), a.getDouble(1), a.getLong(2))) } }
-        }
-    }
+    private val positions = HashMap<String, Resume>().apply { putAll(readPositions()) }
     private var positionsWritten = 0L
 
     /** Where the video on [url] was left, or null when there is nothing worth resuming. */
@@ -294,20 +303,22 @@ class Store(ctx: Context) {
         if (flush || now - positionsWritten > 5_000) {
             positionsWritten = now
             val copy = synchronized(positions) { HashMap(positions) }
+            val posKey = pk("positions")      // the key is chosen now: the profile may change before the write runs
             io.execute {
                 val o = JSONObject()
                 copy.forEach { (k, r) -> o.put(k, JSONArray().put(r.pos).put(r.dur).put(r.time)) }
-                sp.edit().putString("positions", o.toString()).apply()
+                sp.edit().putString(posKey, o.toString()).apply()
             }
             if (flush) version++
         }
     }
 
     // ---- Open tabs (restored, frozen, after the app is closed) ----
-    fun readTabs(): String? = sp.getString("tabs", null)
+    fun readTabs(): String? = sp.getString(pk("tabs"), null)
 
     fun writeTabs(json: String) {
-        io.execute { sp.edit().putString("tabs", json).apply() }
+        val key = pk("tabs")
+        io.execute { sp.edit().putString(key, json).apply() }
     }
 
     // ---- Per-site settings (each field falls back to the global setting when the site has no opinion) ----
@@ -339,7 +350,7 @@ class Store(ctx: Context) {
     fun adblockFor(url: String) = overrideFor(url).adblock ?: bool(K.ADBLOCK)
     fun pointerFor(url: String): Boolean? = overrideFor(url).pointer
 
-    var lastSession by mutableStateOf(readSites("last").firstOrNull())
+    var lastSession by mutableStateOf(readSites(pk("last")).firstOrNull())
         private set
 
     /** Bumped on every change to history, favourites or artwork; screens memoise their rows on it. */
@@ -352,20 +363,49 @@ class Store(ctx: Context) {
     // ---- Favorites ----
     fun isFavorite(url: String) = favorites.any { it.url == url }
 
+    /** The favourites as JSON text for the phone page; a snapshot, so the server thread never reads the live list. */
+    @Volatile var favoritesJson: String = "[]"
+        private set
+
+    private fun syncFavorites() {
+        val arr = JSONArray()
+        favorites.forEach { arr.put(JSONObject().put("t", it.title).put("u", it.url)) }
+        favoritesJson = arr.toString()
+    }
+
+    init {
+        syncFavorites()
+        // A guest session never survives a restart (the app was killed while a guest was active).
+        wipeData(ProfileRules.GUEST)
+    }
+
+    /** Adds a favourite (at the top). True when it is now a favourite (also when it already was); false when the list is full. */
+    fun addFavorite(site: Site): Boolean {
+        if (isFavorite(site.url)) return true
+        if (favorites.size >= MAX_FAVORITES) return false
+        favorites.add(0, site)
+        version++
+        writeSites(pk("favorites"), favorites)
+        syncFavorites()
+        return true
+    }
+
     /** Returns true when the site is now a favorite. */
     fun toggleFavorite(site: Site): Boolean {
         val existing = favorites.indexOfFirst { it.url == site.url }
         val added = existing < 0
         if (added) favorites.add(0, site) else favorites.removeAt(existing)
         version++
-        writeSites("favorites", favorites)
+        writeSites(pk("favorites"), favorites)
+        syncFavorites()
         return added
     }
 
     fun removeFavorite(site: Site) {
         favorites.remove(site)
         version++
-        writeSites("favorites", favorites)
+        writeSites(pk("favorites"), favorites)
+        syncFavorites()
     }
 
     // ---- History ----
@@ -382,12 +422,12 @@ class Store(ctx: Context) {
         if (old == null) {
             val h = hostOf(url)
             visits[h] = (visits[h] ?: 0) + 1
-            sp.edit().putString("visits", JSONObject(visits.toMap()).toString()).apply()
+            sp.edit().putString(pk("visits"), JSONObject(visits.toMap()).toString()).apply()
         }
         lastSession = Site(t, url)
         version++
         writeHistory()
-        writeSites("last", listOf(Site(t, url)))
+        writeSites(pk("last"), listOf(Site(t, url)))
     }
 
     fun updateTitle(url: String, rawTitle: String) {
@@ -399,7 +439,7 @@ class Store(ctx: Context) {
         version++
         if (lastSession?.url == url) {
             lastSession = Site(title, url)
-            writeSites("last", listOf(Site(title, url)))
+            writeSites(pk("last"), listOf(Site(title, url)))
         }
         writeHistory()
     }
@@ -414,15 +454,17 @@ class Store(ctx: Context) {
     }
 
     fun clearHistory() {
+        val snaps = history.mapNotNull { it.snap }
         history.clear()
         visits.clear()
         lastSession = null
         version++
-        io.execute { thumbsDir.listFiles()?.forEach { it.delete() } }
+        // Only this profile's thumbnails: the other profiles' cards still need theirs.
+        io.execute { snaps.forEach { runCatching { File(it).delete() } } }
         synchronized(positions) { positions.clear() }
-        sp.edit().putString("visits", "{}").putString("positions", "{}").apply()
+        sp.edit().putString(pk("visits"), "{}").putString(pk("positions"), "{}").apply()
         writeHistory()
-        writeSites("last", emptyList())
+        writeSites(pk("last"), emptyList())
     }
 
     // ---- Artwork lookups ----
@@ -507,8 +549,8 @@ class Store(ctx: Context) {
         }
     }
 
-    private fun readHistory(): List<HistoryEntry> = try {
-        val arr = JSONArray(sp.getString("history", "[]"))
+    private fun readHistory(key: String = pk("history")): List<HistoryEntry> = try {
+        val arr = JSONArray(sp.getString(key, "[]"))
         (0 until arr.length()).map {
             arr.getJSONObject(it).let { o ->
                 HistoryEntry(
@@ -523,10 +565,11 @@ class Store(ctx: Context) {
 
     private fun writeHistory() {
         val copy = history.toList()
-        io.execute { writeHistoryNow(copy) }
+        val key = pk("history")
+        io.execute { writeHistoryNow(key, copy) }
     }
 
-    private fun writeHistoryNow(list: List<HistoryEntry>) {
+    private fun writeHistoryNow(key: String, list: List<HistoryEntry>) {
         val arr = JSONArray()
         list.forEach {
             arr.put(
@@ -534,11 +577,101 @@ class Store(ctx: Context) {
                     .put("img", it.image ?: "").put("snap", it.snap ?: ""),
             )
         }
-        sp.edit().putString("history", arr.toString()).apply()
+        sp.edit().putString(key, arr.toString()).apply()
+    }
+
+    private fun readVisits(): Map<String, Int> = runCatching {
+        val o = JSONObject(sp.getString(pk("visits"), "{}")!!)
+        o.keys().asSequence().associateWith { o.getInt(it) }
+    }.getOrDefault(emptyMap())
+
+    private fun readPositions(): Map<String, Resume> = runCatching {
+        val o = JSONObject(sp.getString(pk("positions"), "{}")!!)
+        o.keys().asSequence().associateWith { k -> o.getJSONArray(k).let { a -> Resume(a.getDouble(0), a.getDouble(1), a.getLong(2)) } }
+    }.getOrDefault(emptyMap())
+
+    // ---- Profile switching and management ----
+    /**
+     * Makes [id] the active profile: its history, favourites, positions and tabs replace the current ones. Leaving the guest
+     * erases everything the guest did. (Open tabs of the profile being left are saved by the caller before it switches.)
+     */
+    fun switchProfile(id: String) {
+        if (id == profileId) return
+        if (id != ProfileRules.GUEST && profiles.none { it.id == id }) return
+        val leaving = profileId
+        profileId = id
+        if (leaving == ProfileRules.GUEST) wipeData(ProfileRules.GUEST)
+        if (id != ProfileRules.GUEST) put(K.PROFILE, id)
+        reloadData()
+    }
+
+    /** Ends a guest session (the app is closing): back to the remembered profile, guest data erased. */
+    fun endGuest() {
+        if (!isGuest) return
+        switchProfile(str(K.PROFILE).takeIf { id -> profiles.any { it.id == id } } ?: ProfileRules.DEFAULT)
+    }
+
+    private fun reloadData() {
+        favorites.clear(); favorites.addAll(readSites(pk("favorites")))
+        history.clear(); history.addAll(readHistory())
+        visits.clear(); visits.putAll(readVisits())
+        synchronized(positions) { positions.clear(); positions.putAll(readPositions()) }
+        lastSession = readSites(pk("last")).firstOrNull()
+        syncFavorites()
+        version++
+    }
+
+    /** Erases a profile's stored data (and its thumbnails), in order after any write still queued for it. */
+    private fun wipeData(id: String) {
+        val snaps = readHistory(ProfileRules.key(id, "history")).mapNotNull { it.snap }
+        val keys = ProfileRules.dataKeys.map { ProfileRules.key(id, it) }
+        io.execute {
+            sp.edit().apply { keys.forEach { remove(it) } }.apply()
+            snaps.forEach { runCatching { File(it).delete() } }
+        }
+    }
+
+    private fun saveProfiles() {
+        sp.edit().putString("profiles", ProfileRules.serialize(profiles.toList())).apply()
+    }
+
+    /** A new profile, or null when the limit is reached. */
+    fun addProfile(name: String): Profile? {
+        val id = ProfileRules.nextId(profiles.toList()) ?: return null
+        val p = Profile(id, ProfileRules.cleanName(name), ProfileRules.nextColor(profiles.toList()))
+        profiles.add(p)
+        saveProfiles()
+        return p
+    }
+
+    fun renameProfile(id: String, name: String) {
+        val i = profiles.indexOfFirst { it.id == id }
+        if (i < 0) return
+        profiles[i] = profiles[i].copy(name = ProfileRules.cleanName(name))
+        saveProfiles()
+    }
+
+    fun recolorProfile(id: String, color: Int) {
+        val i = profiles.indexOfFirst { it.id == id }
+        if (i < 0) return
+        profiles[i] = profiles[i].copy(color = color.coerceIn(0, ProfileRules.colors.size - 1))
+        saveProfiles()
+    }
+
+    /** Deletes a profile and its data. The default profile and the one in use cannot be deleted. */
+    fun deleteProfile(id: String): Boolean {
+        if (id == ProfileRules.DEFAULT || id == profileId) return false
+        val i = profiles.indexOfFirst { it.id == id }
+        if (i < 0) return false
+        profiles.removeAt(i)
+        saveProfiles()
+        wipeData(id)
+        return true
     }
 
     private companion object {
         const val MAX_HISTORY = 300
+        const val MAX_FAVORITES = 60
         const val MAX_POSITIONS = 150
     }
 }

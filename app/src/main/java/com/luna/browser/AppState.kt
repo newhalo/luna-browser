@@ -30,7 +30,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import java.util.Locale
 
-enum class Screen { Home, Browser, Settings, History, Favorites, Tabs }
+enum class Screen { Home, Browser, Settings, History, Favorites, Tabs, Profiles }
 
 /** The keys the phone pad may press (anything else is refused). */
 private val REMOTE_KEYS = mapOf(
@@ -56,6 +56,9 @@ class AppState(val activity: Activity) {
     private val stack = ArrayDeque<Screen>()
 
     var addressOpen by mutableStateOf(false)
+
+    /** A screen's own overlay (an edit panel) can claim Back first: return true when it closed something. */
+    var closeOverlay: (() -> Boolean)? = null
     var addressInitial = ""
     var toastMsg by mutableStateOf<String?>(null)
     var online by mutableStateOf(true)
@@ -82,10 +85,14 @@ class AppState(val activity: Activity) {
                 "ph_tab_remote" to s(R.string.ph_tab_remote), "ph_tab_type" to s(R.string.ph_tab_type),
                 "ph_share_ask" to s(R.string.ph_share_ask), "ph_share_no" to s(R.string.ph_share_no), "ph_bm_title" to s(R.string.ph_bm_title),
                 "ph_bm_text" to s(R.string.ph_bm_text), "ph_bm_copy" to s(R.string.ph_bm_copy), "ph_copied" to s(R.string.ph_copied),
+                "ph_tab_favs" to s(R.string.ph_tab_favs), "ph_fav_save" to s(R.string.ph_fav_save), "ph_fav_saved" to s(R.string.ph_fav_saved),
+                "ph_fav_empty" to s(R.string.ph_fav_empty), "ph_fav_remove" to s(R.string.ph_fav_remove), "ph_fav_confirm" to s(R.string.ph_fav_confirm),
+                "ph_fav_err" to s(R.string.ph_fav_err),
                 "ph_pad_dpad" to s(R.string.ph_pad_dpad), "ph_pad_touch" to s(R.string.ph_pad_touch), "ph_pad_hint" to s(R.string.ph_pad_hint),
             )
         },
         perform = { action, text, done -> main.post { performRemote(action, text, done) } },
+        favorites = { store.favoritesJson },
     )
 
     /** The pre-filled GitHub report address for the page at [url] (shown as a QR code), or null for non-web pages. */
@@ -95,6 +102,11 @@ class AppState(val activity: Activity) {
         val lists = ads.lastUpdated.takeIf { it > 0 }?.let { java.text.SimpleDateFormat("yyyy-MM-dd", Locale.US).format(java.util.Date(it)) }
         return com.luna.browser.data.ReportLink.build(url, com.luna.browser.data.ReportLink.environment(version, web, lists, "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}"))
     }
+
+    // ---- The TV's web engine ----
+    /** Version of the system WebView (Chromium), e.g. "157.0.8103.38", or null when it can't be read. */
+    val webViewVersion: String? by lazy { runCatching { android.webkit.WebView.getCurrentWebViewPackage()?.versionName }.getOrNull() }
+    val webViewLevel: com.luna.browser.data.WebViewCheck.Level by lazy { com.luna.browser.data.WebViewCheck.level(webViewVersion) }
 
     // ---- Updates (builds installed outside a store only) ----
     /** The installed version, without a build suffix such as "-debug". */
@@ -189,6 +201,20 @@ class AppState(val activity: Activity) {
             RemoteAction.Key, RemoteAction.KeyDown, RemoteAction.KeyUp -> {
                 val code = REMOTE_KEYS[text]
                 if (code == null) done(false) else { injectKey(code, action); done(true) }
+            }
+            RemoteAction.FavAdd -> {
+                // "address" or "address\ntitle". Only something that looks like an address (never a search phrase), only http(s).
+                val raw = text.substringBefore('\n').trim()
+                val url = if (raw.isEmpty() || raw.contains(' ')) "" else store.resolve(raw)
+                if (!url.startsWith("http://") && !url.startsWith("https://")) return done(false)
+                val title = text.substringAfter('\n', "").trim().ifEmpty { store.history.firstOrNull { it.url == url }?.title ?: hostOf(url) }
+                val ok = store.addFavorite(Site(title.take(120), url))
+                if (ok) toast(R.string.toast_fav_added)
+                done(ok)
+            }
+            RemoteAction.FavDel -> {
+                store.favorites.firstOrNull { it.url == text.trim() }?.let { store.removeFavorite(it); toast(R.string.toast_fav_removed) }
+                done(true)
             }
             RemoteAction.Volume -> done(adjustVolume(text))
             RemoteAction.Home -> { goHome(); done(true) }
@@ -414,7 +440,35 @@ class AppState(val activity: Activity) {
         addressOpen = true
     }
 
+    // ---- Profiles ----
+    /** The name shown for a profile: the default one has no name of its own until it is renamed. */
+    fun profileLabel(p: com.luna.browser.data.Profile) = p.name.ifEmpty { s(R.string.prof_main) }
+
+    /**
+     * Switches who is watching: the open tabs of the current profile are saved and released, the new profile's history,
+     * favourites, positions and tabs are loaded, and Home opens. Leaving the guest erases its data and web sign-ins.
+     */
+    fun switchProfile(id: String) {
+        if (id == store.profileId) { goHome(); return }
+        val leavingGuest = store.isGuest
+        tabs.destroyAll()
+        store.switchProfile(id)
+        if (leavingGuest) com.luna.browser.browser.WebProfiles.delete(com.luna.browser.data.ProfileRules.GUEST)
+        tabs.reload()
+        goHome()
+        toast(if (store.isGuest) s(R.string.prof_guest_on) else s(R.string.prof_switched, profileLabel(store.currentProfile)))
+    }
+
+    fun deleteProfile(id: String) {
+        if (store.deleteProfile(id)) {
+            com.luna.browser.browser.WebProfiles.delete(id)
+            toast(R.string.prof_deleted)
+        }
+    }
+
     fun launch() {
+        // "Who's watching?" first, when the viewer asked for it and there is more than one profile.
+        if (store.profiles.size > 1 && store.bool(K.ASK_PROFILE)) { show(Screen.Profiles); return }
         val last = store.lastSession
         if (store.str(K.LAUNCH) == "resume" && last != null) openUrl(last.url)
     }
@@ -445,6 +499,7 @@ class AppState(val activity: Activity) {
 
     fun back() {
         when {
+            closeOverlay?.invoke() == true -> Unit
             addressOpen -> addressOpen = false
             screen == Screen.Browser && browser.onBack() -> Unit
             stack.isNotEmpty() -> show(stack.removeLast())
@@ -469,6 +524,11 @@ class AppState(val activity: Activity) {
         remote.stop()
         netCallback?.let { runCatching { activity.getSystemService(ConnectivityManager::class.java)?.unregisterNetworkCallback(it) } }
         tabs.destroyAll()
+        // A guest session ends with the app: its data and its web sign-ins are erased.
+        if (store.isGuest) {
+            store.endGuest()
+            com.luna.browser.browser.WebProfiles.delete(com.luna.browser.data.ProfileRules.GUEST)
+        }
         scope.cancel()
     }
 }

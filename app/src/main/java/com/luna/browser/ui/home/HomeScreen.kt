@@ -86,6 +86,7 @@ import com.luna.browser.ui.components.Txt
 import com.luna.browser.ui.components.greeting
 import com.luna.browser.ui.components.rememberFocus
 import com.luna.browser.ui.components.timeAgo
+import com.luna.browser.ui.profiles.ProfileChip
 import com.luna.browser.ui.theme.Accent
 import com.luna.browser.ui.theme.Danger
 import com.luna.browser.ui.theme.Dim
@@ -188,6 +189,7 @@ private fun Header(app: AppState) {
         Txt("  Luna", T.title.copy(fontSize = 26.sp, fontWeight = FontWeight.Bold))
         Spacer(Modifier.weight(1f))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (app.store.profiles.size > 1 || app.store.isGuest) ProfileChip(app, Modifier.rememberFocus(app, "home", "nav:profile"))
             if (app.tabs.hasContent) {
                 TvButton(stringResource(R.string.tb_tabs), { app.navigate(Screen.Tabs) }, Modifier.rememberFocus(app, "home", "nav:tabs"), Icons.Rounded.TabIcon, container = Glass)
             }
@@ -205,7 +207,8 @@ private fun HeroInfo(app: AppState, hero: () -> MediaItem?, online: Boolean) {
         LightCrossfade(hero(), ms(220)) { h ->
             Column(Modifier.width(640.dp)) {
                 if (h == null) {
-                    Txt(greeting(app), T.display.copy(fontSize = 42.sp))
+                    val who = if (app.store.profiles.size > 1 && !app.store.isGuest) ", " + app.profileLabel(app.store.currentProfile) else ""
+                    Txt(greeting(app) + who, T.display.copy(fontSize = 42.sp), maxLines = 1)
                     if (!online) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Rounded.WifiOff, null, tint = Danger, modifier = Modifier.size(22.dp))
@@ -213,7 +216,10 @@ private fun HeroInfo(app: AppState, hero: () -> MediaItem?, online: Boolean) {
                         }
                     } else {
                         val upd = app.updateAvailable
+                        val oldEngine = com.luna.browser.data.WebViewCheck.needsAttention(app.webViewLevel)
                         if (upd != null) Txt(stringResource(R.string.upd_home, upd), T.body.copy(fontSize = 22.sp), color = Accent)
+                        else if (oldEngine) Txt(stringResource(R.string.web_home), T.body.copy(fontSize = 22.sp), color = Danger)
+                        else if (app.store.isGuest) Txt(stringResource(R.string.prof_guest_hint), T.body.copy(fontSize = 22.sp), color = Accent)
                         else Txt(stringResource(R.string.home_prompt), T.body.copy(fontSize = 22.sp), color = TextSecondary)
                     }
                 } else {
