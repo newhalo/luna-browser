@@ -59,6 +59,7 @@ import com.luna.browser.data.FilterLists
 import com.luna.browser.data.K
 import com.luna.browser.data.ListStatus
 import com.luna.browser.data.Languages
+import com.luna.browser.data.TileSize
 import com.luna.browser.data.searchEnginesFor
 import com.luna.browser.ui.components.Aurora
 import com.luna.browser.ui.components.FocusSurface
@@ -110,10 +111,13 @@ fun SettingsScreen(app: AppState) {
     Box(Modifier.fillMaxSize()) {
         Aurora(animated = app.store.bool(K.ANIMATED_BG), dim = 0.55f)
         Row(Modifier.fillMaxSize().padding(horizontal = Dim.SafeH, vertical = Dim.SafeV)) {
-            Column(Modifier.width(280.dp).fillMaxHeight().verticalScroll(rememberScrollState()).padding(end = 12.dp, bottom = 12.dp)) {
+            // The title stays put; only the list under it may scroll (it used to scroll the title away).
+            Column(Modifier.width(280.dp).fillMaxHeight().padding(end = 12.dp)) {
                 Txt(stringResource(R.string.set_title), T.display.copy(fontSize = 36.sp), Modifier.padding(bottom = 10.dp))
-                categories.forEachIndexed { i, c ->
-                    CategoryItem(c, i == selected, if (i == 0) Modifier.focusRequester(firstFr) else Modifier) { selected = i }
+                Column(Modifier.weight(1f).verticalScroll(rememberScrollState())) {
+                    categories.forEachIndexed { i, c ->
+                        CategoryItem(c, i == selected, if (i == 0) Modifier.focusRequester(firstFr) else Modifier) { selected = i }
+                    }
                 }
             }
             Column(
@@ -201,7 +205,7 @@ private fun CategoryItem(c: Cat, selected: Boolean, modifier: Modifier, onFocus:
     // Moving focus onto a category shows its settings immediately — no extra click.
     FocusSurface(
         onClick = onFocus,
-        modifier = modifier.fillMaxWidth().padding(vertical = 3.dp).height(52.dp).onFocusChanged { if (it.isFocused) onFocus() },
+        modifier = modifier.fillMaxWidth().padding(vertical = 3.dp).height(46.dp).onFocusChanged { if (it.isFocused) onFocus() },
         container = if (selected) Accent.copy(alpha = 0.22f) else Glass,
         focusScale = 1.03f,
     ) {
@@ -249,6 +253,10 @@ private fun rows(category: Int, app: AppState): List<SRow> {
         1 -> listOf(
             Choice(K.LAUNCH, app.s(R.string.set_launch), app.s(R.string.set_launch_d), listOf("home" to app.s(R.string.launch_home), "resume" to app.s(R.string.launch_resume))),
             Toggle(K.SHOW_CONTINUE, app.s(R.string.set_continue), app.s(R.string.set_continue_d)),
+            Choice(
+                K.TILE_SIZE, app.s(R.string.set_tiles), app.s(R.string.set_tiles_d),
+                listOf(TileSize.LARGE to app.s(R.string.tile_large), TileSize.MEDIUM to app.s(R.string.tile_medium), TileSize.SMALL to app.s(R.string.tile_small)),
+            ),
         )
         2 -> listOfNotNull(
             Toggle(K.CURSOR_START, app.s(R.string.set_cursor_start), app.s(R.string.set_cursor_start_d)),

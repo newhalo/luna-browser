@@ -288,7 +288,10 @@ fun MediaCard(
     showTitle: Boolean = true,
 ) {
     var focused by remember { mutableStateOf(false) }
-    Column(Modifier.width(width)) {
+    // Dp.Unspecified: the card fills the cell it is placed in (History grid).
+    val fixed = width != Dp.Unspecified
+    val iconSize = if (fixed) width * 0.22f else 44.dp
+    Column(if (fixed) Modifier.width(width) else Modifier.fillMaxWidth()) {
         FocusSurface(
             onClick = onClick,
             modifier = modifier.fillMaxWidth().aspectRatio(16f / 9f)
@@ -313,7 +316,7 @@ fun MediaCard(
             } else {
                 Box(Modifier.fillMaxSize().background(Brush.linearGradient(listOf(Color(item.brand.first), Color(item.brand.second)))))
                 Column(Modifier.align(Alignment.Center), horizontalAlignment = Alignment.CenterHorizontally) {
-                    SiteIcon(item.title, item.icon, width * 0.22f)
+                    SiteIcon(item.title, item.icon, iconSize)
                     Spacer(Modifier.height(8.dp))
                     Txt(item.title, T.body.copy(fontWeight = FontWeight.Bold, color = Color.White), color = Color.White)
                 }

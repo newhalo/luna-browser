@@ -271,4 +271,11 @@
     <string name="toast_tab_limit">%d onglets maximum</string>
     <string name="toast_tab_closed">Onglet fermé</string>
     <string name="tabs_hint">OK ouvre · Bas pour les actions</string>
+    <string name="set_tiles">Taille des vignettes</string>
+    <string name="set_tiles_d">Des vignettes plus petites affichent plus de sites et de vidéos sur l’accueil et dans la grille de l’historique.</string>
+    <string name="tile_large">Grande</string>
+    <string name="tile_medium">Moyenne</string>
+    <string name="tile_small">Petite</string>
+    <string name="hist_view_grid">Grille</string>
+    <string name="hist_view_list">Liste</string>
 </resources>

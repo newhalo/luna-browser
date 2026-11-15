@@ -271,4 +271,11 @@
     <string name="toast_tab_limit">Máximo %d pestañas</string>
     <string name="toast_tab_closed">Pestaña cerrada</string>
     <string name="tabs_hint">OK abre · Abajo para acciones</string>
+    <string name="set_tiles">Tamaño de las miniaturas</string>
+    <string name="set_tiles_d">Con miniaturas más pequeñas caben más sitios y vídeos en Inicio y en la cuadrícula del Historial.</string>
+    <string name="tile_large">Grande</string>
+    <string name="tile_medium">Mediano</string>
+    <string name="tile_small">Pequeño</string>
+    <string name="hist_view_grid">Cuadrícula</string>
+    <string name="hist_view_list">Lista</string>
 </resources>

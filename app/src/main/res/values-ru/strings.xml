@@ -279,4 +279,11 @@
     <string name="toast_tab_limit">Не более %d вкладок</string>
     <string name="toast_tab_closed">Вкладка закрыта</string>
     <string name="tabs_hint">OK — открыть · Вниз — действия</string>
+    <string name="set_tiles">Размер миниатюр</string>
+    <string name="set_tiles_d">Чем меньше миниатюры, тем больше сайтов и видео помещается на главном экране и в сетке истории.</string>
+    <string name="tile_large">Крупные</string>
+    <string name="tile_medium">Средние</string>
+    <string name="tile_small">Мелкие</string>
+    <string name="hist_view_grid">Сетка</string>
+    <string name="hist_view_list">Список</string>
 </resources>

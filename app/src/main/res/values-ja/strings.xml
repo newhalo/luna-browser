@@ -267,4 +267,11 @@
     <string name="toast_tab_limit">タブは最大%d個です</string>
     <string name="toast_tab_closed">タブを閉じました</string>
     <string name="tabs_hint">OKで開く · 下で操作</string>
+    <string name="set_tiles">サムネイルのサイズ</string>
+    <string name="set_tiles_d">サムネイルを小さくすると、ホームや履歴のグリッドにより多く表示されます。</string>
+    <string name="tile_large">大</string>
+    <string name="tile_medium">中</string>
+    <string name="tile_small">小</string>
+    <string name="hist_view_grid">グリッド</string>
+    <string name="hist_view_list">リスト</string>
 </resources>

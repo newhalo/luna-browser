@@ -267,4 +267,11 @@
     <string name="toast_tab_limit">Tối đa %d tab</string>
     <string name="toast_tab_closed">Đã đóng tab</string>
     <string name="tabs_hint">OK để mở · Xuống để chọn thao tác</string>
+    <string name="set_tiles">Kích thước ảnh thu nhỏ</string>
+    <string name="set_tiles_d">Ảnh nhỏ hơn thì Trang chủ và lưới Lịch sử hiện được nhiều ô hơn.</string>
+    <string name="tile_large">Lớn</string>
+    <string name="tile_medium">Vừa</string>
+    <string name="tile_small">Nhỏ</string>
+    <string name="hist_view_grid">Lưới</string>
+    <string name="hist_view_list">Danh sách</string>
 </resources>

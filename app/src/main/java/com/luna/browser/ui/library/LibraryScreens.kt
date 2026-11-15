@@ -22,7 +22,15 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.History
+import androidx.compose.material.icons.rounded.ViewList
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.ui.unit.Dp
+import com.luna.browser.data.TileSize
+import com.luna.browser.ui.components.MediaCard
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
@@ -97,9 +105,16 @@ fun HistoryScreen(app: AppState) {
     LaunchedEffect(items.isEmpty()) { if (items.isEmpty()) runCatching { homeFr.requestFocus() } }
 
     LibraryFrame(app) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        val grid = app.store.str(K.HISTORY_VIEW) == "grid"
+        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Txt(stringResource(R.string.hist_title), T.display.copy(fontSize = 38.sp), Modifier.weight(1f))
             if (items.isNotEmpty()) {
+                // The button names the view it switches to.
+                TvButton(
+                    stringResource(if (grid) R.string.hist_view_list else R.string.hist_view_grid),
+                    { app.store.put(K.HISTORY_VIEW, if (grid) "list" else "grid") },
+                    icon = if (grid) Icons.Rounded.ViewList else Icons.Rounded.GridView, container = Glass,
+                )
                 TvButton(stringResource(if (confirm) R.string.hist_clear_confirm else R.string.hist_clear), {
                     if (confirm) { app.store.clearHistory(); confirm = false; app.toast(R.string.toast_history_cleared) } else confirm = true
                 }, icon = Icons.Rounded.Delete, container = Glass)
@@ -111,6 +126,20 @@ fun HistoryScreen(app: AppState) {
                 stringResource(R.string.hist_empty_m),
                 stringResource(R.string.go_home), { app.goHome() }, Modifier.weight(1f), homeFr,
             )
+        } else if (grid) {
+            // Same 16:9 cards as Home; the tile-size setting decides how many fit in a row.
+            val tile = 216.dp * TileSize.scale(app.store.str(K.TILE_SIZE))
+            LazyVerticalGrid(
+                GridCells.Adaptive(tile),
+                Modifier.weight(1f),
+                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 18.dp),
+                horizontalArrangement = Arrangement.spacedBy(18.dp),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
+                itemsIndexed(items, key = { _, it -> it.key }) { i, it ->
+                    MediaCard(it, Dp.Unspecified, {}, { app.openUrl(it.url) }, Modifier.rememberFocus(app, "history", "g$i"))
+                }
+            }
         } else {
             // Lazy: up to 300 entries, only the visible rows are composed.
             LazyColumn(

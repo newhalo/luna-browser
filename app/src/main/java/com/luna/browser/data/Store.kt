@@ -173,6 +173,10 @@ object K {
     /** Lets a phone on the same Wi-Fi send addresses and text to the TV. */
     const val PHONE = "phoneRemote"
     const val PHONE_PIN = "phonePin"
+    /** Size of the Home thumbnails: "large", "medium" or "small" (see [TileSize]). */
+    const val TILE_SIZE = "tileSize"
+    /** How the History page lists pages: "list" or "grid". */
+    const val HISTORY_VIEW = "historyView"
 }
 
 /** Languages the UI is translated into (code to its own name, never translated). Keep in sync with res/xml/locales_config.xml. */
@@ -220,6 +224,7 @@ class Store(ctx: Context) {
         K.REDUCE_MOTION to lowEnd.toString(), K.ANIMATED_BG to (!lowEnd).toString(),
         K.TIP_SHOWN to "false", K.LANGUAGE to "auto",
         K.PHONE to "true", K.PHONE_PIN to "",
+        K.TILE_SIZE to TileSize.LARGE, K.HISTORY_VIEW to "list",
     )
 
     val settings = mutableStateMapOf<String, String>().apply {

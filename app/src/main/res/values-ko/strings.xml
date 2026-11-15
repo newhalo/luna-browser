@@ -267,4 +267,11 @@
     <string name="toast_tab_limit">탭은 최대 %d개입니다</string>
     <string name="toast_tab_closed">탭을 닫았습니다</string>
     <string name="tabs_hint">OK로 열기 · 아래로 작업</string>
+    <string name="set_tiles">썸네일 크기</string>
+    <string name="set_tiles_d">썸네일이 작을수록 홈과 기록 그리드에 더 많은 항목이 표시됩니다.</string>
+    <string name="tile_large">크게</string>
+    <string name="tile_medium">보통</string>
+    <string name="tile_small">작게</string>
+    <string name="hist_view_grid">격자</string>
+    <string name="hist_view_list">목록</string>
 </resources>

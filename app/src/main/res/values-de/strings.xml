@@ -271,4 +271,11 @@
     <string name="toast_tab_limit">Höchstens %d Tabs</string>
     <string name="toast_tab_closed">Tab geschlossen</string>
     <string name="tabs_hint">OK öffnet · Unten für Aktionen</string>
+    <string name="set_tiles">Vorschaubildgröße</string>
+    <string name="set_tiles_d">Kleinere Vorschaubilder zeigen mehr Seiten und Videos auf der Startseite und im Verlaufsraster.</string>
+    <string name="tile_large">Groß</string>
+    <string name="tile_medium">Mittel</string>
+    <string name="tile_small">Klein</string>
+    <string name="hist_view_grid">Raster</string>
+    <string name="hist_view_list">Liste</string>
 </resources>

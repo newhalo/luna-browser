@@ -267,4 +267,11 @@
     <string name="toast_tab_limit">最多 %d 个标签页</string>
     <string name="toast_tab_closed">已关闭标签页</string>
     <string name="tabs_hint">确定键打开 · 向下选择操作</string>
+    <string name="set_tiles">缩略图大小</string>
+    <string name="set_tiles_d">缩略图越小，主页和历史记录网格中能显示的内容越多。</string>
+    <string name="tile_large">大</string>
+    <string name="tile_medium">中</string>
+    <string name="tile_small">小</string>
+    <string name="hist_view_grid">网格</string>
+    <string name="hist_view_list">列表</string>
 </resources>

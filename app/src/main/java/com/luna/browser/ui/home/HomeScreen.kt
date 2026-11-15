@@ -71,6 +71,7 @@ import com.luna.browser.R
 import com.luna.browser.Screen
 import com.luna.browser.data.K
 import com.luna.browser.data.MediaItem
+import com.luna.browser.data.TileSize
 import com.luna.browser.data.hostOf
 import com.luna.browser.ui.components.Backdrop
 import com.luna.browser.ui.components.CardRow
@@ -114,13 +115,14 @@ fun HomeScreen(app: AppState) {
     // Rows are rebuilt only when history / favourites / artwork actually change.
     val showContinue = store.bool(K.SHOW_CONTINUE)
     val lang = app.lang
-    val rows = remember(store.version, showContinue, lang) {
+    val tileScale = TileSize.scale(store.str(K.TILE_SIZE))
+    val rows = remember(store.version, showContinue, lang, tileScale) {
         buildList {
             val cont = if (showContinue) store.continueItems() else emptyList()
-            if (cont.isNotEmpty()) add(Triple(R.string.home_continue, cont, 272.dp))
-            add(Triple(R.string.home_your_sites, store.siteItems(lang), 216.dp))
+            if (cont.isNotEmpty()) add(Triple(R.string.home_continue, cont, 272.dp * tileScale))
+            add(Triple(R.string.home_your_sites, store.siteItems(lang), 216.dp * tileScale))
             val favs = store.favoriteItems()
-            if (favs.isNotEmpty()) add(Triple(R.string.home_favorites, favs, 216.dp))
+            if (favs.isNotEmpty()) add(Triple(R.string.home_favorites, favs, 216.dp * tileScale))
         }
     }
     val onCardFocus = remember { { item: MediaItem -> hero.value = item } }

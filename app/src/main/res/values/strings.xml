@@ -292,4 +292,11 @@
     <string name="toast_tab_limit">Up to %d tabs</string>
     <string name="toast_tab_closed">Tab closed</string>
     <string name="tabs_hint">OK opens · Down for actions</string>
+    <string name="set_tiles">Thumbnail size</string>
+    <string name="set_tiles_d">Smaller thumbnails show more sites and videos on Home and in the History grid.</string>
+    <string name="tile_large">Large</string>
+    <string name="tile_medium">Medium</string>
+    <string name="tile_small">Small</string>
+    <string name="hist_view_grid">Grid</string>
+    <string name="hist_view_list">List</string>
 </resources>

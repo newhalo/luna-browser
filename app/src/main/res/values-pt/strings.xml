@@ -271,4 +271,11 @@
     <string name="toast_tab_limit">No máximo %d abas</string>
     <string name="toast_tab_closed">Aba fechada</string>
     <string name="tabs_hint">OK abre · Baixo para ações</string>
+    <string name="set_tiles">Tamanho das miniaturas</string>
+    <string name="set_tiles_d">Miniaturas menores mostram mais sites e vídeos no Início e na grade do Histórico.</string>
+    <string name="tile_large">Grande</string>
+    <string name="tile_medium">Média</string>
+    <string name="tile_small">Pequena</string>
+    <string name="hist_view_grid">Grade</string>
+    <string name="hist_view_list">Lista</string>
 </resources>
