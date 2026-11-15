@@ -41,12 +41,19 @@ freezes the animated background.
 
 ## Themes
 
-Six palettes (`ui/theme/Themes.kt`): Luna, Dusk, Forest, Ocean, Night sky, Graphite. Colour tokens (`Bg`, `Surface*`, `Accent*`,
+Seven palettes (`ui/theme/Themes.kt`): Luna, Dusk, Forest, Ocean, Night sky, Sakura, Graphite. Colour tokens (`Bg`, `Surface*`, `Accent*`,
 `Scrim`) are getters over the active palette; text, danger and success colours are the same in every theme. Rules for a new
 theme: a dark background (luminance under 0.03), accent contrast of at least 7:1 on the background and 4.5:1 on the focused
 surface, surfaces getting lighter step by step (`ThemesTest` checks all of it), and a motion that is painted into the
-160×90 backdrop bitmap in `Aurora` — never as extra GPU layers. Keep particle counts small (a few dozen circles) and add the
-name to `strings.xml` in all ten languages.
+160×90 backdrop bitmap in `Aurora` — never as extra GPU layers. Particles (embers, fireflies, stars, petals) are the one
+exception: they are stamped at full resolution from small tinted sprites (a blocky dot is what a 160×90 bitmap gives), so keep
+their count small (a few dozen). Add the name to `strings.xml` in all ten languages.
+
+### Glass look
+
+Optional (`K.GLASS`, `LocalGlass`): `FocusSurface` swaps its opaque fill for a translucent diagonal sheen, a light rim that is
+brightest on top, and no shadow. The focus ring stays solid white. It is only paint — no blur and no offscreen layer, which
+this TV class cannot afford. Real backdrop blur is deliberately not used.
 
 ## Components
 

@@ -14,6 +14,7 @@ Measured with [`tools/perf`](../tools/perf) (`measure.ps1` + `frames.py`, which 
 | Home, moving between cards — frame interval (median) | ~105 ms (≈ 9 fps) | **17.9 ms (≈ 55 fps)** |
 | Home, idle — GPU | 32 ms* | **16.2 ms** (aurora at ~15 updates/s) |
 | Home, idle — GPU, any of the six themes (debug build, v0.7) | — | 12.9 ms in each; *Graphite* draws no frames while idle |
+| Home, idle — GPU, *Sakura* + Glass look (debug build) | — | 14.2 ms (particles stamped at full size, translucent cards) |
 | Web page, moving the pointer / scrolling | — | 16.7 ms (60 fps) |
 | Fullscreen video, held-arrow seek | one seek per key repeat | **one seek** after the key is released; GPU 2.5 ms |
 
