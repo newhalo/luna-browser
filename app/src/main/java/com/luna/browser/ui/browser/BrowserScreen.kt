@@ -285,6 +285,7 @@ private fun SitePanel(app: AppState, b: BrowserController) {
                 .padding(26.dp).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+            if (reporting) { ReportView(app, url) { reporting = false }; return@Column }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 SiteIcon(host, st.iconFor(host), 48.dp)
                 Column(Modifier.padding(start = 16.dp)) {
@@ -292,7 +293,6 @@ private fun SitePanel(app: AppState, b: BrowserController) {
                     Txt(stringResource(R.string.site_sub), T.caption)
                 }
             }
-            if (reporting) { ReportView(app, url) { reporting = false }; return@Column }
             Spacer(Modifier.height(4.dp))
             SettingRow(
                 stringResource(R.string.site_desktop), stringResource(R.string.site_desktop_d),
@@ -333,10 +333,10 @@ private fun ColumnScope.ReportView(app: AppState, url: String, onBack: () -> Uni
     Row(verticalAlignment = Alignment.CenterVertically) {
         if (link != null) {
             val qr = remember(link) { qrBitmap(link) }
-            Image(qr, null, Modifier.size(240.dp).clip(RoundedCornerShape(14.dp)).background(Color.White), filterQuality = FilterQuality.None)
+            Image(qr, null, Modifier.size(220.dp).clip(RoundedCornerShape(14.dp)).background(Color.White), filterQuality = FilterQuality.None)
         }
         Column(Modifier.padding(start = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-            Txt(stringResource(R.string.report_scan), T.body)
+            Txt(stringResource(R.string.report_scan), T.body, maxLines = 3)
             Txt(stringResource(R.string.report_includes, page), T.caption, maxLines = 3, color = TextSecondary)
             Txt(stringResource(R.string.report_privacy), T.caption, maxLines = 4, color = TextSecondary)
         }
