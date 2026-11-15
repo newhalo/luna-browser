@@ -291,6 +291,13 @@ private fun rows(category: Int, app: AppState): List<SRow> {
             listOf(
                 Choice(K.LANGUAGE, app.s(R.string.set_language), app.s(R.string.set_language_d), listOf("auto" to app.s(R.string.lang_auto)) + Languages),
                 Choice(K.ENGINE, app.s(R.string.set_engine), app.s(R.string.set_engine_d), engines.map { it to it }),
+                Choice(
+                    K.THEME, app.s(R.string.set_theme), app.s(R.string.set_theme_d),
+                    listOf(
+                        "luna" to app.s(R.string.theme_luna), "dusk" to app.s(R.string.theme_dusk), "forest" to app.s(R.string.theme_forest),
+                        "ocean" to app.s(R.string.theme_ocean), "night" to app.s(R.string.theme_night), "graphite" to app.s(R.string.theme_graphite),
+                    ),
+                ),
                 Toggle(K.ANIMATED_BG, app.s(R.string.set_anim_bg), app.s(R.string.set_anim_bg_d)),
                 Toggle(K.REDUCE_MOTION, app.s(R.string.set_reduce), app.s(R.string.set_reduce_d)),
             )

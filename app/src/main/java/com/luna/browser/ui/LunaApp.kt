@@ -61,7 +61,7 @@ fun LunaApp(app: AppState) {
         LocalConfiguration provides lctx.resources.configuration,
         LocalDensity provides Density(density, base.fontScale),
     ) {
-    LunaTheme(reduceMotion = app.store.bool(K.REDUCE_MOTION)) {
+    LunaTheme(themeId = app.store.str(K.THEME), reduceMotion = app.store.bool(K.REDUCE_MOTION)) {
         // No in-app splash: Android 12+ already shows the system splash while the process starts,
         // and a second timed splash only made start-up feel slower. Home fades in instead.
         var shown by remember { mutableStateOf(false) }

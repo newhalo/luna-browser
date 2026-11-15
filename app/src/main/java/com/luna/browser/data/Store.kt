@@ -167,6 +167,7 @@ object K {
     const val THIRD_PARTY = "thirdParty"
     const val REDUCE_MOTION = "reduceMotion"
     const val ANIMATED_BG = "animatedBg"
+    const val THEME = "theme"
     const val TIP_SHOWN = "tipShown"
     /** "auto" follows the system language; otherwise a language code from [Languages]. */
     const val LANGUAGE = "language"
@@ -234,7 +235,7 @@ class Store(ctx: Context) {
         K.ADBLOCK to "true", K.BLOCK_POPUPS to "true",
         K.SEEK_STEP to "10", K.THIRD_PARTY to "true",
         // Entry-level TVs start with the light settings; everything can be switched back on in Settings.
-        K.REDUCE_MOTION to lowEnd.toString(), K.ANIMATED_BG to (!lowEnd).toString(),
+        K.THEME to "luna", K.REDUCE_MOTION to lowEnd.toString(), K.ANIMATED_BG to (!lowEnd).toString(),
         K.TIP_SHOWN to "false", K.LANGUAGE to "auto",
         K.PHONE to "true", K.PHONE_PIN to "",
         K.TILE_SIZE to TileSize.LARGE, K.HISTORY_VIEW to "list",
