@@ -38,7 +38,7 @@ jobs:
         run: ./gradlew :app:testDebugUnitTest :app:assembleRelease :app:bundleRelease --stacktrace
       - name: Name the APK
         run: cp app/build/outputs/apk/release/app-release.apk "luna-browser-${GITHUB_REF_NAME}.apk"
-      - name: Keep the Play bundle (not published: Play re-signs it, see docs/PUBLISHING.md)
+      - name: Keep the Play bundle (unpublished, Play re-signs it - see docs/PUBLISHING.md)
         uses: actions/upload-artifact@v7
         with:
           name: luna-browser-bundle
