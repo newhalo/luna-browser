@@ -72,8 +72,8 @@ class ReaderModeTest {
     @Test fun listItemsAreGroupedAndClosed() {
         val a = ReaderMode.parse(json(p(longText), """{"k":"li","t":"a"}""", """{"k":"li","t":"b"}""", p("after"), """{"k":"li","t":"c"}"""))!!
         val html = ReaderMode.html(a, "1 min")
-        assertTrue(html.contains("<ul><li>a</li><li>b</li></ul>"))
-        assertTrue(html.contains("<ul><li>c</li></ul>"))
+        assertTrue(html.contains("<ul><li data-i=\"1\">a</li><li data-i=\"2\">b</li></ul>"))
+        assertTrue(html.contains("<ul><li data-i=\"4\">c</li></ul>"))
         assertEquals(html.split("<ul>").size, html.split("</ul>").size)
     }
 
