@@ -110,7 +110,7 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 Scan the QR code on the TV (*Settings → Phone remote*): the page opens already paired. **Remote** is the D-pad and keys
 (switch it to **Touchpad** to steer the pointer by dragging), **Type** sends addresses, searches and text.
 
-![The phone page: Remote tab with a D-pad, OK, Back / Home / Menu, media keys and volume; Type tab with the text box and actions](docs/screenshots/11-phone-remote.jpg)
+![The phone page, fitted to the screen without scrolling: Remote tab (D-pad or touchpad, Back / Home / Menu, media keys, volume), Type tab (text box, actions, share bookmarklet) and the Saved favourites tab](docs/screenshots/11-phone-remote.jpg)
 
 ## Install
 
