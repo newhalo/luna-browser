@@ -362,9 +362,14 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     private fun exitReader() {
         reader = false
         readerPending = false
-        val origin = readerOrigin
-        if (origin.startsWith("http")) { error = null; webView.loadUrl(origin) }
+        error = null
+        // The reading page is one extra entry in the page history: step back over it (the page is shown again as it was).
+        if (webView.canGoBack()) webView.goBack()
+        else if (readerOrigin.startsWith("http")) webView.loadUrl(readerOrigin)
     }
+
+    /** The reading page is a data: document; the address shown, saved and filtered stays that of the article. */
+    private fun setUrl(u: String) { if (!u.startsWith("data:")) { url = u; filterPageUrl = u } }
 
     /** Up / Down scroll by a third of the screen (hold to keep going); Up at the very top opens the toolbar. */
     private fun readerKey(e: KeyEvent): Boolean {
@@ -463,7 +468,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             error = null
             loading = true
             progress = 0.05f
-            pageUrl?.let { url = it; filterPageUrl = it }
+            pageUrl?.let { setUrl(it) }
             injectCosmetics(view)
             syncNav()
             scheduleIdleHide()
@@ -472,20 +477,20 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         override fun onPageFinished(view: WebView, pageUrl: String?) {
             loading = false
             progress = 1f
-            pageUrl?.let { url = it }
+            pageUrl?.let { if (!it.startsWith("data:")) url = it }
             title = view.title ?: ""
             syncNav()
-            if (error == null && pageUrl != null) onVisited(pageUrl, title)
+            if (error == null && pageUrl != null && !pageUrl.startsWith("data:")) onVisited(pageUrl, title)
             injectCosmetics(view)
             if (app.store.bool(K.BLOCK_POPUPS)) view.evaluateJavascript(PopupGuard.OVERLAY_JS, null)
             if (!docStartScript) view.evaluateJavascript(PopupGuard.VIDEO_BRIDGE_JS, null)
         }
 
         override fun doUpdateVisitedHistory(view: WebView, pageUrl: String?, isReload: Boolean) {
-            pageUrl?.let { url = it; filterPageUrl = it }
+            pageUrl?.let { setUrl(it) }
             syncNav()
             // Single-page sites (YouTube) change videos without a new page load.
-            if (!isReload && !loading && error == null && pageUrl != null) onVisited(pageUrl, "")
+            if (!isReload && !loading && error == null && pageUrl != null && !pageUrl.startsWith("data:")) onVisited(pageUrl, "")
         }
 
         override fun onReceivedError(view: WebView, request: WebResourceRequest, err: WebResourceError) {
