@@ -299,4 +299,17 @@
     <string name="tile_small">Small</string>
     <string name="hist_view_grid">Grid</string>
     <string name="hist_view_list">List</string>
+    <string name="ph_share_ask">Open this page on your TV?</string>
+    <string name="ph_share_no">Not now</string>
+    <string name="ph_bm_title">Share from your phone\'s browser</string>
+    <string name="ph_bm_text">Copy this bookmarklet, save it as a bookmark in your phone\'s browser, then open it on any page to send that page here.</string>
+    <string name="ph_bm_copy">Copy bookmarklet</string>
+    <string name="ph_copied">Copied</string>
+    <string name="site_report">Report a problem</string>
+    <string name="site_report_d">Ads, pop-ups or a broken page on this site</string>
+    <string name="report_title">Report this page</string>
+    <string name="report_scan">Scan with your phone to open a pre-filled report on GitHub</string>
+    <string name="report_includes">Included: %s</string>
+    <string name="report_privacy">Nothing is sent from the TV. The address is cut at the “?”, so no search words or tokens are included. You can edit everything before you submit.</string>
+    <string name="report_back">Back</string>
 </resources>

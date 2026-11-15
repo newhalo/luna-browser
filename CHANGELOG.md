@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- **Report a problem** (Site panel): a QR code opens a GitHub report pre-filled with the page address (without query or fragment), Luna and WebView versions and the filter-list date. The TV sends nothing itself.
+- **Share from the phone**: a bookmarklet on the phone page brings a page address from the phone browser to the TV, opened after one confirming tap.
+
 ## [0.4.1] - 2026-11-15
 
 ### Added

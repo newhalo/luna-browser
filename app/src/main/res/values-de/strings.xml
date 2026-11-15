@@ -278,4 +278,17 @@
     <string name="tile_small">Klein</string>
     <string name="hist_view_grid">Raster</string>
     <string name="hist_view_list">Liste</string>
+    <string name="ph_share_ask">Diese Seite auf dem Fernseher öffnen?</string>
+    <string name="ph_share_no">Jetzt nicht</string>
+    <string name="ph_bm_title">Vom Browser des Handys teilen</string>
+    <string name="ph_bm_text">Kopiere dieses Bookmarklet, speichere es als Lesezeichen im Handy-Browser und öffne es auf einer beliebigen Seite, um sie hierher zu senden.</string>
+    <string name="ph_bm_copy">Bookmarklet kopieren</string>
+    <string name="ph_copied">Kopiert</string>
+    <string name="site_report">Problem melden</string>
+    <string name="site_report_d">Werbung, Pop-ups oder eine defekte Seite auf dieser Website</string>
+    <string name="report_title">Diese Seite melden</string>
+    <string name="report_scan">Mit dem Handy scannen, um eine vorausgefüllte Meldung auf GitHub zu öffnen</string>
+    <string name="report_includes">Enthalten: %s</string>
+    <string name="report_privacy">Der Fernseher sendet nichts. Die Adresse wird am „?“ abgeschnitten, es sind also keine Suchbegriffe oder Tokens enthalten. Du kannst alles vor dem Absenden ändern.</string>
+    <string name="report_back">Zurück</string>
 </resources>

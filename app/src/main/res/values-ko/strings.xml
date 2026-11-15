@@ -274,4 +274,17 @@
     <string name="tile_small">작게</string>
     <string name="hist_view_grid">격자</string>
     <string name="hist_view_list">목록</string>
+    <string name="ph_share_ask">이 페이지를 TV에서 열까요?</string>
+    <string name="ph_share_no">나중에</string>
+    <string name="ph_bm_title">휴대폰 브라우저에서 공유</string>
+    <string name="ph_bm_text">이 북마클릿을 복사해 휴대폰 브라우저에 북마크로 저장한 뒤, 아무 페이지에서나 열면 그 페이지를 여기로 보냅니다.</string>
+    <string name="ph_bm_copy">북마클릿 복사</string>
+    <string name="ph_copied">복사됨</string>
+    <string name="site_report">문제 신고</string>
+    <string name="site_report_d">이 사이트의 광고, 팝업 또는 깨진 페이지</string>
+    <string name="report_title">이 페이지 신고</string>
+    <string name="report_scan">휴대폰으로 스캔하면 GitHub에서 미리 채워진 신고서가 열립니다</string>
+    <string name="report_includes">포함 내용: %s</string>
+    <string name="report_privacy">TV는 아무것도 전송하지 않습니다. 주소는 “?”에서 잘려 검색어나 토큰이 포함되지 않습니다. 제출하기 전에 모두 수정할 수 있습니다.</string>
+    <string name="report_back">뒤로</string>
 </resources>

@@ -274,4 +274,17 @@
     <string name="tile_small">小</string>
     <string name="hist_view_grid">网格</string>
     <string name="hist_view_list">列表</string>
+    <string name="ph_share_ask">在电视上打开此页面？</string>
+    <string name="ph_share_no">暂不</string>
+    <string name="ph_bm_title">从手机浏览器分享</string>
+    <string name="ph_bm_text">复制此书签脚本，在手机浏览器中保存为书签，然后在任意页面打开它，即可把该页面发送到这里。</string>
+    <string name="ph_bm_copy">复制书签脚本</string>
+    <string name="ph_copied">已复制</string>
+    <string name="site_report">报告问题</string>
+    <string name="site_report_d">此网站的广告、弹窗或页面异常</string>
+    <string name="report_title">报告此页面</string>
+    <string name="report_scan">用手机扫描，在 GitHub 上打开已填好的报告</string>
+    <string name="report_includes">包含：%s</string>
+    <string name="report_privacy">电视不会发送任何内容。地址会在“?”处截断，因此不含搜索词或令牌。提交前可以修改所有内容。</string>
+    <string name="report_back">返回</string>
 </resources>

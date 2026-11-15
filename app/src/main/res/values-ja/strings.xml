@@ -274,4 +274,17 @@
     <string name="tile_small">小</string>
     <string name="hist_view_grid">グリッド</string>
     <string name="hist_view_list">リスト</string>
+    <string name="ph_share_ask">このページをテレビで開きますか？</string>
+    <string name="ph_share_no">今はしない</string>
+    <string name="ph_bm_title">スマホのブラウザから共有</string>
+    <string name="ph_bm_text">このブックマークレットをコピーし、スマホのブラウザにブックマークとして保存して、任意のページで開くとそのページをここに送れます。</string>
+    <string name="ph_bm_copy">ブックマークレットをコピー</string>
+    <string name="ph_copied">コピーしました</string>
+    <string name="site_report">問題を報告</string>
+    <string name="site_report_d">このサイトの広告、ポップアップ、表示の不具合</string>
+    <string name="report_title">このページを報告</string>
+    <string name="report_scan">スマホでスキャンすると、入力済みの報告がGitHubで開きます</string>
+    <string name="report_includes">含まれる内容：%s</string>
+    <string name="report_privacy">テレビからは何も送信されません。アドレスは「?」で切り取られるため、検索語やトークンは含まれません。送信前にすべて編集できます。</string>
+    <string name="report_back">戻る</string>
 </resources>

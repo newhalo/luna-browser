@@ -98,6 +98,11 @@ import com.luna.browser.ui.components.Txt
 import com.luna.browser.ui.theme.Accent
 import com.luna.browser.ui.theme.Bg
 import com.luna.browser.ui.theme.Danger
+import com.luna.browser.ui.components.qrBitmap
+import com.luna.browser.data.ReportLink
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.ui.graphics.FilterQuality
 import com.luna.browser.ui.theme.Outline
 import com.luna.browser.ui.theme.Surface
 import com.luna.browser.ui.theme.T
@@ -271,6 +276,7 @@ private fun SitePanel(app: AppState, b: BrowserController) {
     val links = stringResource(R.string.site_links)
     fun chip(text: String) = "‹  $text  ›"
     fun set(next: SiteOverride) = st.setOverride(url, next)
+    var reporting by remember { mutableStateOf(false) }
 
     Box(Modifier.fillMaxSize().background(Scrim), contentAlignment = Alignment.Center) {
         Column(
@@ -286,6 +292,7 @@ private fun SitePanel(app: AppState, b: BrowserController) {
                     Txt(stringResource(R.string.site_sub), T.caption)
                 }
             }
+            if (reporting) { ReportView(app, url) { reporting = false }; return@Column }
             Spacer(Modifier.height(4.dp))
             SettingRow(
                 stringResource(R.string.site_desktop), stringResource(R.string.site_desktop_d),
@@ -309,9 +316,32 @@ private fun SitePanel(app: AppState, b: BrowserController) {
                     stringResource(R.string.site_reset), stringResource(R.string.site_reset_d), "", false, danger = true,
                 ) { set(SiteOverride()); b.siteChangeNeedsReload(); b.siteSettingsChanged(reload = false); app.toast(R.string.toast_site_reset) }
             }
+            SettingRow(stringResource(R.string.site_report), stringResource(R.string.site_report_d), "", false) { reporting = true }
             Txt(stringResource(R.string.site_hint), T.caption, Modifier.padding(top = 4.dp, start = 6.dp), color = TextSecondary)
         }
     }
+}
+
+/** "Report a problem": a QR code that opens a pre-filled GitHub report on the viewer's phone. Nothing is sent by the TV. */
+@Composable
+private fun ColumnScope.ReportView(app: AppState, url: String, onBack: () -> Unit) {
+    val link = remember(url) { app.reportLink(url) }
+    val page = remember(url) { ReportLink.cleanPage(url) ?: "" }
+    val back = remember { FocusRequester() }
+    LaunchedEffect(Unit) { runCatching { back.requestFocus() } }
+    Txt(stringResource(R.string.report_title), T.title)
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        if (link != null) {
+            val qr = remember(link) { qrBitmap(link) }
+            Image(qr, null, Modifier.size(240.dp).clip(RoundedCornerShape(14.dp)).background(Color.White), filterQuality = FilterQuality.None)
+        }
+        Column(Modifier.padding(start = 24.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Txt(stringResource(R.string.report_scan), T.body)
+            Txt(stringResource(R.string.report_includes, page), T.caption, maxLines = 3, color = TextSecondary)
+            Txt(stringResource(R.string.report_privacy), T.caption, maxLines = 4, color = TextSecondary)
+        }
+    }
+    TvButton(stringResource(R.string.report_back), onBack, Modifier.focusRequester(back), icon = Icons.AutoMirrored.Rounded.ArrowBack)
 }
 
 // ---------------------------------------------------------------- Errors

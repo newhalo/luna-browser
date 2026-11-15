@@ -343,6 +343,7 @@ textarea{min-height:128px;resize:none}textarea:focus,input:focus{outline:2px sol
 .btn:active{transform:scale(.985);filter:brightness(1.1)}
 .pairc{text-align:center;padding:26px 18px}.pairc p{color:var(--mute);margin:14px 0 16px}
 .pairc input{text-align:center;font-size:28px;letter-spacing:8px;padding:14px 8px}
+.mute{color:var(--mute);font-size:14px;line-height:1.5;margin:8px 0 4px}.surl{word-break:break-all;background:#0e1120;border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:15px;margin:6px 0 4px;-webkit-user-select:text;user-select:text}
 .toast{position:fixed;left:50%;top:max(14px,env(safe-area-inset-top));transform:translate(-50%,-90px);background:#1f2540;border:1px solid var(--line);color:var(--ink);padding:11px 18px;border-radius:999px;font-weight:600;max-width:90vw;text-align:center;transition:transform .22s;z-index:9;box-shadow:0 8px 24px rgba(0,0,0,.5)}
 .toast.show{transform:translate(-50%,0)}.toast.err{background:#47202a;border-color:#7a3340}
 @media (max-height:760px){.dpad{width:min(62vw,250px);margin-bottom:14px}.tpad{height:min(46vw,185px)}.rb{width:56px;height:56px}.rb.big{width:66px;height:66px}.row{margin-bottom:12px}.seg{margin-bottom:10px}.clickbar{height:46px;margin-bottom:12px}.vol .rb{height:44px}header{padding-top:0}}
@@ -376,6 +377,7 @@ textarea{min-height:128px;resize:none}textarea:focus,input:focus{outline:2px sol
 <main>
 <section id="pair" class="card pairc" hidden><p>{{ph_pin}}</p><input id="pin" inputmode="numeric" maxlength="8" autocomplete="off" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;"><button id="go" class="btn pri">{{ph_pair}}</button></section>
 <section id="app" hidden>
+<div id="share" class="card" hidden><p class="mute">{{ph_share_ask}}</p><div id="shareUrl" class="surl"></div><button id="shareGo" class="btn pri"><svg class="ic"><use href="#i-tv"/></svg>{{ph_open}}</button><button id="shareNo" class="btn sec">{{ph_share_no}}</button></div>
 <div id="remote">
 <div class="seg"><button id="segD" class="on"><svg class="ic"><use href="#i-dpad"/></svg>{{ph_pad_dpad}}</button><button id="segT"><svg class="ic"><use href="#i-touch"/></svg>{{ph_pad_touch}}</button></div>
 <div id="dpadwrap">
@@ -413,6 +415,7 @@ textarea{min-height:128px;resize:none}textarea:focus,input:focus{outline:2px sol
 <button id="search" class="btn sec"><svg class="ic"><use href="#i-search"/></svg>{{ph_search}}</button>
 <button id="type" class="btn sec"><svg class="ic"><use href="#i-type"/></svg>{{ph_type}}</button>
 <button id="enter" class="btn sec"><svg class="ic"><use href="#i-enter"/></svg>{{ph_enter}}</button></div>
+<div class="card" style="margin-top:12px"><b>{{ph_bm_title}}</b><p class="mute">{{ph_bm_text}}</p><button id="bmcopy" class="btn sec"><svg class="ic"><use href="#i-search"/></svg>{{ph_bm_copy}}</button></div>
 </div>
 <nav class="tabbar"><button id="tabRemote" class="on"><svg class="ic"><use href="#i-remote"/></svg>{{ph_tab_remote}}</button><button id="tabType"><svg class="ic"><use href="#i-kbd"/></svg>{{ph_tab_type}}</button></nav>
 </section>
@@ -420,19 +423,23 @@ textarea{min-height:128px;resize:none}textarea:focus,input:focus{outline:2px sol
 <div id="toast" class="toast"></div>
 <script>
 var L=__LABELS__,pin=null;try{pin=localStorage.getItem('luna.pin')}catch(e){}
+var share=null,om=(location.hash||'').match(/open=([^&]+)/);if(om){try{var su=decodeURIComponent(om[1]);if(/^https?:\/\//i.test(su))share=su.slice(0,2000)}catch(e){}try{history.replaceState(null,'',location.pathname)}catch(e){}}
 var qr=(location.hash||'').match(/pin=(\d{1,8})/);if(qr){pin=qr[1];try{history.replaceState(null,'',location.pathname)}catch(e){}}
 function $(i){return document.getElementById(i)}
 function say(t,e){var x=$('toast');x.textContent=t||'';x.className='toast'+(t?' show':'')+(e?' err':'');clearTimeout(say.t);if(t)say.t=setTimeout(function(){x.className='toast'},2400)}
 function live(ok){$('dot').className='dot'+(ok?' live':'')}
 function body(act,text){return 'pin='+encodeURIComponent(pin||'')+'&act='+act+'&text='+encodeURIComponent(text||'')}
 function post(act,text){return fetch('/api',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body(act,text)}).then(function(r){return r.json().then(function(j){j.status=r.status;return j})})}
-function show(paired){$('pair').hidden=paired;$('app').hidden=!paired;if(!paired)live(false)}
+function show(paired){$('pair').hidden=paired;$('app').hidden=!paired;if(!paired)live(false);$('shareUrl').textContent=share||'';$('share').hidden=!(paired&&share)}
 function result(j){if(j.ok){live(true);say(L.ph_sent);return}
 if(j.error==='pin'){try{localStorage.removeItem('luna.pin')}catch(e){}pin=null;show(false);say(L.ph_bad_pin,1)}
 else if(j.error==='locked')say(L.ph_locked,1);else if(j.error==='nofield')say(L.ph_nofield,1);else say('?',1)}
 function send(act){var t=$('text').value;if(!t.trim())return;post(act,t).then(result).catch(function(){live(false);say('?',1)})}
 function tab(t){$('remote').hidden=t!=='remote';$('typing').hidden=t!=='type';$('tabRemote').className=t==='remote'?'on':'';$('tabType').className=t==='type'?'on':''}
 $('tabRemote').onclick=function(){tab('remote')};$('tabType').onclick=function(){tab('type')};
+$('shareGo').onclick=function(){var u=share;share=null;$('share').hidden=true;if(u)post('open',u).then(result).catch(function(){live(false);say('?',1)})};
+$('shareNo').onclick=function(){share=null;$('share').hidden=true};
+$('bmcopy').onclick=function(){var c="javascript:location.href='"+location.origin+"/#open='+encodeURIComponent(location.href)";var t=document.createElement('textarea');t.value=c;t.style.cssText='position:fixed;opacity:0';document.body.appendChild(t);t.select();var ok=false;try{ok=document.execCommand('copy')}catch(e){}document.body.removeChild(t);say(ok?L.ph_copied:c,!ok)};
 $('go').onclick=function(){pin=$('pin').value.trim();post('ping','').then(function(j){if(j.ok){try{localStorage.setItem('luna.pin',pin)}catch(e){}show(true);live(true)}else result(j)}).catch(function(){say('?',1)})};
 $('open').onclick=function(){send('open')};$('search').onclick=function(){send('search')};$('type').onclick=function(){send('type')};$('enter').onclick=function(){send('enter')};
 function key(act,k){return post(act,k).then(function(j){live(!!j.ok||j.error==='nofield');if(!j.ok&&(j.error==='pin'||j.error==='locked'))result(j)}).catch(function(){live(false)})}

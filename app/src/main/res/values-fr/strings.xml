@@ -278,4 +278,17 @@
     <string name="tile_small">Petite</string>
     <string name="hist_view_grid">Grille</string>
     <string name="hist_view_list">Liste</string>
+    <string name="ph_share_ask">Ouvrir cette page sur la TV ?</string>
+    <string name="ph_share_no">Plus tard</string>
+    <string name="ph_bm_title">Partager depuis le navigateur du téléphone</string>
+    <string name="ph_bm_text">Copiez ce bookmarklet, enregistrez-le comme favori dans le navigateur du téléphone, puis ouvrez-le sur n’importe quelle page pour l’envoyer ici.</string>
+    <string name="ph_bm_copy">Copier le bookmarklet</string>
+    <string name="ph_copied">Copié</string>
+    <string name="site_report">Signaler un problème</string>
+    <string name="site_report_d">Publicités, pop-ups ou page cassée sur ce site</string>
+    <string name="report_title">Signaler cette page</string>
+    <string name="report_scan">Scannez avec votre téléphone pour ouvrir un rapport prérempli sur GitHub</string>
+    <string name="report_includes">Inclus : %s</string>
+    <string name="report_privacy">La TV n’envoie rien. L’adresse est coupée au « ? », sans mots recherchés ni jetons. Vous pouvez tout modifier avant d’envoyer.</string>
+    <string name="report_back">Retour</string>
 </resources>

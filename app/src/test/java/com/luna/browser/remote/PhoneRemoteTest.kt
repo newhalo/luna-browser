@@ -15,6 +15,7 @@ class PhoneRemoteTest {
     private val PAGE_KEYS = listOf(
         "ph_title", "ph_pin", "ph_pair", "ph_hint", "ph_open", "ph_search", "ph_type", "ph_enter",
         "ph_sent", "ph_bad_pin", "ph_locked", "ph_nofield", "ph_tab_remote", "ph_tab_type", "ph_pad_dpad", "ph_pad_touch", "ph_pad_hint",
+        "ph_share_ask", "ph_share_no", "ph_bm_title", "ph_bm_text", "ph_bm_copy", "ph_copied",
     )
     private val calls = CopyOnWriteArrayList<Pair<RemoteAction, String>>()
     private lateinit var remote: PhoneRemote
@@ -54,6 +55,15 @@ class PhoneRemoteTest {
         assertTrue(html.contains("Luna &lt;remote&gt;"))
         assertTrue(html.contains("Address &quot;or&quot; search"))
         assertTrue(!html.contains("{{"))
+    }
+
+    @Test fun pageOffersSharedLinksOnlyAfterAConfirmingTap() {
+        val html = get("/").second
+        // A link arrives in the #fragment, is shown and sent only when the viewer taps; it never auto-sends.
+        assertTrue(html.contains("id=\"shareGo\""))
+        assertTrue(html.contains("open=([^&]+)"))
+        assertTrue(html.contains("/^https?:"))
+        assertTrue(html.contains("location.origin"))
     }
 
     @Test fun unknownPathsAre404() = assertEquals(404, get("/admin").first)

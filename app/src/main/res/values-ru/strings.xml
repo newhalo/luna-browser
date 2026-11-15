@@ -286,4 +286,17 @@
     <string name="tile_small">Мелкие</string>
     <string name="hist_view_grid">Сетка</string>
     <string name="hist_view_list">Список</string>
+    <string name="ph_share_ask">Открыть эту страницу на ТВ?</string>
+    <string name="ph_share_no">Не сейчас</string>
+    <string name="ph_bm_title">Поделиться из браузера телефона</string>
+    <string name="ph_bm_text">Скопируйте этот букмарклет, сохраните его как закладку в браузере телефона и откройте на любой странице, чтобы отправить её сюда.</string>
+    <string name="ph_bm_copy">Копировать букмарклет</string>
+    <string name="ph_copied">Скопировано</string>
+    <string name="site_report">Сообщить о проблеме</string>
+    <string name="site_report_d">Реклама, всплывающие окна или сломанная страница на этом сайте</string>
+    <string name="report_title">Сообщить об этой странице</string>
+    <string name="report_scan">Отсканируйте телефоном, чтобы открыть готовый отчёт на GitHub</string>
+    <string name="report_includes">Включено: %s</string>
+    <string name="report_privacy">ТВ ничего не отправляет. Адрес обрезан по «?», поэтому поисковые запросы и токены не попадают в отчёт. Всё можно изменить перед отправкой.</string>
+    <string name="report_back">Назад</string>
 </resources>

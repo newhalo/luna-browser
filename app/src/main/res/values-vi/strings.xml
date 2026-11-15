@@ -274,4 +274,17 @@
     <string name="tile_small">Nhỏ</string>
     <string name="hist_view_grid">Lưới</string>
     <string name="hist_view_list">Danh sách</string>
+    <string name="ph_share_ask">Mở trang này trên TV?</string>
+    <string name="ph_share_no">Để sau</string>
+    <string name="ph_bm_title">Chia sẻ từ trình duyệt trên điện thoại</string>
+    <string name="ph_bm_text">Sao chép bookmarklet này, lưu thành dấu trang trong trình duyệt điện thoại, rồi mở nó ở bất kỳ trang nào để gửi trang đó sang đây.</string>
+    <string name="ph_bm_copy">Sao chép bookmarklet</string>
+    <string name="ph_copied">Đã sao chép</string>
+    <string name="site_report">Báo cáo sự cố</string>
+    <string name="site_report_d">Quảng cáo, cửa sổ bật lên hoặc trang bị lỗi ở trang này</string>
+    <string name="report_title">Báo cáo trang này</string>
+    <string name="report_scan">Quét bằng điện thoại để mở sẵn bản báo cáo trên GitHub</string>
+    <string name="report_includes">Nội dung: %s</string>
+    <string name="report_privacy">TV không gửi gì đi cả. Địa chỉ bị cắt tại dấu “?” nên không kèm từ khóa tìm kiếm hay mã truy cập. Bạn có thể sửa mọi thứ trước khi gửi.</string>
+    <string name="report_back">Quay lại</string>
 </resources>

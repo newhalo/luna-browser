@@ -80,11 +80,21 @@ class AppState(val activity: Activity) {
                 "ph_type" to s(R.string.ph_type), "ph_enter" to s(R.string.ph_enter), "ph_sent" to s(R.string.ph_sent),
                 "ph_bad_pin" to s(R.string.ph_bad_pin), "ph_locked" to s(R.string.ph_locked), "ph_nofield" to s(R.string.ph_nofield),
                 "ph_tab_remote" to s(R.string.ph_tab_remote), "ph_tab_type" to s(R.string.ph_tab_type),
+                "ph_share_ask" to s(R.string.ph_share_ask), "ph_share_no" to s(R.string.ph_share_no), "ph_bm_title" to s(R.string.ph_bm_title),
+                "ph_bm_text" to s(R.string.ph_bm_text), "ph_bm_copy" to s(R.string.ph_bm_copy), "ph_copied" to s(R.string.ph_copied),
                 "ph_pad_dpad" to s(R.string.ph_pad_dpad), "ph_pad_touch" to s(R.string.ph_pad_touch), "ph_pad_hint" to s(R.string.ph_pad_hint),
             )
         },
         perform = { action, text, done -> main.post { performRemote(action, text, done) } },
     )
+
+    /** The pre-filled GitHub report address for the page at [url] (shown as a QR code), or null for non-web pages. */
+    fun reportLink(url: String): String? {
+        val version = runCatching { activity.packageManager.getPackageInfo(activity.packageName, 0).versionName }.getOrNull() ?: "?"
+        val web = runCatching { android.webkit.WebView.getCurrentWebViewPackage()?.versionName }.getOrNull()
+        val lists = ads.lastUpdated.takeIf { it > 0 }?.let { java.text.SimpleDateFormat("yyyy-MM-dd", Locale.US).format(java.util.Date(it)) }
+        return com.luna.browser.data.ReportLink.build(url, com.luna.browser.data.ReportLink.environment(version, web, lists, "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}"))
+    }
 
     private var addressCache: Pair<Long, String?> = 0L to null
 
