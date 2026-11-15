@@ -20,6 +20,8 @@ import com.luna.browser.browser.TabPolicy
 import com.luna.browser.browser.BrowserController
 import com.luna.browser.data.AdBlocker
 import com.luna.browser.data.K
+import com.luna.browser.data.Site
+import com.luna.browser.data.hostOf
 import com.luna.browser.data.Store
 import com.luna.browser.remote.PadGestures
 import com.luna.browser.remote.PhoneRemote
