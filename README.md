@@ -81,6 +81,8 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 | **Tabs:** the same 16:9 cards as Home; **Down** for close / new tab | **Site** button: desktop mode, text size, ad blocking and pointer mode for one site only |
 | ![Home with small thumbnails](docs/screenshots/14-home-small-tiles.jpg) | ![History as a grid](docs/screenshots/15-history-grid.jpg) |
 | **Thumbnail size** (Settings → Home): small tiles fit more on Home | **History** as a list or a grid, one button to switch |
+| ![Report a problem](docs/screenshots/17-report-problem.jpg) | |
+| **Report a problem** (Site panel): scan the QR code with your phone to open a pre-filled GitHub report | |
 
 ### Your phone as a remote
 
