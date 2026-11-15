@@ -374,4 +374,12 @@
     <string name="set_reader_size">リーダーの文字サイズ</string>
     <string name="set_reader_size_d">リーダーモードの文字サイズ。読むときに左右キーで変更できます。</string>
     <string name="reader_tts_starting">音声エンジンを起動しています…</string>
+    <string name="set_theme">テーマ</string>
+    <string name="set_theme_d">色と背景アニメーション。グラファイトは真っ黒で動きません（性能の低いテレビに最適）。</string>
+    <string name="theme_luna">Luna</string>
+    <string name="theme_dusk">夕暮れ</string>
+    <string name="theme_forest">森</string>
+    <string name="theme_ocean">海</string>
+    <string name="theme_night">星空</string>
+    <string name="theme_graphite">グラファイト</string>
 </resources>

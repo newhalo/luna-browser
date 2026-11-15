@@ -378,4 +378,12 @@
     <string name="set_reader_size">Tamanho do texto de leitura</string>
     <string name="set_reader_size_d">Tamanho do texto no modo leitura. Esquerda / Direita o alteram ao ler.</string>
     <string name="reader_tts_starting">Iniciando o mecanismo de voz…</string>
+    <string name="set_theme">Tema</string>
+    <string name="set_theme_d">Cores e animação do fundo. Grafite é preto puro e não se move (o mais leve para TVs fracas).</string>
+    <string name="theme_luna">Luna</string>
+    <string name="theme_dusk">Entardecer</string>
+    <string name="theme_forest">Floresta</string>
+    <string name="theme_ocean">Oceano</string>
+    <string name="theme_night">Céu estrelado</string>
+    <string name="theme_graphite">Grafite</string>
 </resources>

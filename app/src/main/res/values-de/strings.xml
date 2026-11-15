@@ -378,4 +378,12 @@
     <string name="set_reader_size">Textgröße im Lesemodus</string>
     <string name="set_reader_size_d">Textgröße im Lesemodus. Links / Rechts ändern sie beim Lesen.</string>
     <string name="reader_tts_starting">Sprachausgabe wird gestartet …</string>
+    <string name="set_theme">Design</string>
+    <string name="set_theme_d">Farben und Hintergrundanimation. Graphit ist reines Schwarz ohne Bewegung (am schonendsten für schwache Fernseher).</string>
+    <string name="theme_luna">Luna</string>
+    <string name="theme_dusk">Dämmerung</string>
+    <string name="theme_forest">Wald</string>
+    <string name="theme_ocean">Ozean</string>
+    <string name="theme_night">Sternenhimmel</string>
+    <string name="theme_graphite">Graphit</string>
 </resources>

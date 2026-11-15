@@ -4,26 +4,29 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
-// ---- Colour tokens (dark, high contrast) ----
-val Bg = Color(0xFF0B0D12)
-val Surface = Color(0xFF151922)
-val SurfaceHigh = Color(0xFF1F2530)
-val SurfaceFocus = Color(0xFF2E3748)
+// ---- Colour tokens ----
+// Text, danger and success stay the same in every theme (readability); the rest follows the active [Palette].
+// These are getters over Compose state, so a theme change repaints whatever read them.
+val Bg: Color get() = Themes.current.bg
+val Surface: Color get() = Themes.current.surface
+val SurfaceHigh: Color get() = Themes.current.surfaceHigh
+val SurfaceFocus: Color get() = Themes.current.surfaceFocus
 val Outline = Color(0x22FFFFFF)
-val Accent = Color(0xFF8AA4FF)
-val AccentDeep = Color(0xFF3B4A8C)
+val Accent: Color get() = Themes.current.accent
+val AccentDeep: Color get() = Themes.current.accentDeep
 val TextPrimary = Color(0xFFF3F5F9)
 val TextSecondary = Color(0xFFA9B1C1)
 val Danger = Color(0xFFFF8A8A)
 val Success = Color(0xFF6EE7A8)
 val FocusRing = Color.White
-val Scrim = Color(0xE60B0D12)
+val Scrim: Color get() = Themes.current.bg.copy(alpha = 0.9f)
 /** Translucent surface for controls that sit on top of artwork. */
 val Glass = Color(0x2EFFFFFF)
 
@@ -52,7 +55,9 @@ val LocalReduceMotion = compositionLocalOf { false }
 fun ms(value: Int): Int = if (LocalReduceMotion.current) 0 else value
 
 @Composable
-fun LunaTheme(reduceMotion: Boolean, content: @Composable () -> Unit) {
+fun LunaTheme(themeId: String, reduceMotion: Boolean, content: @Composable () -> Unit) {
+    // Selected before any child reads a colour token (a write that no earlier read in this composition saw).
+    remember(themeId) { Themes.select(themeId) }
     androidx.compose.runtime.CompositionLocalProvider(LocalReduceMotion provides reduceMotion) {
         MaterialTheme(
             colorScheme = darkColorScheme(

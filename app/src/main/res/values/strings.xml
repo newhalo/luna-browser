@@ -399,4 +399,12 @@
     <string name="set_reader_size">Reading text size</string>
     <string name="set_reader_size_d">Text size in reading mode. Left / Right change it while reading.</string>
     <string name="reader_tts_starting">Starting the speech engine…</string>
+    <string name="set_theme">Theme</string>
+    <string name="set_theme_d">Colours and background animation. Graphite is pure black and does not move (lightest on weak TVs).</string>
+    <string name="theme_luna">Luna</string>
+    <string name="theme_dusk">Dusk</string>
+    <string name="theme_forest">Forest</string>
+    <string name="theme_ocean">Ocean</string>
+    <string name="theme_night">Night sky</string>
+    <string name="theme_graphite">Graphite</string>
 </resources>

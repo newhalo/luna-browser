@@ -374,4 +374,12 @@
     <string name="set_reader_size">阅读文字大小</string>
     <string name="set_reader_size_d">阅读模式的文字大小。阅读时可用左/右键调整。</string>
     <string name="reader_tts_starting">正在启动语音引擎…</string>
+    <string name="set_theme">主题</string>
+    <string name="set_theme_d">颜色和背景动画。石墨为纯黑且不动（对性能较弱的电视最省资源）。</string>
+    <string name="theme_luna">Luna</string>
+    <string name="theme_dusk">黄昏</string>
+    <string name="theme_forest">森林</string>
+    <string name="theme_ocean">海洋</string>
+    <string name="theme_night">星空</string>
+    <string name="theme_graphite">石墨</string>
 </resources>

@@ -374,4 +374,12 @@
     <string name="set_reader_size">읽기 모드 글자 크기</string>
     <string name="set_reader_size_d">읽기 모드의 글자 크기. 읽는 중 왼쪽/오른쪽으로 바꿀 수 있습니다.</string>
     <string name="reader_tts_starting">음성 엔진을 시작하는 중…</string>
+    <string name="set_theme">테마</string>
+    <string name="set_theme_d">색상과 배경 애니메이션. 그래파이트는 완전한 검정이며 움직이지 않습니다(성능이 낮은 TV에 가장 가볍습니다).</string>
+    <string name="theme_luna">Luna</string>
+    <string name="theme_dusk">해질녘</string>
+    <string name="theme_forest">숲</string>
+    <string name="theme_ocean">바다</string>
+    <string name="theme_night">별밤</string>
+    <string name="theme_graphite">그래파이트</string>
 </resources>

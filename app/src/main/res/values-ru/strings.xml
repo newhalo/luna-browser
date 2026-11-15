@@ -386,4 +386,12 @@
     <string name="set_reader_size">Размер текста при чтении</string>
     <string name="set_reader_size_d">Размер текста в режиме чтения. Влево / Вправо меняют его во время чтения.</string>
     <string name="reader_tts_starting">Запуск синтезатора речи…</string>
+    <string name="set_theme">Тема</string>
+    <string name="set_theme_d">Цвета и анимация фона. «Графит» — чисто чёрный и неподвижный (самый лёгкий для слабых ТВ).</string>
+    <string name="theme_luna">Luna</string>
+    <string name="theme_dusk">Закат</string>
+    <string name="theme_forest">Лес</string>
+    <string name="theme_ocean">Океан</string>
+    <string name="theme_night">Звёздное небо</string>
+    <string name="theme_graphite">Графит</string>
 </resources>
