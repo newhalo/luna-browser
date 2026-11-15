@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Fixed
+- Phone remote: the remote tab now fits the phone screen without scrolling (pad and buttons scale with the screen height); the Type and Favorites tabs scroll inside their own area while the tab bar stays at the bottom.
 - Remote navigation: Right on the last card of a Home row no longer jumps into the row below, and Left from a Settings item always returns to the category being shown (it used to land a few categories further down).
 
 ## [0.7.0] - 2026-11-15
