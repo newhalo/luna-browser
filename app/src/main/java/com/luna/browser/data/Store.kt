@@ -289,6 +289,11 @@ class Store(ctx: Context) {
         else if (PinRules.valid(pin)) { val e = PinRules.encode(pin); pins[id] = e; sp.edit().putString("pin.$id", e).apply() }
     }
 
+    // Wrong-PIN tries survive a restart (otherwise leaving and reopening the app would give five fresh tries every time).
+    fun pinFailures(): Int = sp.getInt("pinFails", 0)
+    fun pinLockedUntil(): Long = sp.getLong("pinUntil", 0L)
+    fun setPinFailures(fails: Int, until: Long) { sp.edit().putInt("pinFails", fails).putLong("pinUntil", until).apply() }
+
     /** The storage key of [name] for the active profile. */
     private fun pk(name: String) = ProfileRules.key(profileId, name)
 

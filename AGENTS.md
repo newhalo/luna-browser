@@ -63,6 +63,9 @@ Deeper reading: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (design), [docs/DES
   `ProfileRules.dataKeys`. Compute the key **before** handing a write to the IO executor (the profile may change before it runs).
 - Profile ids are `0`..`9` or `guest` (`ProfileRules.isValidId`); never build storage keys or WebView profile names from
   anything else. The guest must leave nothing behind (storage and web data, also after a crash: see `Store` init).
+- A profile PIN is `PinRules` (salted SHA-256, `pin.<id>` key). Everything that opens or changes a profile must go through
+  `AppState.tryPin` (growing waits) and, while `AppState.locked`, nothing else may open pages (phone remote, `openUrl`, Back).
+  Never store or log a PIN.
 - Cookies are per profile only where the WebView supports multi-profile (`WebProfiles.supported()`); the UI says when not.
 
 **Security of the phone remote** (`PhoneRemote`)

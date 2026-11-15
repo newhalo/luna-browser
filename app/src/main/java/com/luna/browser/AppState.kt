@@ -451,20 +451,20 @@ class AppState(val activity: Activity) {
 
     // ---- Profile PINs ----
     /** True from start-up until the PIN of the remembered profile has been entered: nothing opens meanwhile. */
-    var locked by mutableStateOf(false)
+    var locked by mutableStateOf(store.hasPin(store.profileId))
         private set
-    private var pinFails = 0
-    private var pinUntil = 0L
 
     /** Checks [pin] for profile [id]: null when right, otherwise the message to show (wrong, or how long to wait). */
     fun tryPin(id: String, pin: String): String? {
-        val now = SystemClock.elapsedRealtime()
-        if (now < pinUntil) return s(R.string.prof_pin_locked, ((pinUntil - now + 999) / 1000).toInt())
-        if (store.checkPin(id, pin)) { pinFails = 0; return null }
-        pinFails++
-        val wait = com.luna.browser.data.PinRules.lockSeconds(pinFails)
-        if (wait > 0) { pinUntil = now + wait * 1000L; return s(R.string.prof_pin_locked, wait) }
-        return s(R.string.prof_pin_wrong)
+        val now = System.currentTimeMillis()
+        val until = store.pinLockedUntil()
+        // A clock set far back can't extend the wait beyond the longest one.
+        if (now < until && until - now <= 300_000L) return s(R.string.prof_pin_locked, ((until - now + 999) / 1000).toInt())
+        if (store.checkPin(id, pin)) { store.setPinFailures(0, 0L); return null }
+        val fails = store.pinFailures() + 1
+        val wait = com.luna.browser.data.PinRules.lockSeconds(fails)
+        store.setPinFailures(fails, if (wait > 0) now + wait * 1000L else 0L)
+        return if (wait > 0) s(R.string.prof_pin_locked, wait) else s(R.string.prof_pin_wrong)
     }
 
     /** The picker's way in: the remembered profile's PIN was right (or it has none). */
@@ -498,7 +498,7 @@ class AppState(val activity: Activity) {
 
     fun launch() {
         // A profile with a PIN opens behind the picker; "Who's watching?" can also be asked for at every start.
-        if (store.hasPin(store.profileId)) { locked = true; show(Screen.Profiles); return }
+        if (locked) { show(Screen.Profiles); return }
         if (store.profiles.size > 1 && store.bool(K.ASK_PROFILE)) { show(Screen.Profiles); return }
         val last = store.lastSession
         if (store.str(K.LAUNCH) == "resume" && last != null) openUrl(last.url)

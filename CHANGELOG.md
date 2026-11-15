@@ -6,6 +6,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-15
+
+### Added
+- **Profile PINs**: a profile can ask for a 4-digit PIN (number keys on the remote or an on-screen pad, entered twice when set). A profile with a PIN opens behind the *Who's watching?* picker at start-up; opening, editing or deleting it needs the PIN, Back at the picker leaves Luna, and the phone remote can't open pages while it is shown. Only a salted SHA-256 is stored; five wrong tries start growing waits (30 s up to 5 min). It keeps family members apart; it is not encryption.
+- **Live tab thumbnails**: opening the tab switcher from a page first takes a fresh screenshot of it (never more than half a second), so each tab card shows what the page looks like now. Thumbnails are removed with the tab, the history and when the profile changes.
+- **Reading mode text size**: Left / Right while reading make the text smaller or larger (5 steps, 89 % to 158 %); the choice is remembered and also in *Settings → Browsing*.
+- **Read aloud**: OK in reading mode starts the article with the TV's speech engine (in the article's language when the engine has it), highlights the paragraph being read and scrolls to it; OK or Play/Pause pauses and resumes from that paragraph. Long paragraphs are cut at sentence ends for the engine.
+
 ## [0.6.0] - 2026-11-15
 
 ### Added
@@ -144,7 +152,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - First version: Jetpack Compose TV UI on the system WebView, virtual cursor, floating toolbar, fullscreen
   video controls, host-based ad blocking, settings, history and favourites.
 
-[Unreleased]: https://github.com/newhalo/luna-browser/compare/v0.6.0...HEAD
+[Unreleased]: https://github.com/newhalo/luna-browser/compare/v0.7.0...HEAD
+[0.7.0]: https://github.com/newhalo/luna-browser/compare/v0.6.0...v0.7.0
 [0.6.0]: https://github.com/newhalo/luna-browser/compare/v0.5.1...v0.6.0
 [0.5.1]: https://github.com/newhalo/luna-browser/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/newhalo/luna-browser/compare/v0.4.1...v0.5.0

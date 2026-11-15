@@ -35,6 +35,12 @@ Luna can keep separate history, favourites, open tabs and (on a recent web engin
 guest. This is only a separation on the TV, not an account: profile names and avatars are stored on the device and never sent
 anywhere. Deleting a profile erases its data; a guest session erases itself when it ends.
 
+## Profile PINs
+
+A profile PIN is stored on the TV only as a salted SHA-256 hash and never sent anywhere. It keeps family members out of each
+other's profiles; it does not encrypt the data. Reading aloud uses the TV's own speech engine; Luna sends no text anywhere
+for it.
+
 ## Phone remote
 
 If *Settings → Phone remote* is on (it is by default), Luna listens on your home network, only while it is on screen, so a
