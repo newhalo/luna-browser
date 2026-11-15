@@ -46,6 +46,7 @@ import kotlinx.coroutines.launch
  * [mine] are the cards' focus requesters; [above] (optional) are those of the row above, so that Up goes to the card
  * above (the default focus search skips rows that were scrolled out of view).
  */
+@OptIn(androidx.compose.ui.ExperimentalComposeUiApi::class)
 @Composable
 fun CardRow(
     app: AppState,
