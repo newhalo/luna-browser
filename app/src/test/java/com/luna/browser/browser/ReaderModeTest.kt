@@ -124,7 +124,7 @@ class ReaderModeTest {
         assertTrue(parts.size > 5)
         assertTrue(parts.all { it.length <= 1000 })
         assertTrue("every piece ends at a sentence", parts.dropLast(1).all { it.endsWith(".") })
-        assertEquals(text.trim().replace(Regex("\s+"), " "), parts.joinToString(" ").replace(Regex("\s+"), " "))
+        assertEquals(text.trim().replace(Regex("""\s+"""), " "), parts.joinToString(" ").replace(Regex("""\s+"""), " "))
         assertEquals(listOf("short"), ReaderMode.chunks("  short ", 1000))
         assertTrue(ReaderMode.chunks("   ").isEmpty())
         val noSpaces = "x".repeat(2500)

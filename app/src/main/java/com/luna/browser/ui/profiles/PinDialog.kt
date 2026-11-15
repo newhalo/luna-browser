@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Backspace
+import androidx.compose.material.icons.automirrored.rounded.Backspace
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
@@ -142,7 +142,7 @@ fun PinDialog(
                             onClick = { entered = entered.dropLast(1) },
                             modifier = Modifier.size(width = 84.dp, height = 62.dp).semantics { contentDescription = "⌫" },
                             shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp), container = Glass,
-                        ) { Icon(Icons.Rounded.Backspace, null, tint = TextPrimary, modifier = Modifier.align(Alignment.Center).size(26.dp)) }
+                        ) { Icon(Icons.AutoMirrored.Rounded.Backspace, null, tint = TextPrimary, modifier = Modifier.align(Alignment.Center).size(26.dp)) }
                         PadKey('0', Modifier) { press('0') }
                         FocusSurface(
                             onClick = onCancel,
