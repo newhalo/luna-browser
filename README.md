@@ -21,7 +21,7 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 **Play / Pause / Left / Right**, a built-in ad and pop-up blocker, and a home screen that feels like a streaming app.
 
 > **Status:** early (0.x) but daily-driven on a real TV. Latest release:
-> [**v0.4.0**](https://github.com/newhalo/luna-browser/releases/latest) — tabs, per-site settings, a touchpad on the
+> [**v0.4.1**](https://github.com/newhalo/luna-browser/releases/latest) — tabs, per-site settings, a touchpad on the
 > phone remote, video positions remembered outside fullscreen, and ad-block rules that update without a release.
 
 ## Features
@@ -39,6 +39,7 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
   stopped, and says so. Ads or another episode on the same page are never seeked.
 - **Tabs** — up to 8 tabs with a switcher made of the same 16:9 cards as Home. Only the most recent few stay alive
   (two on low-end TVs); the rest are frozen to save memory and reload when you return. Tabs survive restarts.
+- **Your layout** — thumbnail size (large / medium / small) for Home, and a History page that is a list or a grid.
 - **Per-site settings** — the toolbar's *This site* button sets desktop mode, text size, ad blocking and pointer mode
   for one site only.
 - **Your phone as a remote** — scan the QR code in *Settings → Phone remote* and your phone becomes a full remote
@@ -78,6 +79,8 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 | Pointer speed, desktop sites, page text size | Clear errors with one-press recovery |
 | ![Tab switcher](docs/screenshots/12-tabs.jpg) | ![Per-site settings](docs/screenshots/13-site-settings.jpg) |
 | **Tabs:** the same 16:9 cards as Home; **Down** for close / new tab | **Site** button: desktop mode, text size, ad blocking and pointer mode for one site only |
+| ![Home with small thumbnails](docs/screenshots/14-home-small-tiles.jpg) | ![History as a grid](docs/screenshots/15-history-grid.jpg) |
+| **Thumbnail size** (Settings → Home): small tiles fit more on Home | **History** as a list or a grid, one button to switch |
 
 ### Your phone as a remote
 

@@ -6,6 +6,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.4.1] - 2026-11-15
+
+### Added
+- **History as a grid**: a button switches the History page between the list and a grid of 16:9 cards (remembered).
+- **Thumbnail size** (Settings → Home): large, medium or small tiles on Home and in the History grid, so more fit on screen.
+
+### Fixed
+- Tab switcher: the row of cards no longer stays scrolled after a tab is closed.
+- Settings: the title no longer scrolls out of view; the category list fits without scrolling.
+
 ## [0.4.0] - 2026-11-15
 
 ### Added
@@ -106,7 +116,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - First version: Jetpack Compose TV UI on the system WebView, virtual cursor, floating toolbar, fullscreen
   video controls, host-based ad blocking, settings, history and favourites.
 
-[Unreleased]: https://github.com/newhalo/luna-browser/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/newhalo/luna-browser/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/newhalo/luna-browser/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/newhalo/luna-browser/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/newhalo/luna-browser/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/newhalo/luna-browser/releases/tag/v0.3.0
