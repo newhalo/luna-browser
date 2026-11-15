@@ -40,11 +40,16 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 - **Tabs** — up to 8 tabs with a switcher made of the same 16:9 cards as Home. Only the most recent few stay alive
   (two on low-end TVs); the rest are frozen to save memory and reload when you return. Tabs survive restarts.
 - **Your layout** — thumbnail size (large / medium / small) for Home, and a History page that is a list or a grid.
+- **Reading mode** — the toolbar's *Read* button turns an article into a clean page with large type, a reading time and
+  only the text and pictures that matter; Up / Down scroll, Back returns to the page. Nothing from the page can run in it.
+- **Profiles** — up to five people (plus a guest) each get their own history, favourites, *continue watching* and open
+  tabs, and, on a recent web engine, their own sign-ins. *Who's watching?* can appear when Luna opens; guest mode erases
+  itself when it ends.
 - **Per-site settings** — the toolbar's *Site* button sets desktop mode, text size, ad blocking and pointer mode
   for one site only, and has **Report a problem**: scan a QR code to open a pre-filled report on GitHub.
 - **Your phone as a remote** — scan the QR code in *Settings → Phone remote* and your phone becomes a full remote
   (D-pad with hold-to-repeat, OK, Back, Home, Menu, media keys, volume), a **touchpad** (drag to move the pointer,
-  two fingers to scroll, tap to click) and a keyboard for addresses, searches and text fields — no app to install, it
+  two fingers to scroll, tap to click), your TV's **favourites** (open, save, remove) and a keyboard for addresses, searches and text fields — no app to install, it
   is a web page served by the TV on your Wi-Fi (details [below](#phone-remote)).
 - **Ad, tracker and pop-up blocking** — a standards-based filter engine (Adblock Plus / uBlock Origin syntax)
   with the community [EasyList](https://easylist.to) and [ABPVN](https://abpvn.com) lists refreshed daily, a built-in list, generic pop-up and
@@ -215,19 +220,18 @@ Pages are rendered by the Android System WebView and get **no** JavaScript bridg
 ## Roadmap
 
 **Next**
-- [ ] **WebView check**: warn in *Settings → About* when the TV's system WebView is too old for modern sites, and say how to update it.
-- [ ] **Reading mode**: a clean, large-type view for articles; desktop pages are often too small from the sofa.
-- [ ] **Profiles**: separate history and favourites per family member, plus a guest mode.
-- [ ] **Favourites sync** between TV and phone through the phone page, still without an account.
 - [ ] **Live tab thumbnails**: today a tab card shows the page's last saved thumbnail.
 - [ ] Native-speaker review of the translations, then more languages ([how](docs/LOCALIZATION.md)).
 - [ ] Compatibility reports from more TVs and Android versions ([how](docs/COMPATIBILITY.md#reporting-a-device)).
+- [ ] Reading mode: remember the size you prefer, and read aloud with the TV's speech engine.
+- [ ] Profiles: a PIN for a profile, and per-profile settings (search engine, language).
 
 **Later**
 - [ ] Emulator-based UI tests for D-pad navigation.
 - [ ] Gradle 9 and the newest Compose, once the plugins catch up.
 - [ ] Google Play listing: Play Console account, 12-tester closed test, then production (see [docs/PUBLISHING.md](docs/PUBLISHING.md)).
 
+**Done in 0.6.0:** *web engine check* (About warns when the TV's WebView is too old, and the Home screen says so), *reading mode*, *favourites from the phone* (a Favorites tab: open, save, remove), and *profiles* with a guest mode.
 **Done in 0.5.0:** an update notice (once a day, builds outside a store only), store-ready packaging, *Report a problem* from the *Site* panel (a QR code opens a pre-filled GitHub report; the page address is cut at the "?" and nothing is sent by the TV), and links shared from the phone's browser.
 **Done in 0.4.x:** tabs, per-site settings, phone touchpad, inline video positions, filter-rule updates without a release, history grid, thumbnail size, and the toolchain upgrade (Android Gradle Plugin 8.13, Gradle 8.14, Kotlin 2.1, Compose BOM 2024.12).
 

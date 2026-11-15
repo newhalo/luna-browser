@@ -29,6 +29,12 @@ browsing history.
 These servers see your TV's IP address, as any website does. Their own policies apply
 (GitHub: <https://docs.github.com/en/site-policy/privacy-policies>).
 
+## Profiles
+
+Luna can keep separate history, favourites, open tabs and (on a recent web engine) sign-ins for up to five people and a
+guest. This is only a separation on the TV, not an account: profile names and avatars are stored on the device and never sent
+anywhere. Deleting a profile erases its data; a guest session erases itself when it ends.
+
 ## Phone remote
 
 If *Settings → Phone remote* is on (it is by default), Luna listens on your home network, only while it is on screen, so a

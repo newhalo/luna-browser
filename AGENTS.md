@@ -36,7 +36,8 @@ build.yml`: tests + debug and release APKs as artifacts). A new push cancels the
 | Page engine | `browser/BrowserController` | One per tab: WebView, virtual cursor, fullscreen video + JS bridge, error mapping, per-site settings, thumbnails |
 | Tabs | `browser/TabManager`, `TabPolicy` | Max 8; only 3 (2 on low-end TVs) live, the rest frozen to address + title |
 | Pop-ups / injected JS | `browser/PopupGuard` | Generic pop-up rules, overlay sweeper, cross-iframe video bridge |
-| Data | `data/Store`, `SiteSettings`, `Resume`, `TileSize`, `UpdateCheck`, `ReportLink` | `Store` is Compose-observable; settings keys live in object `K` |
+| Reading mode, profiles | `browser/ReaderMode`, `browser/WebProfiles`, `ui/profiles` | The page only yields text blocks; the reading page is built from escaped text. One WebView profile per Luna profile |
+| Data | `data/Store`, `Profiles`, `SiteSettings`, `Resume`, `TileSize`, `UpdateCheck`, `ReportLink`, `WebViewCheck`, `FavoriteInput` | `Store` is Compose-observable; settings keys live in object `K` |
 | Ad blocking | `data/AdBlocker`, `data/filter/*` | Pure-Kotlin Adblock Plus engine (no Android types, easy to unit test). Lists: EasyList / ABPVN downloaded at run time, `assets/filters/luna.txt` is Luna's own and is also fetched from this repo daily |
 | Phone remote | `remote/PhoneRemote`, `PadGestures` | LAN HTTP server + the phone web page (a Kotlin raw string with embedded JS) |
 | UI | `ui/home`, `ui/browser`, `ui/tabs`, `ui/library`, `ui/settings`, `ui/components`, `ui/theme` | `CardRow` = horizontally sliding card row, `SettingRow`, `FocusSurface`, `TvButton` |
@@ -55,6 +56,14 @@ Deeper reading: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (design), [docs/DES
   installs), page thumbnails. Don't reintroduce a third-party icon/favicon service.
 - Never put the user's browsing data (full URLs with query strings, search words) into a request, report or log. See
   `ReportLink.cleanPage` for how page addresses are cut.
+
+**Profiles**
+- Anything stored per person (history, favourites, positions, tabs, last session...) goes through `Store.pk()` /
+  `ProfileRules.key`, so it follows the active profile and is erased with it. Add a new per-profile key to
+  `ProfileRules.dataKeys`. Compute the key **before** handing a write to the IO executor (the profile may change before it runs).
+- Profile ids are `0`..`9` or `guest` (`ProfileRules.isValidId`); never build storage keys or WebView profile names from
+  anything else. The guest must leave nothing behind (storage and web data, also after a crash: see `Store` init).
+- Cookies are per profile only where the WebView supports multi-profile (`WebProfiles.supported()`); the UI says when not.
 
 **Security of the phone remote** (`PhoneRemote`)
 - Every API call needs the PIN; failures are counted per client address plus a global ceiling; only LAN addresses are served;

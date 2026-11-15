@@ -205,10 +205,8 @@ class AppState(val activity: Activity) {
                 if (code == null) done(false) else { injectKey(code, action); done(true) }
             }
             RemoteAction.FavAdd -> {
-                // "address" or "address\ntitle". Only something that looks like an address (never a search phrase), only http(s).
-                val raw = text.substringBefore('\n').trim()
-                val url = if (raw.isEmpty() || raw.contains(' ')) "" else store.resolve(raw)
-                if (!url.startsWith("http://") && !url.startsWith("https://")) return done(false)
+                // "address" or "address<newline>title". Only a web address (never a search phrase or another scheme).
+                val url = com.luna.browser.data.FavoriteInput.address(text.substringBefore('\n')) ?: return done(false)
                 val title = text.substringAfter('\n', "").trim().ifEmpty { store.history.firstOrNull { it.url == url }?.title ?: hostOf(url) }
                 val ok = store.addFavorite(Site(title.take(120), url))
                 if (ok) toast(R.string.toast_fav_added)

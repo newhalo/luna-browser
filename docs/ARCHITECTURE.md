@@ -33,6 +33,19 @@ MainActivity ── dispatchKeyEvent ──► AppState.handleKey ──► Brow
 | `ui.components` | `ui` | `FocusSurface` and the TV widgets, `MediaCard`, `Aurora` / `Backdrop` |
 | `ui.theme` | `ui` | Colour, type and spacing tokens |
 
+## Profiles, reading mode and phone favourites
+
+- **Profiles** (`data/Profiles.kt`, `Store`, `ui/profiles`): the per-profile data (favourites, history, visits, positions, tabs, last
+  session) lives under profile-prefixed `SharedPreferences` keys (`ProfileRules.key`); the default profile keeps the
+  historic key names. `Store.switchProfile` reloads the observable lists; `AppState.switchProfile` first saves and releases the
+  tabs and then reloads them. Cookies are separated with the WebView multi-profile feature (`browser/WebProfiles`, one engine
+  profile per Luna profile, applied right after a WebView is created); on engines without it, profiles share cookies and the
+  UI says so. The guest uses id `guest`: its keys and engine profile are erased when it ends and at start-up.
+- **Reading mode** (`browser/ReaderMode`): `EXTRACT_JS` runs in the page and returns only text blocks as JSON; `ReaderMode.html`
+  builds the reading page in Kotlin from escaped text and `loadDataWithBaseURL(null, …)` loads it, so it has its own opaque origin.
+- **Phone favourites** (`PhoneRemote`): `favs` (read-only list from a snapshot kept by `Store`), `fa` (save) and `fd` (remove),
+  all behind the PIN; saving only accepts a web address.
+
 ## Input model
 
 A TV has no touch screen, so input is a **key stream**:

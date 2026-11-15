@@ -7,6 +7,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ### Added
+- **Web engine check**: *Settings → About* grades the TV's system WebView (up to date / outdated / too old) with how to update it; Home shows a line when it is outdated. (Chromium 110+ is "up to date".)
+- **Reading mode**: a *Read* button on the toolbar rebuilds the page's article as a clean dark reading page (large type, reading time, headings, lists, quotes, pictures). Up / Down scroll, Back returns to the page. The reading page is built from escaped text in a separate document: nothing from the page runs in it.
+- **Favourites from the phone**: a third *Saved* tab on the phone page lists the TV's favourites (tap to open, trash with a second tap to remove), and *Save to favorites* appears next to a shared link and in the Type tab. Up to 60 favourites.
+- **Profiles**: up to five profiles and a guest. Each has its own history, favourites, continue-watching positions and open tabs; with a recent WebView also its own cookies and sign-ins. *Who's watching?* picker (optional at start-up), manage screen (name, colour, delete), a round profile button and greeting on Home. Guest mode keeps nothing and erases its web data when it ends. Existing data becomes the *Main* profile.
+
+### Added
 - `AGENTS.md` (project brief for AI coding assistants) and a `CLAUDE.md` that imports it.
 
 ## [0.5.1] - 2026-11-15

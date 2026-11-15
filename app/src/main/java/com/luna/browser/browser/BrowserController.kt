@@ -348,8 +348,10 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             readerPending = true
             reader = true
             held.clear()
+            // No base address: the reading page gets an opaque origin of its own, never the site's (it has no scripts
+            // anyway). The history entry keeps the article's address, so Back and the history behave.
             webView.loadDataWithBaseURL(
-                readerOrigin,
+                null,
                 ReaderMode.html(article, app.s(R.string.reader_minutes, ReaderMode.minutes(article))),
                 "text/html", "utf-8", readerOrigin,
             )
