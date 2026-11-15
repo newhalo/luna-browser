@@ -22,7 +22,7 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 
 > **Status:** early (0.x) but daily-driven on a real TV. Latest release:
 > [**v0.8.0**](https://github.com/newhalo/luna-browser/releases/latest) — a pink *Sakura* theme, round background particles and an
-> optional frosted *Glass look*; on top of 0.7's seven themes, phone page that fits the screen, profile PINs, live tab thumbnails
+> optional frosted *Glass look*; on top of 0.7's six themes, phone page that fits the screen, profile PINs, live tab thumbnails
 > and reading mode with read aloud.
 
 ## Features

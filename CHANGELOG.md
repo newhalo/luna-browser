@@ -7,6 +7,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 ## [Unreleased]
 
 ## [0.8.0] - 2026-11-15
+
 ### Added
 - **Sakura**, a pink theme with slowly tumbling petals.
 - **Glass look** (*Settings → General*): translucent buttons, cards and rows with a light edge and a soft sheen. Plain paint, no blur, so it costs weak TVs next to nothing. Off by default.
