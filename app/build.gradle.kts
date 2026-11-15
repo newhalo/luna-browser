@@ -12,8 +12,8 @@ android {
         applicationId = "com.luna.browser"
         minSdk = 26
         targetSdk = 34
-        versionCode = 6
-        versionName = "0.4.1"
+        versionCode = 7
+        versionName = "0.5.0"
     }
 
     // Signing
@@ -60,6 +60,8 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures { compose = true }
+    // Google's encrypted dependency list is not needed, and F-Droid rejects it.
+    dependenciesInfo { includeInApk = false }
 }
 
 kotlin {

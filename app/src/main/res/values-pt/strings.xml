@@ -291,4 +291,17 @@
     <string name="report_includes">Inclui: %s</string>
     <string name="report_privacy">A TV não envia nada. O endereço é cortado no “?”, sem termos de busca nem tokens. Você pode editar tudo antes de enviar.</string>
     <string name="report_back">Voltar</string>
+    <string name="set_upd">Procurar atualizações</string>
+    <string name="set_upd_d">Uma vez por dia o Luna pergunta ao GitHub se há uma versão mais nova. Nada é instalado automaticamente.</string>
+    <string name="upd_latest">Versão mais recente</string>
+    <string name="upd_check">Verificar agora</string>
+    <string name="upd_check_d">Procurar uma versão mais nova agora.</string>
+    <string name="upd_checking">Verificando…</string>
+    <string name="upd_available">O Luna %s está disponível</string>
+    <string name="upd_uptodate">Você tem a versão mais recente</string>
+    <string name="upd_found">Há uma versão mais nova</string>
+    <string name="upd_failed">Não foi possível verificar. Tente mais tarde.</string>
+    <string name="upd_store_v">Gerenciado pela loja de aplicativos</string>
+    <string name="upd_home">Luna %s disponível · Configurações → Sobre</string>
+    <string name="upd_qr">Escaneie com o celular para abrir a página de download</string>
 </resources>

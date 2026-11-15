@@ -1,0 +1,12 @@
+Luna est un navigateur web conçu pour la télévision, pas un navigateur de téléphone étiré sur un grand écran.
+
+• Pensé pour la télécommande : un pointeur à l’écran dirigé avec la croix directionnelle, tout à portée d’un appui, gros caractères et focus bien visible.
+• La vidéo d’abord : commandes plein écran pour toute vidéo web, même dans les lecteurs intégrés. Maintenez gauche ou droite pour avancer ; Luna se souvient de l’endroit où vous vous êtes arrêté.
+• Blocage intégré des publicités, traqueurs et pop-ups avec des listes communautaires mises à jour chaque jour.
+• Votre téléphone comme télécommande : scannez un QR code et il devient croix directionnelle, pavé tactile et clavier. Aucune application à installer.
+• Onglets, favoris, historique en liste ou en grille, et réglages par site (mode bureau, taille du texte, blocage des pubs).
+• Un accueil façon application de streaming, avec des vignettes des pages visitées et une taille au choix.
+• Dans votre langue : 10 langues, selon la langue du système de la TV.
+• Privé par conception : pas de compte, pas d’analyse, pas de télémétrie. Open source.
+
+Luna utilise Android System WebView. Il ne lit pas les services protégés par DRM comme Netflix ou Disney+ ; utilisez leurs applications.

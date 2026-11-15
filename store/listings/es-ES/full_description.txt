@@ -1,0 +1,12 @@
+Luna es un navegador web hecho para la televisión, no un navegador de móvil estirado a una pantalla grande.
+
+• Pensado para el mando: un puntero en pantalla que se mueve con la cruceta, acceso a todo con una pulsación, texto grande y foco claro.
+• El vídeo primero: controles a pantalla completa para cualquier vídeo web, incluso en reproductores incrustados. Mantén izquierda o derecha para avanzar; Luna recuerda dónde lo dejaste.
+• Bloqueo integrado de anuncios, rastreadores y ventanas emergentes con listas de la comunidad actualizadas a diario.
+• Tu móvil como mando: escanea un código QR y el móvil se convierte en cruceta, panel táctil y teclado. Sin instalar nada.
+• Pestañas, favoritos, historial en lista o cuadrícula y ajustes por sitio (modo escritorio, tamaño de texto, bloqueo de anuncios).
+• Un inicio que parece una app de streaming, con miniaturas de las páginas visitadas y tamaño a tu elección.
+• En tu idioma: 10 idiomas, según el idioma del sistema de la TV.
+• Privado por diseño: sin cuentas, sin analíticas, sin telemetría. Código abierto.
+
+Luna usa Android System WebView. No puede reproducir servicios con DRM como Netflix o Disney+; usa sus propias apps.

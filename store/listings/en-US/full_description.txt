@@ -1,0 +1,12 @@
+Luna is a web browser made for the TV, not a phone browser stretched onto a big screen.
+
+• Made for the remote: an on-screen pointer you steer with the D-pad, one-press access to everything, large type and clear focus.
+• Video first: fullscreen controls for any web video, even inside embedded players. Hold left or right to seek; Luna remembers where you stopped.
+• Built-in ad, tracker and pop-up blocking with community filter lists, updated daily.
+• Your phone as a remote: scan a QR code and your phone becomes a D-pad, a touchpad and a keyboard. No app to install.
+• Tabs, favourites, history as a list or a grid, and per-site settings (desktop mode, text size, ad blocking).
+• A home screen that feels like a streaming app, with thumbnails of the pages you visited and a size you can choose.
+• Speaks your language: 10 languages, following the TV's system language.
+• Private by design: no accounts, no analytics, no telemetry. Open source.
+
+Luna works with the Android System WebView. It cannot play DRM-protected services such as Netflix or Disney+; use their own apps for those.

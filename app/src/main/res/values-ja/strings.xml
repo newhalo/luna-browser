@@ -287,4 +287,17 @@
     <string name="report_includes">含まれる内容：%s</string>
     <string name="report_privacy">テレビからは何も送信されません。アドレスは「?」で切り取られるため、検索語やトークンは含まれません。送信前にすべて編集できます。</string>
     <string name="report_back">戻る</string>
+    <string name="set_upd">アップデートを確認</string>
+    <string name="set_upd_d">1日に1回、新しいバージョンがあるかGitHubに問い合わせます。自動でインストールはされません。</string>
+    <string name="upd_latest">最新バージョン</string>
+    <string name="upd_check">今すぐ確認</string>
+    <string name="upd_check_d">新しいバージョンを今すぐ探します。</string>
+    <string name="upd_checking">確認中…</string>
+    <string name="upd_available">Luna %s が利用できます</string>
+    <string name="upd_uptodate">最新バージョンです</string>
+    <string name="upd_found">新しいバージョンがあります</string>
+    <string name="upd_failed">確認できませんでした。後でもう一度お試しください。</string>
+    <string name="upd_store_v">アプリストアが管理します</string>
+    <string name="upd_home">Luna %s が利用できます · 設定 → 情報</string>
+    <string name="upd_qr">スマホでスキャンしてダウンロードページを開く</string>
 </resources>

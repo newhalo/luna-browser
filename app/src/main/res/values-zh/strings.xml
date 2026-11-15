@@ -287,4 +287,17 @@
     <string name="report_includes">包含：%s</string>
     <string name="report_privacy">电视不会发送任何内容。地址会在“?”处截断，因此不含搜索词或令牌。提交前可以修改所有内容。</string>
     <string name="report_back">返回</string>
+    <string name="set_upd">检查更新</string>
+    <string name="set_upd_d">Luna 每天向 GitHub 询问一次是否有新版本。不会自动安装任何内容。</string>
+    <string name="upd_latest">最新版本</string>
+    <string name="upd_check">立即检查</string>
+    <string name="upd_check_d">现在查找新版本。</string>
+    <string name="upd_checking">正在检查…</string>
+    <string name="upd_available">Luna %s 可用</string>
+    <string name="upd_uptodate">已是最新版本</string>
+    <string name="upd_found">有新版本可用</string>
+    <string name="upd_failed">无法检查，请稍后再试。</string>
+    <string name="upd_store_v">由应用商店负责</string>
+    <string name="upd_home">Luna %s 可用 · 设置 → 关于</string>
+    <string name="upd_qr">用手机扫描以打开下载页面</string>
 </resources>

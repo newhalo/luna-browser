@@ -21,8 +21,8 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 **Play / Pause / Left / Right**, a built-in ad and pop-up blocker, and a home screen that feels like a streaming app.
 
 > **Status:** early (0.x) but daily-driven on a real TV. Latest release:
-> [**v0.4.1**](https://github.com/newhalo/luna-browser/releases/latest) — tabs, per-site settings, a touchpad on the
-> phone remote, video positions remembered outside fullscreen, and ad-block rules that update without a release.
+> [**v0.5.0**](https://github.com/newhalo/luna-browser/releases/latest) — report a page problem with a QR code, send links
+> from your phone's browser, an update notice, history as a grid, and store-ready packaging ([docs/PUBLISHING.md](docs/PUBLISHING.md)).
 
 ## Features
 
@@ -205,6 +205,7 @@ Luna has no accounts, no analytics and no telemetry. The only network traffic be
 | Request | When | Why |
 |---|---|---|
 | Filter lists: EasyList (`easylist.to`) or, for Vietnamese, ABPVN (`raw.githubusercontent.com`, `abpvn.com`), plus Luna's own `luna.txt` from this repository (`raw.githubusercontent.com`) | first run, then daily | ad-blocking rules (each list can be switched off in Settings) |
+| `api.github.com` (latest release) | once a day, only for builds **not** installed from a store | tells you a newer Luna exists; nothing is downloaded or installed (switch off in Settings → About) |
 | `google.com/s2/favicons` | home screen, only for the built-in quick sites | their icons |
 | Thumbnails (`i.ytimg.com` or the page's own `og:image`) | home / history cards | artwork for pages you visited |
 | Incoming: your phone → the TV on port 8765 (LAN only, PIN-protected) | only while Luna is on screen and *Phone remote* is on | the phone remote |
@@ -226,9 +227,9 @@ Pages are rendered by the Android System WebView and get **no** JavaScript bridg
 **Later**
 - [ ] Emulator-based UI tests for D-pad navigation.
 - [ ] Gradle 9 and the newest Compose, once the plugins catch up.
-- [ ] Store listings (see [docs/PUBLISHING.md](docs/PUBLISHING.md)).
+- [ ] Google Play listing: Play Console account, 12-tester closed test, then production (see [docs/PUBLISHING.md](docs/PUBLISHING.md)).
 
-**Done in 0.5.0:** *Report a problem* from the *Site* panel (a QR code opens a pre-filled GitHub report; the page address is cut at the "?" and nothing is sent by the TV), and links shared from the phone's browser.
+**Done in 0.5.0:** an update notice (once a day, builds outside a store only), store-ready packaging, *Report a problem* from the *Site* panel (a QR code opens a pre-filled GitHub report; the page address is cut at the "?" and nothing is sent by the TV), and links shared from the phone's browser.
 **Done in 0.4.x:** tabs, per-site settings, phone touchpad, inline video positions, filter-rule updates without a release, history grid, thumbnail size, and the toolchain upgrade (Android Gradle Plugin 8.13, Gradle 8.14, Kotlin 2.1, Compose BOM 2024.12).
 
 **Not planned**

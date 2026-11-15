@@ -1,0 +1,12 @@
+Luna là trình duyệt được thiết kế riêng cho TV, không phải trình duyệt điện thoại kéo giãn lên màn hình lớn.
+
+• Dành cho remote: con trỏ trên màn hình điều khiển bằng phím mũi tên, mọi thứ chỉ cách một lần bấm, chữ lớn và vòng chọn rõ ràng.
+• Ưu tiên video: điều khiển toàn màn hình cho mọi video web, kể cả trình phát nhúng. Giữ trái/phải để tua; Luna nhớ vị trí bạn đang xem dở.
+• Chặn quảng cáo, trình theo dõi và cửa sổ bật lên có sẵn, dùng luật cộng đồng cập nhật hằng ngày.
+• Điện thoại làm remote: quét mã QR là điện thoại thành bàn phím mũi tên, bàn di chuột và bàn phím. Không cần cài ứng dụng.
+• Tab, trang yêu thích, lịch sử dạng danh sách hoặc lưới, và cài đặt riêng cho từng trang (bản máy tính, cỡ chữ, chặn quảng cáo).
+• Màn hình chính như ứng dụng xem phim, có ảnh thu nhỏ của các trang bạn đã xem và chọn được kích thước ô.
+• Nói tiếng của bạn: 10 ngôn ngữ, theo ngôn ngữ hệ thống của TV.
+• Riêng tư từ thiết kế: không tài khoản, không phân tích, không theo dõi. Mã nguồn mở.
+
+Luna dùng Android System WebView. Luna không phát được các dịch vụ có bản quyền DRM như Netflix hay Disney+; hãy dùng ứng dụng riêng của họ.

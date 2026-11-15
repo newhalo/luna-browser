@@ -291,4 +291,17 @@
     <string name="report_includes">Enthalten: %s</string>
     <string name="report_privacy">Der Fernseher sendet nichts. Die Adresse wird am „?“ abgeschnitten, es sind also keine Suchbegriffe oder Tokens enthalten. Du kannst alles vor dem Absenden ändern.</string>
     <string name="report_back">Zurück</string>
+    <string name="set_upd">Nach Updates suchen</string>
+    <string name="set_upd_d">Einmal täglich fragt Luna bei GitHub nach einer neueren Version. Es wird nichts automatisch installiert.</string>
+    <string name="upd_latest">Neueste Version</string>
+    <string name="upd_check">Jetzt prüfen</string>
+    <string name="upd_check_d">Jetzt nach einer neueren Version suchen.</string>
+    <string name="upd_checking">Prüfe …</string>
+    <string name="upd_available">Luna %s ist verfügbar</string>
+    <string name="upd_uptodate">Du hast die neueste Version</string>
+    <string name="upd_found">Eine neuere Version ist verfügbar</string>
+    <string name="upd_failed">Prüfung nicht möglich. Versuche es später erneut.</string>
+    <string name="upd_store_v">Wird vom App-Store übernommen</string>
+    <string name="upd_home">Luna %s ist verfügbar · Einstellungen → Info</string>
+    <string name="upd_qr">Mit dem Handy scannen, um die Download-Seite zu öffnen</string>
 </resources>

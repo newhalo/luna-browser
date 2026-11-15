@@ -24,11 +24,11 @@ asks for, what Luna already satisfies, what is missing, and what the maintainer 
 | Launchable on TV: an activity with the `LEANBACK_LAUNCHER` category | Yes (`AndroidManifest.xml`) |
 | `android.software.leanback` declared with `required="false"` | Yes (also runs on non-TV Android if ever needed) |
 | `android.hardware.touchscreen` declared `required="false"` | Yes |
-| Home-screen banner, 320 × 180 px, containing the app name | `@drawable/banner` exists (vector); **verify** it shows the name and renders at that size |
+| Home-screen banner, 320 × 180 dp, containing the app name | Yes: `banner.png` (mdpi/hdpi/xhdpi) shows the moon and "Luna" |
 | Everything reachable with a D-pad, visible focus | Yes, this is Luna's main design rule ([DESIGN.md](DESIGN.md)) |
 | No mandatory sign-in, no crash on first run | Yes |
 | Permissions | Only `INTERNET` and `ACCESS_NETWORK_STATE` |
-| Target API level for TV | `targetSdk = 34`. Google's help page lists API 34 for Android TV, but secondary sources say new apps need API 36 from 31 Aug 2026. **Verify in Play Console before the first upload**, and raise `targetSdk` if in doubt (see "Work for Luna" below) |
+| Target API level for TV | `targetSdk = 34`. Google's [target API page](https://support.google.com/googleplay/android-developer/answer/11926878) (read 15 Nov 2026) says Android TV apps must target **API 34 or higher**; the API 36 rule applies to phones and tablets. The page also contradicts itself in one paragraph (API 33 for existing TV apps), so re-check in Play Console. **Do not raise `targetSdk` to 36 casually**: Android 16 removes the opt-out from predictive back, which changes how the remote's Back key reaches the app, and Luna's long-press Back depends on it |
 
 Reference: Android's [TV app quality checklist](https://developer.android.com/training/tv/publishing/checklist) and
 [Target API level requirements](https://support.google.com/googleplay/android-developer/answer/11926878).
@@ -134,13 +134,26 @@ Add this to the README's Install section, and put the APK's SHA-256 in each rele
 5. Apply for production, fix review feedback.
 6. Then F-Droid (open source, low cost) and Amazon (only with a real Fire TV).
 
-## 9. Work for Luna (code / repo) before the first upload
+## 9. Updates: how users learn about a new version
 
-- [ ] `bundleRelease` in the Release workflow, AAB attached to the release.
+| Install route | Who updates it | How the user finds out |
+|---|---|---|
+| **Google Play / Amazon / F-Droid** | The store, automatically (if the user allows auto-update) or from the store's page | Play shows "Update" and can update in the background. Nothing for Luna to build |
+| **GitHub APK, Downloader, adb** | Nobody, unless the user does it | Luna checks once a day (`UpdateCheck`, GitHub's public "latest release" API) and shows *Luna X.Y.Z is available* on Home, plus a QR code to the download page in *Settings → About*. It never downloads or installs by itself |
+
+The check is skipped when the installer is a store (`getInstallSourceInfo`), because store policies don't allow an app to
+direct users somewhere else to get itself, and the store already handles it. Users can switch the check off in
+*Settings → About*. Silent self-install of an APK is deliberately not offered: it needs the "install unknown apps"
+permission, which Play forbids for browsers' self-updates and which would be a security risk.
+
+## 10. Work for Luna (code / repo) before the first upload
+
+- [x] `bundleRelease` in the Release workflow (the `.aab` is kept as a workflow artifact, 90 days).
 - [ ] Decide and document the signing option; test installing the GitHub APK over a Play build.
-- [ ] `PRIVACY.md` and a public URL.
-- [ ] `store/` folder: listing text in 10 languages, graphics, screenshots.
-- [ ] Confirm `targetSdk`; raise to 35/36 and test on the TV if needed.
-- [ ] Make the banner contain the app name at 320 × 180.
-- [ ] `dependenciesInfo { includeInApk = false }` (also required for F-Droid).
+- [x] `PRIVACY.md` (and a public URL: the GitHub file works).
+- [x] `store/` folder: listing text in 10 languages, graphics (`store/README.md`).
+- [x] Confirm `targetSdk` (34 is enough for TV, see section 2).
+- [x] Banner shows the app name.
+- [x] `dependenciesInfo { includeInApk = false }` (also required for F-Droid).
+- [ ] Retake 1920 × 1080 screenshots from a release build.
 - [ ] A short "TV app quality" self-test pass using the official checklist.

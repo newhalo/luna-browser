@@ -211,7 +211,11 @@ private fun HeroInfo(app: AppState, hero: () -> MediaItem?, online: Boolean) {
                             Icon(Icons.Rounded.WifiOff, null, tint = Danger, modifier = Modifier.size(22.dp))
                             Txt("  " + stringResource(R.string.home_offline), T.body, color = Danger)
                         }
-                    } else Txt(stringResource(R.string.home_prompt), T.body.copy(fontSize = 22.sp), color = TextSecondary)
+                    } else {
+                        val upd = app.updateAvailable
+                        if (upd != null) Txt(stringResource(R.string.upd_home, upd), T.body.copy(fontSize = 22.sp), color = Accent)
+                        else Txt(stringResource(R.string.home_prompt), T.body.copy(fontSize = 22.sp), color = TextSecondary)
+                    }
                 } else {
                     Txt(h.title, T.display.copy(fontSize = 38.sp), maxLines = 1)
                     Spacer(Modifier.height(8.dp))

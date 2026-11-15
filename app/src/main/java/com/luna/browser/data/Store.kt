@@ -177,6 +177,11 @@ object K {
     const val TILE_SIZE = "tileSize"
     /** How the History page lists pages: "list" or "grid". */
     const val HISTORY_VIEW = "historyView"
+    /** Once a day, ask GitHub whether a newer Luna exists (builds installed outside a store only). */
+    const val UPDATE_CHECK = "updateCheck"
+    const val UPDATE_LAST = "updateLast"
+    const val UPDATE_LATEST = "updateLatest"
+    const val UPDATE_URL = "updateUrl"
 }
 
 /** Languages the UI is translated into (code to its own name, never translated). Keep in sync with res/xml/locales_config.xml. */
@@ -225,6 +230,7 @@ class Store(ctx: Context) {
         K.TIP_SHOWN to "false", K.LANGUAGE to "auto",
         K.PHONE to "true", K.PHONE_PIN to "",
         K.TILE_SIZE to TileSize.LARGE, K.HISTORY_VIEW to "list",
+        K.UPDATE_CHECK to "true", K.UPDATE_LAST to "0", K.UPDATE_LATEST to "", K.UPDATE_URL to "",
     )
 
     val settings = mutableStateMapOf<String, String>().apply {

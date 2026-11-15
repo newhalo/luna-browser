@@ -287,4 +287,17 @@
     <string name="report_includes">Nội dung: %s</string>
     <string name="report_privacy">TV không gửi gì đi cả. Địa chỉ bị cắt tại dấu “?” nên không kèm từ khóa tìm kiếm hay mã truy cập. Bạn có thể sửa mọi thứ trước khi gửi.</string>
     <string name="report_back">Quay lại</string>
+    <string name="set_upd">Kiểm tra bản cập nhật</string>
+    <string name="set_upd_d">Mỗi ngày một lần, Luna hỏi GitHub xem có bản mới không. Không có gì được tự động cài đặt.</string>
+    <string name="upd_latest">Phiên bản mới nhất</string>
+    <string name="upd_check">Kiểm tra ngay</string>
+    <string name="upd_check_d">Tìm bản mới ngay bây giờ.</string>
+    <string name="upd_checking">Đang kiểm tra…</string>
+    <string name="upd_available">Có Luna %s</string>
+    <string name="upd_uptodate">Bạn đang dùng bản mới nhất</string>
+    <string name="upd_found">Có bản mới</string>
+    <string name="upd_failed">Không kiểm tra được. Hãy thử lại sau.</string>
+    <string name="upd_store_v">Do cửa hàng ứng dụng lo</string>
+    <string name="upd_home">Có Luna %s · Cài đặt → Giới thiệu</string>
+    <string name="upd_qr">Quét bằng điện thoại để mở trang tải về</string>
 </resources>

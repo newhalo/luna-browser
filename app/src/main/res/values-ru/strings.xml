@@ -299,4 +299,17 @@
     <string name="report_includes">Включено: %s</string>
     <string name="report_privacy">ТВ ничего не отправляет. Адрес обрезан по «?», поэтому поисковые запросы и токены не попадают в отчёт. Всё можно изменить перед отправкой.</string>
     <string name="report_back">Назад</string>
+    <string name="set_upd">Проверка обновлений</string>
+    <string name="set_upd_d">Раз в день Luna спрашивает GitHub, есть ли новая версия. Ничего не устанавливается автоматически.</string>
+    <string name="upd_latest">Последняя версия</string>
+    <string name="upd_check">Проверить сейчас</string>
+    <string name="upd_check_d">Поискать новую версию сейчас.</string>
+    <string name="upd_checking">Проверка…</string>
+    <string name="upd_available">Доступна Luna %s</string>
+    <string name="upd_uptodate">У вас последняя версия</string>
+    <string name="upd_found">Доступна новая версия</string>
+    <string name="upd_failed">Не удалось проверить. Попробуйте позже.</string>
+    <string name="upd_store_v">Обновляет магазин приложений</string>
+    <string name="upd_home">Доступна Luna %s · Настройки → О программе</string>
+    <string name="upd_qr">Отсканируйте телефоном, чтобы открыть страницу загрузки</string>
 </resources>

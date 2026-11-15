@@ -237,6 +237,27 @@ private fun QrRow(text: String, caption: String) {
     }
 }
 
+private fun updateRows(app: AppState): List<SRow> {
+    if (app.storeInstall) return listOf(Info(app.s(R.string.set_upd), app.s(R.string.upd_store_v)))
+    val latest = app.updateAvailable
+    return listOfNotNull(
+        Toggle(K.UPDATE_CHECK, app.s(R.string.set_upd), app.s(R.string.set_upd_d)),
+        Info(app.s(R.string.upd_latest), when {
+            app.updateChecking -> app.s(R.string.upd_checking)
+            latest != null -> app.s(R.string.upd_available, latest)
+            app.store.str(K.UPDATE_LATEST).isNotEmpty() -> app.s(R.string.upd_uptodate)
+            else -> "—"
+        }),
+        Action(app.s(R.string.upd_check), app.s(R.string.upd_check_d)) {
+            app.scope.launch {
+                val ok = app.checkUpdate()
+                app.toast(if (!ok) R.string.upd_failed else if (app.updateAvailable != null) R.string.upd_found else R.string.upd_uptodate)
+            }
+        },
+        if (latest != null && app.updateUrl.isNotEmpty()) Qr(app.updateUrl, app.s(R.string.upd_qr)) else null,
+    )
+}
+
 private fun rows(category: Int, app: AppState): List<SRow> {
     val s = app.store
     return when (category) {
@@ -314,6 +335,7 @@ private fun rows(category: Int, app: AppState): List<SRow> {
             val version = runCatching { app.activity.packageManager.getPackageInfo(app.activity.packageName, 0).versionName }.getOrNull() ?: "?"
             listOf(
                 Info(app.s(R.string.about_luna), app.s(R.string.about_version, version)),
+                *updateRows(app).toTypedArray(),
                 Info(app.s(R.string.about_engine), runCatching { WebView.getCurrentWebViewPackage()?.versionName }.getOrNull() ?: app.s(R.string.about_unknown)),
                 Info(app.s(R.string.about_device), "${Build.MANUFACTURER} ${Build.MODEL}"),
                 Info(app.s(R.string.about_menu), app.s(R.string.about_menu_v)),

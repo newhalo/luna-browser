@@ -1,0 +1,12 @@
+Luna ist ein Webbrowser für den Fernseher – kein Handy-Browser, der auf einen großen Bildschirm gezogen wurde.
+
+• Für die Fernbedienung gemacht: ein Mauszeiger, den du mit dem Steuerkreuz bewegst, alles mit einem Tastendruck erreichbar, große Schrift und klarer Fokus.
+• Video zuerst: Vollbild-Steuerung für jedes Web-Video, auch in eingebetteten Playern. Halte Links oder Rechts zum Spulen; Luna merkt sich, wo du aufgehört hast.
+• Eingebaute Blockierung von Werbung, Trackern und Pop-ups mit täglich aktualisierten Community-Listen.
+• Dein Handy als Fernbedienung: QR-Code scannen, und das Handy wird zu Steuerkreuz, Touchpad und Tastatur. Keine App nötig.
+• Tabs, Favoriten, Verlauf als Liste oder Raster und Einstellungen pro Website (Desktop-Modus, Textgröße, Werbeblocker).
+• Ein Startbildschirm wie eine Streaming-App, mit Vorschaubildern besuchter Seiten und wählbarer Größe.
+• In deiner Sprache: 10 Sprachen, passend zur Systemsprache des Fernsehers.
+• Privat von Grund auf: keine Konten, keine Analysen, keine Telemetrie. Open Source.
+
+Luna nutzt Android System WebView. DRM-geschützte Dienste wie Netflix oder Disney+ lassen sich nicht abspielen; nutze dafür deren eigene Apps.

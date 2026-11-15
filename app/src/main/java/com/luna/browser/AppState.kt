@@ -96,6 +96,71 @@ class AppState(val activity: Activity) {
         return com.luna.browser.data.ReportLink.build(url, com.luna.browser.data.ReportLink.environment(version, web, lists, "${android.os.Build.MANUFACTURER} ${android.os.Build.MODEL}"))
     }
 
+    // ---- Updates (builds installed outside a store only) ----
+    /** The installed version, without a build suffix such as "-debug". */
+    val versionName: String by lazy {
+        runCatching { activity.packageManager.getPackageInfo(activity.packageName, 0).versionName }.getOrNull()
+            ?.substringBefore('-') ?: "0"
+    }
+
+    /** True when a store installed Luna: the store updates it, so Luna doesn't. */
+    val storeInstall: Boolean by lazy {
+        val installer = runCatching {
+            if (android.os.Build.VERSION.SDK_INT >= 30) activity.packageManager.getInstallSourceInfo(activity.packageName).installingPackageName
+            else @Suppress("DEPRECATION") activity.packageManager.getInstallerPackageName(activity.packageName)
+        }.getOrNull()
+        com.luna.browser.data.UpdateCheck.isStoreInstall(installer)
+    }
+
+    /** The newer version found by the last check, or null. Observable (reads the settings map). */
+    val updateAvailable: String?
+        get() = store.str(K.UPDATE_LATEST).takeIf { com.luna.browser.data.UpdateCheck.isNewer(it, versionName) }
+
+    val updateUrl: String get() = store.str(K.UPDATE_URL)
+
+    var updateChecking by mutableStateOf(false)
+        private set
+
+    /** Asks GitHub for the latest release. Returns true when the answer was understood (newer or not), false on any failure. */
+    suspend fun checkUpdate(): Boolean {
+        if (storeInstall || updateChecking) return false
+        updateChecking = true
+        try {
+            val body = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                runCatching {
+                    val c = java.net.URL(com.luna.browser.data.UpdateCheck.API).openConnection() as java.net.HttpURLConnection
+                    c.connectTimeout = 10_000
+                    c.readTimeout = 15_000
+                    c.setRequestProperty("Accept", "application/vnd.github+json")
+                    c.setRequestProperty("User-Agent", "LunaBrowser/$versionName (Android TV)")
+                    try {
+                        if (c.responseCode != 200) null else c.inputStream.use { input ->
+                            val out = java.io.ByteArrayOutputStream()
+                            val buf = ByteArray(8192)
+                            while (true) {
+                                val n = input.read(buf)
+                                if (n < 0) break
+                                if (out.size() + n > com.luna.browser.data.UpdateCheck.MAX_BYTES) return@use null
+                                out.write(buf, 0, n)
+                            }
+                            out.toString("UTF-8")
+                        }
+                    } finally { c.disconnect() }
+                }.getOrNull()
+            }
+            val release = body?.let { com.luna.browser.data.UpdateCheck.fromJson(it) } ?: return false
+            store.put(K.UPDATE_LATEST, release.version)
+            store.put(K.UPDATE_URL, release.url)
+            store.put(K.UPDATE_LAST, System.currentTimeMillis())
+            return true
+        } finally {
+            updateChecking = false
+        }
+    }
+
+    private fun updateDue() = !storeInstall && store.bool(K.UPDATE_CHECK) &&
+        System.currentTimeMillis() - (store.str(K.UPDATE_LAST).toLongOrNull() ?: 0L) > com.luna.browser.data.UpdateCheck.DAY_MS
+
     private var addressCache: Pair<Long, String?> = 0L to null
 
     /** "http://192.168.1.20:8765" while the phone remote is listening, else null. Cached: it asks the network stack. */
@@ -226,6 +291,11 @@ class AppState(val activity: Activity) {
         scope.launch {
             kotlinx.coroutines.delay(20_000)
             if (ads.needsUpdate()) ads.update()
+        }
+        // A daily "is there a newer Luna?" check, a little after the filter lists.
+        scope.launch {
+            kotlinx.coroutines.delay(45_000)
+            if (updateDue()) checkUpdate()
         }
         // Load the WebView (Chromium) provider off the UI thread, so opening the first page later
         // doesn't freeze the home screen. getDefaultUserAgent() is documented as thread-safe.

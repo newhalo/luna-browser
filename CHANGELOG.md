@@ -6,7 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-15
+
 ### Added
+- **Update notice**: for builds installed outside a store, Luna checks GitHub once a day and shows "Luna X is available" on Home, with a QR code to the download page in Settings → About. It never installs anything itself and can be switched off. Store installs skip it.
+- **Store-ready**: a launcher banner that shows the name, `PRIVACY.md`, `store/` (listing text in 10 languages and Play graphics), an `.aab` built by the Release workflow, and no dependency-info block in the APK. See docs/PUBLISHING.md.
 - **Report a problem** (Site panel): a QR code opens a GitHub report pre-filled with the page address (without query or fragment), Luna and WebView versions and the filter-list date. The TV sends nothing itself.
 - **Share from the phone**: a bookmarklet on the phone page brings a page address from the phone browser to the TV, opened after one confirming tap.
 
@@ -120,7 +124,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - First version: Jetpack Compose TV UI on the system WebView, virtual cursor, floating toolbar, fullscreen
   video controls, host-based ad blocking, settings, history and favourites.
 
-[Unreleased]: https://github.com/newhalo/luna-browser/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/newhalo/luna-browser/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/newhalo/luna-browser/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/newhalo/luna-browser/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/newhalo/luna-browser/compare/v0.3.1...v0.4.0
 [0.3.1]: https://github.com/newhalo/luna-browser/compare/v0.3.0...v0.3.1

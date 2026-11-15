@@ -1,0 +1,12 @@
+O Luna é um navegador feito para a TV, não um navegador de celular esticado para uma tela grande.
+
+• Feito para o controle remoto: um ponteiro na tela movido pelo direcional, tudo a um toque, letras grandes e foco claro.
+• Vídeo em primeiro lugar: controles em tela cheia para qualquer vídeo da web, até em players incorporados. Segure esquerda ou direita para avançar; o Luna lembra onde você parou.
+• Bloqueio integrado de anúncios, rastreadores e pop-ups com listas da comunidade atualizadas todo dia.
+• Seu celular como controle: leia um QR code e ele vira direcional, touchpad e teclado. Sem instalar nada.
+• Abas, favoritos, histórico em lista ou grade e ajustes por site (modo desktop, tamanho do texto, bloqueio de anúncios).
+• Uma tela inicial de app de streaming, com miniaturas das páginas visitadas e tamanho à sua escolha.
+• No seu idioma: 10 idiomas, seguindo o idioma do sistema da TV.
+• Privado por princípio: sem contas, sem análises, sem telemetria. Código aberto.
+
+O Luna usa o Android System WebView. Não reproduz serviços com DRM como Netflix ou Disney+; use os aplicativos deles.
