@@ -101,6 +101,10 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 | ![Profile PIN pad](docs/screenshots/21-profile-pin.jpg) | ![Locked profile picker](docs/screenshots/22-profile-locked.jpg) |
 | **Profile PIN:** four digits with the remote's number keys or the on-screen pad | The picker opens first when the remembered profile has a PIN |
 
+![Themes: Luna, Dusk, Forest, Ocean, Night sky, Graphite](docs/screenshots/25-themes.jpg)
+
+**Themes** (*Settings → General → Theme*): Luna, Dusk, Forest, Ocean, Night sky and Graphite, each with its own colours and background motion.
+
 ### Your phone as a remote
 
 Scan the QR code on the TV (*Settings → Phone remote*): the page opens already paired. **Remote** is the D-pad and keys
