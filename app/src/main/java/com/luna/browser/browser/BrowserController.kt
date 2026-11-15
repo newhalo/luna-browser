@@ -369,7 +369,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     }
 
     /** The reading page is a data: document; the address shown, saved and filtered stays that of the article. */
-    private fun setUrl(u: String) { if (!u.startsWith("data:")) { url = u; filterPageUrl = u } }
+    private fun pageAddress(u: String) { if (!u.startsWith("data:")) { url = u; filterPageUrl = u } }
 
     /** Up / Down scroll by a third of the screen (hold to keep going); Up at the very top opens the toolbar. */
     private fun readerKey(e: KeyEvent): Boolean {
@@ -468,7 +468,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             error = null
             loading = true
             progress = 0.05f
-            pageUrl?.let { setUrl(it) }
+            pageUrl?.let { pageAddress(it) }
             injectCosmetics(view)
             syncNav()
             scheduleIdleHide()
@@ -487,7 +487,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         }
 
         override fun doUpdateVisitedHistory(view: WebView, pageUrl: String?, isReload: Boolean) {
-            pageUrl?.let { setUrl(it) }
+            pageUrl?.let { pageAddress(it) }
             syncNav()
             // Single-page sites (YouTube) change videos without a new page load.
             if (!isReload && !loading && error == null && pageUrl != null && !pageUrl.startsWith("data:")) onVisited(pageUrl, "")
