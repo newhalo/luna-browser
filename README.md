@@ -242,6 +242,7 @@ Ideas and bug reports are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 Pull requests are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) and the
 [Code of Conduct](CODE_OF_CONDUCT.md) first. Found a site that still shows ads? Use the *Ad / pop-up report*
 issue template — it is usually a one-line fix. For vulnerabilities see [SECURITY.md](SECURITY.md).
+Using an AI coding assistant? Point it at [AGENTS.md](AGENTS.md): the project context, rules and pitfalls it needs.
 
 ## Acknowledgements
 

@@ -60,6 +60,13 @@ emulator; the remote on a real TV).
 5. Keep changes focused; one concern per pull request. Update the docs and [CHANGELOG.md](CHANGELOG.md).
 6. Describe *what* and *why* in the PR, and attach a screenshot for visual changes.
 
+## Using an AI coding assistant
+
+[AGENTS.md](AGENTS.md) is the project brief for AI assistants (Claude Code, Codex, Cursor, Copilot, …): what Luna is,
+the code map, the commands, and the rules that are easy to break. Most tools read it automatically; otherwise paste or
+reference it at the start of a session. You are still responsible for the change: run the tests and check it on a
+D-pad before you open the pull request.
+
 ## Code style
 
 Kotlin official style (`.editorconfig` is provided; Android Studio picks it up). Prefer small, readable

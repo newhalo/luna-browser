@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- `AGENTS.md` (project brief for AI coding assistants) and a `CLAUDE.md` that imports it.
+
 ## [0.5.1] - 2026-11-15
 
 ### Fixed
