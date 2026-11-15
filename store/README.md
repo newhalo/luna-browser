@@ -18,8 +18,8 @@ store/
 Locales (Play codes): `en-US`, `vi`, `es-ES`, `fr-FR`, `de-DE`, `pt-BR`, `ru-RU`, `ja-JP`, `ko-KR`, `zh-CN`. The
 launcher banner inside the app (320 x 180 dp, shows the name) is in `app/src/main/res/drawable-*/banner.png`.
 
-Screenshots: use the 1920 x 1080 captures from a release build on a real TV (`docs/screenshots/` has 1280 x 720 versions
-for the README). Play wants at least 2 and accepts up to 8 for TV.
+Screenshots: `store/screenshots/` has eight 1920 x 1080 captures taken on a real TV (Xiaomi MiTV, Android 14) with the
+open-movie sample pages. Play wants at least 2 and accepts up to 8 for TV. Retake them if the look changes.
 
 ## Play Console answers (draft, check against the console's current questions)
 

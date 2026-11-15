@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-15
+
+### Fixed
+- Phone page: a link and the pairing PIN in the same address fragment no longer lose the PIN (found by the new jsdom test in `tools/phonepage-test`).
+
 ### Changed
 - **No third-party icon service**: Home cards for built-in sites show a lettered tile in the site's colours until the site has been opened once; its own icon is then saved on the device. The app no longer contacts `google.com/s2/favicons`.
 - Logo, banner and store graphics re-set in Roboto (open licence); notices for the screenshot artwork added; documentation wording about video sites made neutral.
@@ -128,7 +133,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - First version: Jetpack Compose TV UI on the system WebView, virtual cursor, floating toolbar, fullscreen
   video controls, host-based ad blocking, settings, history and favourites.
 
-[Unreleased]: https://github.com/newhalo/luna-browser/compare/v0.5.0...HEAD
+[Unreleased]: https://github.com/newhalo/luna-browser/compare/v0.5.1...HEAD
+[0.5.1]: https://github.com/newhalo/luna-browser/compare/v0.5.0...v0.5.1
 [0.5.0]: https://github.com/newhalo/luna-browser/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/newhalo/luna-browser/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/newhalo/luna-browser/compare/v0.3.1...v0.4.0

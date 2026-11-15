@@ -47,7 +47,7 @@ object UpdateCheck {
         null
     }
 
-    private val stores = setOf("com.android.vending", "com.amazon.venezia", "org.fdroid.fdroid", "com.xiaomi.mipicks", "com.sec.android.app.samsungapps")
+    private val stores = setOf("com.android.vending", "org.fdroid.fdroid", "com.xiaomi.mipicks", "com.sec.android.app.samsungapps")
 
     /** True when [installer] is an app store that already handles updates. */
     fun isStoreInstall(installer: String?): Boolean = installer != null && installer in stores

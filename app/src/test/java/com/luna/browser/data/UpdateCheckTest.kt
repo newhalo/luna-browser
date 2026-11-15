@@ -45,7 +45,7 @@ class UpdateCheckTest {
 
     @Test fun storeInstallsAreLeftToTheStore() {
         assertTrue(UpdateCheck.isStoreInstall("com.android.vending"))
-        assertTrue(UpdateCheck.isStoreInstall("com.amazon.venezia"))
+        assertTrue(UpdateCheck.isStoreInstall("org.fdroid.fdroid"))
         assertFalse(UpdateCheck.isStoreInstall(null))
         assertFalse(UpdateCheck.isStoreInstall("com.google.android.packageinstaller"))
         assertFalse(UpdateCheck.isStoreInstall("com.example.downloader"))

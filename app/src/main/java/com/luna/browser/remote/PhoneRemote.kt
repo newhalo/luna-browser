@@ -423,8 +423,8 @@ textarea{min-height:128px;resize:none}textarea:focus,input:focus{outline:2px sol
 <div id="toast" class="toast"></div>
 <script>
 var L=__LABELS__,pin=null;try{pin=localStorage.getItem('luna.pin')}catch(e){}
-var share=null,om=(location.hash||'').match(/open=([^&]+)/);if(om){try{var su=decodeURIComponent(om[1]);if(/^https?:\/\//i.test(su))share=su.slice(0,2000)}catch(e){}try{history.replaceState(null,'',location.pathname)}catch(e){}}
-var qr=(location.hash||'').match(/pin=(\d{1,8})/);if(qr){pin=qr[1];try{history.replaceState(null,'',location.pathname)}catch(e){}}
+var H=location.hash||'',share=null,om=H.match(/open=([^&]+)/);if(om){try{var su=decodeURIComponent(om[1]);if(/^https?:\/\//i.test(su))share=su.slice(0,2000)}catch(e){}try{history.replaceState(null,'',location.pathname)}catch(e){}}
+var qr=H.match(/pin=(\d{1,8})/);if(qr){pin=qr[1];try{history.replaceState(null,'',location.pathname)}catch(e){}}
 function $(i){return document.getElementById(i)}
 function say(t,e){var x=$('toast');x.textContent=t||'';x.className='toast'+(t?' show':'')+(e?' err':'');clearTimeout(say.t);if(t)say.t=setTimeout(function(){x.className='toast'},2400)}
 function live(ok){$('dot').className='dot'+(ok?' live':'')}

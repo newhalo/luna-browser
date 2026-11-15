@@ -21,7 +21,7 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 **Play / Pause / Left / Right**, a built-in ad and pop-up blocker, and a home screen that feels like a streaming app.
 
 > **Status:** early (0.x) but daily-driven on a real TV. Latest release:
-> [**v0.5.0**](https://github.com/newhalo/luna-browser/releases/latest) — report a page problem with a QR code, send links
+> [**v0.5.1**](https://github.com/newhalo/luna-browser/releases/latest) — report a page problem with a QR code, send links
 > from your phone's browser, an update notice, history as a grid, and store-ready packaging ([docs/PUBLISHING.md](docs/PUBLISHING.md)).
 
 ## Features

@@ -12,7 +12,7 @@ asks for, what Luna already satisfies, what is missing, and what the maintainer 
 "Luna" collides with **Amazon Luna** (cloud gaming; several US trademark applications for LUNA since 2020). A browser is a
 different kind of product, and adding "Browser" helps a little, but trademark offices and courts look at the dominant
 word, and a generic word like "Browser" is usually disregarded, so **"Luna Browser" is not a safe harbour**. The risk is
-highest on the Amazon Appstore and on any store where Amazon can file a complaint. Before publishing: search USPTO,
+highest on any store where Amazon can file a complaint (Luna is not published on Amazon's own store). Before publishing: search USPTO,
 EUIPO, WIPO and the Vietnamese IP Office (NOIP) for LUNA in software classes (9, 42); ask an IP lawyer if anything
 relevant appears; consider a more distinctive name while the app has no store users, because renaming later breaks
 installs, reviews and links. This is not legal advice.
@@ -22,7 +22,6 @@ installs, reviews and links. This is not legal advice.
 | Store | Who it reaches | Cost | Effort | Verdict |
 |---|---|---|---|---|
 | **Google Play** (Android TV / Google TV) | Almost every Android TV owner, including Xiaomi, Sony, TCL and Philips TVs outside China | US$25 once | High (account rules, AAB, review) | **Main target** |
-| **Amazon Appstore** (Fire TV) | Fire TV sticks and TVs | Free developer account | Medium; must test on a real Fire TV | Second, only if someone has a Fire TV |
 | **F-Droid** | Open-source users | Free | Medium (metadata in `fdroiddata`, builds from source) | Good fit for an open-source browser |
 | **Xiaomi GetApps** | Mostly phones; TV-specific rules not found | Free | Unknown | Skip until there is demand |
 | **Sideloading** (Downloader app + GitHub Releases) | Everyone willing to type a short code | Free | Low | **Do this now**, see section 7 |
@@ -47,14 +46,19 @@ Reference: Android's [TV app quality checklist](https://developer.android.com/tr
 
 1. **Android App Bundle.** Play wants an `.aab`, not an APK. Add `:app:bundleRelease` to the Release workflow and attach
    the bundle (the APK stays for GitHub / sideloading).
-2. **Signing decision (important).** Play re-signs apps with its own key (*Play App Signing*). People who installed the
-   GitHub APK have Luna signed with the private key in `luna-keys`; a Play-signed build would **not** install over it
-   (signature mismatch). Choose one before the first upload:
-   - **A. Upload the existing key to Play App Signing** (Play Console lets you import your current app-signing key via
-     Google's PEPK tool). Both channels keep the same signature and update each other. *Recommended; cannot be changed
-     later.*
-   - **B. Use a different application id for the store build** (for example `com.luna.browser.play`). Two separate apps,
-     no conflict, but users can't move their data between them.
+2. **Signing: decided, use the existing key (Play App Signing).** Play re-signs apps with its own key, so a Play build
+   would normally not install over the GitHub APK that people already have (different signature). To keep one identity
+   on every channel, Luna **imports its current signing key into Play App Signing**: in Play Console choose *Release →
+   Setup → App signing → "Use existing app signing key"* and upload the key exported with Google's **PEPK tool** (it
+   encrypts the key for Google; the plain key never leaves `luna-keys`). Afterwards the GitHub APK, the Play build and
+   later updates all carry the same certificate (SHA-256 starting `D5:C6:66:47`), so each can update the other. Points to
+   respect:
+   - This cannot be changed after the first upload of the app signing key.
+   - Keep using the same key for the GitHub Releases workflow. Play also asks for an *upload key*; reusing the same key
+     as the upload key is allowed, but a separate upload key is safer (it can be reset by Google if lost, the app
+     signing key cannot). Recommended: create a second keystore for uploads and keep it in `luna-keys` too.
+   - Back up `D:\Projects\luna-keys\` before touching any of this. Losing the app signing key means no more updates for
+     installed copies.
 3. **Privacy policy** at a public URL. Luna collects nothing, so the policy is short; the project already has the facts
    (README → Privacy). Write `PRIVACY.md` and publish it with GitHub Pages or link its raw GitHub view (Play accepts a
    plain page).
@@ -107,11 +111,6 @@ Reference: Android's [TV app quality checklist](https://developer.android.com/tr
 
 ## 6. Other stores
 
-**Amazon Appstore (Fire TV).** Free developer account; upload an APK or AAB; the app must be tested on a physical
-Fire TV before submission and must pass Amazon's test criteria (D-pad navigation, landscape, no features missing on Fire
-TV). Listing needs a 1280 × 720 icon and 3–10 screenshots (**verify**). Fire TV uses its own WebView, so compatibility
-needs a real device: add it to [COMPATIBILITY.md](COMPATIBILITY.md) first.
-
 **F-Droid.** Everything Luna depends on is open source (Compose, Coil, ZXing, kotlinx), the browser engine is the
 system WebView, and it has no tracking. F-Droid builds from source and signs with its own key, so the F-Droid build can
 never update over the GitHub APK. Steps: add a metadata file to
@@ -137,18 +136,18 @@ Add this to the README's Install section, and put the APK's SHA-256 in each rele
 
 ## 8. Suggested order
 
-1. Decide the signing option (section 3.2) and write `PRIVACY.md`.
+1. Signing is decided (section 3.2: existing key via Play App Signing). `PRIVACY.md` is written.
 2. Add `bundleRelease` to the Release workflow; check `targetSdk`; verify the banner.
 3. Create the Play Console account, start the closed test, collect 12+ testers.
 4. Fill the declarations and the listing in parallel with the 14-day wait.
 5. Apply for production, fix review feedback.
-6. Then F-Droid (open source, low cost) and Amazon (only with a real Fire TV).
+6. Then F-Droid (open source, low cost). Luna is deliberately **not** published on the Amazon Appstore.
 
 ## 9. Updates: how users learn about a new version
 
 | Install route | Who updates it | How the user finds out |
 |---|---|---|
-| **Google Play / Amazon / F-Droid** | The store, automatically (if the user allows auto-update) or from the store's page | Play shows "Update" and can update in the background. Nothing for Luna to build |
+| **Google Play / F-Droid** | The store, automatically (if the user allows auto-update) or from the store's page | Play shows "Update" and can update in the background. Nothing for Luna to build |
 | **GitHub APK, Downloader, adb** | Nobody, unless the user does it | Luna checks once a day (`UpdateCheck`, GitHub's public "latest release" API) and shows *Luna X.Y.Z is available* on Home, plus a QR code to the download page in *Settings → About*. It never downloads or installs by itself |
 
 The check is skipped when the installer is a store (`getInstallSourceInfo`), because store policies don't allow an app to
@@ -156,14 +155,35 @@ direct users somewhere else to get itself, and the store already handles it. Use
 *Settings → About*. Silent self-install of an APK is deliberately not offered: it needs the "install unknown apps"
 permission, which Play forbids for browsers' self-updates and which would be a security risk.
 
-## 10. Work for Luna (code / repo) before the first upload
+## 10. TV app quality self-check (15 Nov 2026)
+
+Against Google's [TV app quality checklist](https://developer.android.com/training/tv/publishing/checklist). "Done on TV"
+means checked by hand on the Xiaomi MiTV; "Code" means it follows from the manifest or code but was not re-tested.
+
+| Area | Result |
+|---|---|
+| Launcher entry (`LEANBACK_LAUNCHER`), banner with the app name | Done on TV: appears in the TV launcher |
+| Touchscreen and leanback declared not required | Code (manifest) |
+| Landscape, 1080p and 4K layouts, safe-area margins | Done on TV (1080p UI); 4K is the same layout, scaled |
+| Every control reachable with D-pad, visible focus | Done on TV: Home, Tabs, History, Settings, toolbar, panels |
+| Back returns step by step and exits from Home | Done on TV |
+| Media keys (play/pause, rewind, fast-forward) | Done on TV in earlier releases; also from the phone remote |
+| No crash or ANR in a normal session | No crash seen in the logs of this session; no long soak test |
+| Works offline: clear error screen | Done on TV (offline and timeout screens) |
+| Text size readable at 3 m | Done on TV (large type, per-site zoom) |
+| No required sign-in, no permissions prompt on first run | Done |
+| Cold start | 0.55 to 0.7 s on the Xiaomi TV |
+| Not tested | Other TVs and Android versions, 4K panel, voice search on a device without a recogniser, long sessions (hours) |
+
+## 11. Work for Luna (code / repo) before the first upload
 
 - [x] `bundleRelease` in the Release workflow (the `.aab` is kept as a workflow artifact, 90 days).
-- [ ] Decide and document the signing option; test installing the GitHub APK over a Play build.
+- [x] Signing option decided: existing key imported into Play App Signing.
+- [ ] Create a separate upload keystore and keep it in `luna-keys`; test installing the GitHub APK over a Play build from the closed test.
 - [x] `PRIVACY.md` (and a public URL: the GitHub file works).
 - [x] `store/` folder: listing text in 10 languages, graphics (`store/README.md`).
 - [x] Confirm `targetSdk` (34 is enough for TV, see section 2).
 - [x] Banner shows the app name.
 - [x] `dependenciesInfo { includeInApk = false }` (also required for F-Droid).
-- [ ] Retake 1920 × 1080 screenshots from a release build.
+- [x] 1920 × 1080 TV screenshots (`store/screenshots/`, taken 15 Nov 2026 on the real TV).
 - [ ] A short "TV app quality" self-test pass using the official checklist.

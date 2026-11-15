@@ -1,0 +1,7 @@
+{
+  "name": "luna-phonepage-test",
+  "private": true,
+  "description": "Runs the phone remote page in jsdom: shared links, pairing fragment, bookmarklet.",
+  "scripts": { "test": "node share.test.js" },
+  "devDependencies": { "jsdom": "^24.1.0" }
+}
