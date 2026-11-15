@@ -64,25 +64,25 @@ object Themes {
         Palette(
             "forest", Color(0xFF09120D), Color(0xFF121C16), Color(0xFF1B2820), Color(0xFF2A3D31), Color(0xFF7EE0A4), Color(0xFF2F6B4A),
             listOf(
-                ThemeLight(Color(0xCC2A9A5E), 200f, 160f, 380f, 240f, 120f),
-                ThemeLight(Color(0xCC17877F), 860f, 400f, 330f, -220f, -100f),
-                ThemeLight(Color(0xCC62A336), 480f, 620f, 280f, 260f, -200f),
+                ThemeLight(Color(0xFF2FB26C), 200f, 160f, 380f, 240f, 120f),
+                ThemeLight(Color(0xFF1CA39A), 860f, 400f, 330f, -220f, -100f),
+                ThemeLight(Color(0xFF7FBF3A), 480f, 620f, 280f, 260f, -200f),
             ),
             Motion.Fireflies, particle = Color(0xFFD9F57A),
         ),
         Palette(
             "ocean", Color(0xFF07101A), Color(0xFF0F1A28), Color(0xFF172536), Color(0xFF243A52), Color(0xFF6CCBFF), Color(0xFF1F5F8C),
             listOf(
-                ThemeLight(Color(0xB32B6FD1), 480f, 40f, 520f, 160f, 40f),
-                ThemeLight(Color(0x9917A6C9), 120f, 360f, 300f, 140f, 60f),
+                ThemeLight(Color(0xE62F7BE0), 480f, 40f, 520f, 160f, 40f),
+                ThemeLight(Color(0xCC1CB5D8), 120f, 360f, 300f, 140f, 60f),
             ),
             Motion.Waves, particle = Color(0xFF6CCBFF),
         ),
         Palette(
             "night", Color(0xFF06070E), Color(0xFF10121C), Color(0xFF191C2A), Color(0xFF272B40), Color(0xFFC4B5FF), Color(0xFF4A3F8C),
             listOf(
-                ThemeLight(Color(0x886A4FD1), 720f, 120f, 460f, -160f, 80f),
-                ThemeLight(Color(0x663A5FC8), 160f, 440f, 380f, 180f, -80f),
+                ThemeLight(Color(0xAA7A5CE6), 720f, 120f, 460f, -160f, 80f),
+                ThemeLight(Color(0x99466CD8), 160f, 440f, 380f, 180f, -80f),
             ),
             Motion.Stars, particle = Color(0xFFF4F1FF),
         ),

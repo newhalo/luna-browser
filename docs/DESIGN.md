@@ -37,7 +37,16 @@ a 3 dp white ring and a lighter fill. Scroll containers keep inner padding so a 
 ## Motion
 
 Fades, slides and scales of 100–250 ms. **Settings → General → Reduce motion** sets every duration to 0 and
-freezes the aurora background.
+freezes the animated background.
+
+## Themes
+
+Six palettes (`ui/theme/Themes.kt`): Luna, Dusk, Forest, Ocean, Night sky, Graphite. Colour tokens (`Bg`, `Surface*`, `Accent*`,
+`Scrim`) are getters over the active palette; text, danger and success colours are the same in every theme. Rules for a new
+theme: a dark background (luminance under 0.03), accent contrast of at least 7:1 on the background and 4.5:1 on the focused
+surface, surfaces getting lighter step by step (`ThemesTest` checks all of it), and a motion that is painted into the
+160×90 backdrop bitmap in `Aurora` — never as extra GPU layers. Keep particle counts small (a few dozen circles) and add the
+name to `strings.xml` in all ten languages.
 
 ## Components
 

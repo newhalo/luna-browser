@@ -44,6 +44,10 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
   only the text and pictures that matter; Up / Down scroll, Left / Right change the text size (remembered), **OK reads it
   aloud** with the TV's speech engine and highlights the paragraph being read. Back returns to the page. Nothing from the
   page can run in it.
+- **Themes** — six looks, each with its own colours and background motion: *Luna*, *Dusk* (rising embers), *Forest*
+  (fireflies), *Ocean* (slow waves), *Night sky* (twinkling stars) and *Graphite* (pure black, nothing moves — the lightest
+  on weak TVs). *Settings → General → Theme*; the whole screen changes at once. Every motion is painted into one small
+  bitmap, so a theme costs the GPU no more than the original background.
 - **Profiles** — up to five people (plus a guest) each get their own history, favourites, *continue watching* and open
   tabs, and, on a recent web engine, their own sign-ins. A profile can have a **4-digit PIN** (the picker then opens behind
   it). *Who's watching?* can appear when Luna opens; guest mode erases itself when it ends.

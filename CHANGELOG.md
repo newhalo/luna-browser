@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- **Themes**: *Luna* (default), *Dusk*, *Forest*, *Ocean*, *Night sky* and *Graphite*, chosen in *Settings → General → Theme*. Each has its own colours (background, surfaces, accent) and background motion: drifting lights, rising embers, fireflies, waves, twinkling stars, or nothing at all (Graphite, pure black). Reduce motion and *Animated background* still freeze them. Measured on the MiTV: idle GPU time per frame is the same as the original background in every theme (12.9 ms), and Graphite draws nothing while idle.
+
 ### Fixed
 - Phone remote: the remote tab now fits the phone screen without scrolling (pad and buttons scale with the screen height); the Type and Favorites tabs scroll inside their own area while the tab bar stays at the bottom.
 - Remote navigation: Right on the last card of a Home row no longer jumps into the row below, and Left from a Settings item always returns to the category being shown (it used to land a few categories further down).
