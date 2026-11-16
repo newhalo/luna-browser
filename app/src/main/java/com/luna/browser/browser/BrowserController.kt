@@ -75,10 +75,12 @@ data class Osd(val label: String, val icon: ImageVector?, val id: Long)
  * Owns the WebView and everything around it: loading state, error mapping, ad blocking,
  * the virtual cursor, and remote-control handling for pages and fullscreen video.
  */
-class BrowserController(private val activity: Activity, private val app: AppState) {
+class BrowserController(private val activity: Activity, private val app: AppState, val isPrivate: Boolean = false) {
     // Each profile has its own cookies and site data (where the web engine can separate them): set before anything loads.
-    val webView = WebView(activity).also { WebProfiles.apply(it, app.store.profileId) }
-    private val cookies = WebProfiles.cookies(app.store.profileId)
+    // A private tab uses the shared private profile instead and leaves no trace in the history, resume or thumbnails.
+    private val webProfile = if (isPrivate) WebProfiles.PRIVATE else app.store.profileId
+    val webView = WebView(activity).also { WebProfiles.apply(it, webProfile) }
+    private val cookies = WebProfiles.cookies(webProfile)
     private val handler = Handler(Looper.getMainLooper())
     private val density = activity.resources.displayMetrics.density
 
@@ -287,6 +289,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         active = false
         handler.removeCallbacksAndMessages(null)
         (webView.parent as? android.view.ViewGroup)?.removeView(webView)
+        if (isPrivate) runCatching { webView.clearCache(true); webView.clearHistory(); webView.clearFormData() }
         webView.destroy()
     }
 
@@ -764,6 +767,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
 
     private fun onVisited(pageUrl: String, pageTitle: String) {
         app.tabs.saveSoon()
+        if (isPrivate) return
         app.store.recordVisit(pageTitle, pageUrl)
         artUrl = pageUrl
         handler.removeCallbacks(artTask)
@@ -783,6 +787,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
 
     /** Screenshots the visible page (GPU content included) into a small JPEG for home-screen cards. */
     private fun snapshot(u: String) {
+        if (isPrivate) return
         if (customView != null || toolbarVisible || webView.width == 0 || !webView.isAttachedToWindow) return
         capturing = true
         handler.postDelayed({
@@ -813,7 +818,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         val u = url
         var called = false
         fun finish() { if (!called) { called = true; done() } }
-        if (!u.startsWith("http") || error != null || customView != null || webView.width == 0 || !webView.isAttachedToWindow || reader) { finish(); return }
+        if (isPrivate || !u.startsWith("http") || error != null || customView != null || webView.width == 0 || !webView.isAttachedToWindow || reader) { finish(); return }
         val wasToolbar = toolbarVisible
         toolbarVisible = false
         capturing = true
@@ -1237,7 +1242,7 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
 
     private fun saveProgress(s: VideoState, flush: Boolean = false) {
         val u = url
-        if (u.isBlank() || s.failed || (s.buffering && !flush)) return
+        if (isPrivate || u.isBlank() || s.failed || (s.buffering && !flush)) return
         // Until the saved position has been applied, a freshly started video must not overwrite it.
         if (resumeTried != ResumeRules.key(u)) return
         app.store.savePosition(u, s.position, s.duration, flush)
@@ -1245,7 +1250,7 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
 
     private fun trackProgress(s: VideoState) {
         val u = url
-        if (u.isBlank() || s.failed || s.buffering) return
+        if (isPrivate || u.isBlank() || s.failed || s.buffering) return
         val key = ResumeRules.key(u)
         if (resumeTried != key && s.duration >= ResumeRules.MIN_DURATION) {
             resumeTried = key

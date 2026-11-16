@@ -389,4 +389,10 @@
     <string name="theme_sakura">Sakura</string>
     <string name="set_glass">Visual de vidro</string>
     <string name="set_glass_d">Botões e cartões translúcidos, como vidro fosco, com borda clara. Quase não pesa em TVs fracas.</string>
+    <string name="priv_btn">Anônimo</string>
+    <string name="priv_new_tab">Nova aba anônima</string>
+    <string name="priv_badge">Anônimo</string>
+    <string name="priv_hint">Aba anônima · histórico, posições de vídeo e logins não são salvos</string>
+    <string name="priv_cleared">Dados anônimos apagados</string>
+    <string name="priv_shared">O mecanismo web deste sistema não consegue separar logins anônimos: os cookies desta aba são mantidos como os normais. O histórico e as posições de vídeo continuam sem ser salvos.</string>
 </resources>

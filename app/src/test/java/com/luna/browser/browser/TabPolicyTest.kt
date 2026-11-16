@@ -57,4 +57,23 @@ class TabPolicyTest {
         val many = (1..20).map { "https://s$it.com" to "$it" }
         assertEquals(TabPolicy.MAX_TABS, TabPolicy.fromJson(TabPolicy.toJson(many, 0)).first.size)
     }
+
+    @Test fun privateTabsAreNeverSaved() {
+        // normal, private, normal, private
+        val flags = listOf(false, true, false, true)
+        assertEquals(listOf(0, 2), TabPolicy.persistable(flags, 0).first)
+        assertEquals(1, TabPolicy.persistable(flags, 2).second)
+    }
+
+    @Test fun aPrivateCurrentTabFallsBackToTheNearestSavedOneBeforeIt() {
+        val flags = listOf(false, false, true, true)
+        assertEquals(1, TabPolicy.persistable(flags, 3).second)
+        assertEquals(0, TabPolicy.persistable(listOf(true, false), 0).second)
+    }
+
+    @Test fun onlyPrivateTabsSavesNothing() {
+        val r = TabPolicy.persistable(listOf(true, true), 1)
+        assertEquals(emptyList<Int>(), r.first)
+        assertEquals(0, r.second)
+    }
 }

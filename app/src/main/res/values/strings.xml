@@ -410,4 +410,10 @@
     <string name="theme_sakura">Sakura</string>
     <string name="set_glass">Glass look</string>
     <string name="set_glass_d">Frosted, see-through buttons and cards with a light edge. Costs almost nothing on weak TVs.</string>
+    <string name="priv_btn">Private</string>
+    <string name="priv_new_tab">New private tab</string>
+    <string name="priv_badge">Private</string>
+    <string name="priv_hint">Private tab · history, video positions and sign-ins are not saved</string>
+    <string name="priv_cleared">Private data erased</string>
+    <string name="priv_shared">This system\'s web engine can\'t keep private sign-ins apart: cookies from this tab are kept like normal ones. History and video positions are still not saved.</string>
 </resources>

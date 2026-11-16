@@ -434,9 +434,20 @@ class AppState(val activity: Activity) {
         show(Screen.Home)
     }
 
+    /** A new, empty private tab (no history, resume positions, thumbnails or saved tab; its own sign-ins); Home opens to pick something. */
+    fun newPrivateTab() {
+        if (!tabs.add(isPrivate = true)) { toast(R.string.toast_tab_limit, TabPolicy.MAX_TABS); return }
+        stack.clear()
+        show(Screen.Home)
+        if (!com.luna.browser.browser.WebProfiles.supported()) toast(R.string.priv_shared)
+    }
+
     fun closeTab(i: Int) {
+        val wasPrivate = tabs.tabs.getOrNull(i)?.isPrivate == true
         tabs.close(i)
-        if (tabs.count == 1 && tabs.current.isEmpty) goHome() else toast(R.string.toast_tab_closed)
+        val ended = wasPrivate && tabs.tabs.none { it.isPrivate }
+        if (tabs.count == 1 && tabs.current.isEmpty) goHome()
+        if (ended) toast(R.string.priv_cleared) else if (!(tabs.count == 1 && tabs.current.isEmpty)) toast(R.string.toast_tab_closed)
     }
 
     fun closeOtherTabs(keep: Int) {
@@ -497,6 +508,8 @@ class AppState(val activity: Activity) {
     }
 
     fun launch() {
+        // Private sign-ins never outlive the app, also after a crash.
+        com.luna.browser.browser.WebProfiles.wipePrivate()
         // A profile with a PIN opens behind the picker; "Who's watching?" can also be asked for at every start.
         if (locked) { show(Screen.Profiles); return }
         if (store.profiles.size > 1 && store.bool(K.ASK_PROFILE)) { show(Screen.Profiles); return }

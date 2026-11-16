@@ -15,7 +15,7 @@ import com.luna.browser.data.DeviceProfile
  * One page the viewer has open. It owns a [BrowserController] (a WebView with its pointer, video and page state)
  * only while it is "live"; a frozen tab keeps just its address and title and is loaded again when selected.
  */
-class Tab(url: String = "", title: String = "") {
+class Tab(url: String = "", title: String = "", val isPrivate: Boolean = false) {
     var controller: BrowserController? = null
     var lastUsed = 0L
 
@@ -87,7 +87,7 @@ class TabManager(private val app: AppState) {
             tabs[victim].freeze()
         }
         val saved = t.savedPair()
-        val c = BrowserController(app.activity, app)
+        val c = BrowserController(app.activity, app, t.isPrivate)
         t.controller = c
         if (saved.first.startsWith("http")) c.load(saved.first)
         return c
@@ -100,9 +100,9 @@ class TabManager(private val app: AppState) {
     }
 
     /** Adds an empty tab and makes it current; false when the limit is reached. */
-    fun add(): Boolean {
+    fun add(isPrivate: Boolean = false): Boolean {
         if (tabs.size >= TabPolicy.MAX_TABS) return false
-        tabs.add(Tab())
+        tabs.add(Tab(isPrivate = isPrivate))
         index = tabs.lastIndex
         saveSoon()
         return true
@@ -110,27 +110,41 @@ class TabManager(private val app: AppState) {
 
     fun close(i: Int) {
         if (i !in tabs.indices) return
-        tabs[i].url.takeIf { it.startsWith("http") }?.let { app.store.deleteTabThumb(it) }
+        val wasPrivate = tabs[i].isPrivate
+        if (!wasPrivate) tabs[i].url.takeIf { it.startsWith("http") }?.let { app.store.deleteTabThumb(it) }
         tabs[i].freeze()
         tabs.removeAt(i)
         if (tabs.isEmpty()) tabs.add(Tab())
         index = TabPolicy.indexAfterClose(index, i, tabs.size)
         saveSoon()
+        if (wasPrivate) endPrivateIfNone()
     }
 
     fun closeOthers(keep: Int) {
         if (keep !in tabs.indices) return
-        for (i in tabs.lastIndex downTo 0) if (i != keep) { tabs[i].freeze(); tabs.removeAt(i) }
+        var closedPrivate = false
+        for (i in tabs.lastIndex downTo 0) if (i != keep) { closedPrivate = closedPrivate || tabs[i].isPrivate; tabs[i].freeze(); tabs.removeAt(i) }
         index = 0
         saveSoon()
+        if (closedPrivate) endPrivateIfNone()
     }
 
     /** The tab showing [url], or -1. */
-    fun indexOfUrl(url: String): Int = tabs.indexOfFirst { it.url == url }
+    fun indexOfUrl(url: String): Int = tabs.indexOfFirst { !it.isPrivate && it.url == url }
+
+    /** Whether the private session is over (no private tab left): its sign-ins and site data are erased. */
+    private fun endPrivateIfNone() {
+        if (tabs.any { it.isPrivate }) return
+        WebProfiles.wipePrivate()
+        // The engine may still hold the closed WebView for a moment, which blocks removing the profile: once more later.
+        handler.postDelayed({ if (tabs.none { it.isPrivate }) WebProfiles.wipePrivate() }, 1500)
+    }
 
     // ---- Persistence ----
     private val save = Runnable {
-        app.store.writeTabs(TabPolicy.toJson(tabs.map { it.savedPair() }, index))
+        // Private tabs are never written down.
+        val (keep, cur) = TabPolicy.persistable(tabs.map { it.isPrivate }, index)
+        app.store.writeTabs(TabPolicy.toJson(keep.map { tabs[it].savedPair() }, cur))
     }
 
     /** Called whenever tabs or their pages change; coalesced, since pages change often. */
@@ -142,6 +156,8 @@ class TabManager(private val app: AppState) {
     fun destroyAll() {
         handler.removeCallbacks(save)
         save.run()
+        val hadPrivate = tabs.any { it.isPrivate }
         tabs.forEach { it.freeze() }
+        if (hadPrivate) WebProfiles.wipePrivate()
     }
 }

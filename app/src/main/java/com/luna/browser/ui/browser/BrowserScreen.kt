@@ -49,6 +49,7 @@ import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material.icons.rounded.Tab as TabIcon
 import androidx.compose.material.icons.rounded.TouchApp
 import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material.icons.rounded.WifiOff
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -142,11 +143,26 @@ private fun BrowserContent(app: AppState, b: BrowserController) {
             }
         }
 
+        if (b.isPrivate && b.customView == null && !b.capturing) PrivateBadge()
         b.error?.let { ErrorPanel(app, it) }
         if (b.customView != null) FullscreenLayer(b) else OsdFlash(b)
         if (b.reader) ReaderHud(b)
         Toolbar(app, b)
         if (b.sitePanel) SitePanel(app, b)
+    }
+}
+
+/** A small always-visible mark in the corner while a private tab is shown. */
+@Composable
+private fun BoxScope.PrivateBadge() {
+    Row(
+        Modifier.align(Alignment.TopEnd).padding(top = 27.dp, end = 48.dp)
+            .clip(RoundedCornerShape(16.dp)).background(Color(0xCC121622)).padding(horizontal = 12.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Icon(Icons.Rounded.VisibilityOff, null, tint = Accent, modifier = Modifier.size(18.dp))
+        Txt(stringResource(R.string.priv_badge), T.caption.copy(fontSize = 15.sp), color = TextPrimary)
     }
 }
 
@@ -224,7 +240,7 @@ private fun Toolbar(app: AppState, b: BrowserController) {
                     shape = RoundedCornerShape(33.dp),
                 ) {
                     Row(Modifier.padding(horizontal = 22.dp).align(Alignment.CenterStart), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(if (b.url.startsWith("https")) Icons.Rounded.Lock else Icons.Rounded.Search, null, tint = TextSecondary, modifier = Modifier.size(24.dp))
+                        Icon(if (b.isPrivate) Icons.Rounded.VisibilityOff else if (b.url.startsWith("https")) Icons.Rounded.Lock else Icons.Rounded.Search, null, tint = TextSecondary, modifier = Modifier.size(24.dp))
                         Column(Modifier.padding(start = 14.dp)) {
                             Txt(if (b.url.isEmpty()) stringResource(R.string.tb_address_hint) else hostOf(b.url), T.label)
                             Txt(b.title.ifBlank { stringResource(R.string.tb_edit_hint) }, T.caption)

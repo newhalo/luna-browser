@@ -397,4 +397,10 @@
     <string name="theme_sakura">Сакура</string>
     <string name="set_glass">Стеклянный вид</string>
     <string name="set_glass_d">Матовые полупрозрачные кнопки и карточки со светлой кромкой. Почти не нагружает слабые ТВ.</string>
+    <string name="priv_btn">Инкогнито</string>
+    <string name="priv_new_tab">Новая вкладка инкогнито</string>
+    <string name="priv_badge">Инкогнито</string>
+    <string name="priv_hint">Вкладка инкогнито · история, позиции видео и входы не сохраняются</string>
+    <string name="priv_cleared">Данные инкогнито удалены</string>
+    <string name="priv_shared">Веб-движок этой системы не умеет отделять входы в режиме инкогнито: cookie этой вкладки сохраняются как обычно. История и позиции видео по-прежнему не сохраняются.</string>
 </resources>

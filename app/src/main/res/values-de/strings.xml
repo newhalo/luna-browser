@@ -389,4 +389,10 @@
     <string name="theme_sakura">Sakura</string>
     <string name="set_glass">Glas-Look</string>
     <string name="set_glass_d">Milchglasartige, durchscheinende Schaltflächen und Karten mit hellem Rand. Kostet auf schwachen Fernsehern fast nichts.</string>
+    <string name="priv_btn">Privat</string>
+    <string name="priv_new_tab">Neuer privater Tab</string>
+    <string name="priv_badge">Privat</string>
+    <string name="priv_hint">Privater Tab · Verlauf, Videopositionen und Anmeldungen werden nicht gespeichert</string>
+    <string name="priv_cleared">Private Daten gelöscht</string>
+    <string name="priv_shared">Die Web-Engine dieses Systems kann private Anmeldungen nicht trennen: Cookies dieses Tabs bleiben wie sonst erhalten. Verlauf und Videopositionen werden trotzdem nicht gespeichert.</string>
 </resources>

@@ -385,4 +385,10 @@
     <string name="theme_sakura">Hoa anh đào</string>
     <string name="set_glass">Giao diện kính</string>
     <string name="set_glass_d">Nút và thẻ trong mờ như kính, viền sáng. Gần như không tốn tài nguyên trên TV yếu.</string>
+    <string name="priv_btn">Ẩn danh</string>
+    <string name="priv_new_tab">Tab ẩn danh mới</string>
+    <string name="priv_badge">Ẩn danh</string>
+    <string name="priv_hint">Tab ẩn danh · không lưu lịch sử, vị trí video và đăng nhập</string>
+    <string name="priv_cleared">Đã xóa dữ liệu ẩn danh</string>
+    <string name="priv_shared">Công cụ web của hệ thống này không tách được đăng nhập ẩn danh: cookie của tab này được giữ như thường. Lịch sử và vị trí video vẫn không được lưu.</string>
 </resources>

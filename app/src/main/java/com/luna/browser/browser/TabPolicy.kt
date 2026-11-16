@@ -36,6 +36,17 @@ object TabPolicy {
         else -> current
     }
 
+    /**
+     * Private tabs are never saved. Given which open tabs are private and which one is current, the indices to save
+     * and the current one among them (the nearest saved tab before it when a private tab is current, else the first).
+     */
+    fun persistable(isPrivate: List<Boolean>, current: Int): Pair<List<Int>, Int> {
+        val keep = isPrivate.indices.filter { !isPrivate[it] }
+        val at = keep.indexOf(current)
+        val cur = if (at >= 0) at else keep.lastOrNull { it < current }?.let { keep.indexOf(it) } ?: 0
+        return keep to cur
+    }
+
     fun toJson(tabs: List<Pair<String, String>>, current: Int): String = JSONObject()
         .put("current", current)
         .put("tabs", JSONArray().apply { tabs.forEach { (u, t) -> put(JSONObject().put("u", u).put("t", t)) } })

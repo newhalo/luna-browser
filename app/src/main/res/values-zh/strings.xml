@@ -385,4 +385,10 @@
     <string name="theme_sakura">樱花</string>
     <string name="set_glass">玻璃质感</string>
     <string name="set_glass_d">磨砂玻璃般的半透明按钮和卡片，边缘明亮。在配置较低的电视上几乎不占资源。</string>
+    <string name="priv_btn">无痕</string>
+    <string name="priv_new_tab">新建无痕标签页</string>
+    <string name="priv_badge">无痕</string>
+    <string name="priv_hint">无痕标签页 · 不保存历史记录、视频播放位置和登录状态</string>
+    <string name="priv_cleared">已清除无痕数据</string>
+    <string name="priv_shared">此系统的网页引擎无法隔离无痕登录：该标签页的 Cookie 会像普通标签页一样保留。历史记录和视频播放位置仍不会保存。</string>
 </resources>

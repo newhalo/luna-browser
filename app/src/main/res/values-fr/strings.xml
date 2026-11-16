@@ -389,4 +389,10 @@
     <string name="theme_sakura">Sakura</string>
     <string name="set_glass">Aspect verre</string>
     <string name="set_glass_d">Boutons et cartes translucides, façon verre dépoli, avec un bord clair. Presque sans coût sur les TV modestes.</string>
+    <string name="priv_btn">Privé</string>
+    <string name="priv_new_tab">Nouvel onglet privé</string>
+    <string name="priv_badge">Privé</string>
+    <string name="priv_hint">Onglet privé · l\'historique, les positions vidéo et les connexions ne sont pas enregistrés</string>
+    <string name="priv_cleared">Données privées effacées</string>
+    <string name="priv_shared">Le moteur web de ce système ne peut pas isoler les connexions privées : les cookies de cet onglet sont conservés comme d\'habitude. L\'historique et les positions vidéo ne sont toujours pas enregistrés.</string>
 </resources>

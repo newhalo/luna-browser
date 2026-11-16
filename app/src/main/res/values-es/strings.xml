@@ -389,4 +389,10 @@
     <string name="theme_sakura">Sakura</string>
     <string name="set_glass">Aspecto de cristal</string>
     <string name="set_glass_d">Botones y tarjetas translúcidos como cristal esmerilado, con borde claro. Casi no consume en TV modestas.</string>
+    <string name="priv_btn">Privado</string>
+    <string name="priv_new_tab">Nueva pestaña privada</string>
+    <string name="priv_badge">Privado</string>
+    <string name="priv_hint">Pestaña privada · no se guardan el historial, las posiciones de vídeo ni los inicios de sesión</string>
+    <string name="priv_cleared">Datos privados borrados</string>
+    <string name="priv_shared">El motor web de este sistema no puede separar los inicios de sesión privados: las cookies de esta pestaña se conservan como las normales. El historial y las posiciones de vídeo siguen sin guardarse.</string>
 </resources>

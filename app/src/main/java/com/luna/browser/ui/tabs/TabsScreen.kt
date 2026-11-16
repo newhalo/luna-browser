@@ -21,6 +21,7 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -81,6 +82,7 @@ fun TabsScreen(app: AppState) {
                 Spacer(Modifier.height(8.dp))
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (t != null && !t.isEmpty) Pill(hostOf(t.url))
+                    if (t != null && t.isPrivate) Pill(stringResource(R.string.priv_badge))
                     if (shown == tabs.index) Pill(stringResource(R.string.tabs_current))
                     Txt(stringResource(R.string.tabs_hint), T.caption, color = TextSecondary)
                 }
@@ -95,6 +97,7 @@ fun TabsScreen(app: AppState) {
                 TvButton(stringResource(R.string.tabs_close), { app.closeTab(shown) }, icon = Icons.Rounded.Close, container = Glass)
                 if (tabs.count > 1) TvButton(stringResource(R.string.tabs_close_others), { app.closeOtherTabs(shown) }, icon = Icons.Rounded.TabIcon, container = Glass)
                 TvButton(newLabel, { app.newTab() }, icon = Icons.Rounded.Add, primary = true)
+                TvButton(stringResource(R.string.priv_new_tab), { app.newPrivateTab() }, icon = Icons.Rounded.VisibilityOff, container = Glass)
             }
         }
     }
@@ -106,9 +109,9 @@ private fun tabItem(app: AppState, index: Int, t: Tab): MediaItem {
     return MediaItem(
         key = "t:$index",
         title = if (t.isEmpty) app.s(R.string.tabs_new) else t.title.ifBlank { host },
-        subtitle = host,
+        subtitle = if (t.isPrivate) app.s(R.string.priv_badge) + (if (host.isEmpty()) "" else " · $host") else host,
         url = t.url,
-        art = if (t.isEmpty) null else store.tabThumb(t.url) ?: store.artForUrl(t.url) ?: store.artForHost(host),
+        art = if (t.isEmpty || t.isPrivate) null else store.tabThumb(t.url) ?: store.artForUrl(t.url) ?: store.artForHost(host),
         icon = if (host.isEmpty()) null else store.iconFor(host),
         brand = brandOf(host),
     )

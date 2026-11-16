@@ -29,6 +29,7 @@ import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Tab as TabIcon
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material.icons.rounded.WifiOff
 import androidx.compose.material3.Icon
 import androidx.annotation.StringRes
@@ -117,9 +118,10 @@ fun HomeScreen(app: AppState) {
     val showContinue = store.bool(K.SHOW_CONTINUE)
     val lang = app.lang
     val tileScale = TileSize.scale(store.str(K.TILE_SIZE))
-    val rows = remember(store.version, showContinue, lang, tileScale) {
+    val inPrivate = app.tabs.current.isPrivate   // a private tab does not show what was watched before
+    val rows = remember(store.version, showContinue, lang, tileScale, inPrivate) {
         buildList {
-            val cont = if (showContinue) store.continueItems() else emptyList()
+            val cont = if (showContinue && !inPrivate) store.continueItems() else emptyList()
             if (cont.isNotEmpty()) add(Triple(R.string.home_continue, cont, 272.dp * tileScale))
             add(Triple(R.string.home_your_sites, store.siteItems(lang), 216.dp * tileScale))
             val favs = store.favoriteItems()
@@ -190,6 +192,7 @@ private fun Header(app: AppState) {
         Spacer(Modifier.weight(1f))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             if (app.store.profiles.size > 1 || app.store.isGuest) ProfileChip(app, Modifier.rememberFocus(app, "home", "nav:profile"))
+            TvButton(stringResource(R.string.priv_btn), { app.newPrivateTab() }, Modifier.rememberFocus(app, "home", "nav:private"), Icons.Rounded.VisibilityOff, container = Glass)
             if (app.tabs.hasContent) {
                 TvButton(stringResource(R.string.tb_tabs), { app.navigate(Screen.Tabs) }, Modifier.rememberFocus(app, "home", "nav:tabs"), Icons.Rounded.TabIcon, container = Glass)
             }
@@ -219,6 +222,7 @@ private fun HeroInfo(app: AppState, hero: () -> MediaItem?, online: Boolean) {
                         val oldEngine = com.luna.browser.data.WebViewCheck.needsAttention(app.webViewLevel)
                         if (upd != null) Txt(stringResource(R.string.upd_home, upd), T.body.copy(fontSize = 22.sp), color = Accent)
                         else if (oldEngine) Txt(stringResource(R.string.web_home), T.body.copy(fontSize = 22.sp), color = Danger)
+                        else if (app.tabs.current.isPrivate) Txt(stringResource(R.string.priv_hint), T.body.copy(fontSize = 22.sp), color = Accent)
                         else if (app.store.isGuest) Txt(stringResource(R.string.prof_guest_hint), T.body.copy(fontSize = 22.sp), color = Accent)
                         else Txt(stringResource(R.string.home_prompt), T.body.copy(fontSize = 22.sp), color = TextSecondary)
                     }
@@ -286,7 +290,7 @@ fun AddressDialog(app: AppState) {
     }
     val q = text.text.trim()
     val suggestions = if (q.length < 2) emptyList() else
-        (app.store.favoriteItems() + app.store.continueItems(300))
+        (app.store.favoriteItems() + if (app.tabs.current.isPrivate) emptyList() else app.store.continueItems(300))
             .distinctBy { it.url }
             .filter { it.url.contains(q, true) || it.title.contains(q, true) }
             .take(4)

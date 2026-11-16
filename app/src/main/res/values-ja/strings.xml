@@ -385,4 +385,10 @@
     <string name="theme_sakura">桜</string>
     <string name="set_glass">ガラス風デザイン</string>
     <string name="set_glass_d">すりガラスのような半透明のボタンとカード。縁は明るく、低性能のテレビでもほとんど負荷がありません。</string>
+    <string name="priv_btn">プライベート</string>
+    <string name="priv_new_tab">新しいプライベートタブ</string>
+    <string name="priv_badge">プライベート</string>
+    <string name="priv_hint">プライベートタブ · 履歴、動画の再生位置、ログイン情報は保存されません</string>
+    <string name="priv_cleared">プライベートのデータを消去しました</string>
+    <string name="priv_shared">このシステムのWebエンジンはプライベートのログインを分離できません。このタブのCookieは通常どおり保持されます。履歴と動画の再生位置は引き続き保存されません。</string>
 </resources>
