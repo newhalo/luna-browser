@@ -192,7 +192,6 @@ private fun Header(app: AppState) {
         Spacer(Modifier.weight(1f))
         Row(horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
             if (app.store.profiles.size > 1 || app.store.isGuest) ProfileChip(app, Modifier.rememberFocus(app, "home", "nav:profile"))
-            TvButton(stringResource(R.string.priv_btn), { app.newPrivateTab() }, Modifier.rememberFocus(app, "home", "nav:private"), Icons.Rounded.VisibilityOff, container = Glass)
             if (app.tabs.hasContent) {
                 TvButton(stringResource(R.string.tb_tabs), { app.navigate(Screen.Tabs) }, Modifier.rememberFocus(app, "home", "nav:tabs"), Icons.Rounded.TabIcon, container = Glass)
             }
@@ -249,7 +248,7 @@ private fun SearchRow(app: AppState, searchFr: FocusRequester, firstCardFr: Focu
     ) {
         FocusSurface(
             onClick = { app.openAddress() },
-            modifier = Modifier.width(560.dp).height(58.dp)
+            modifier = Modifier.width(if (app.voiceAvailable) 430.dp else 560.dp).height(58.dp)
                 .rememberFocus(app, "home", "search")
                 .focusRequester(searchFr)
                 .focusProperties { down = firstCardFr }
@@ -270,6 +269,11 @@ private fun SearchRow(app: AppState, searchFr: FocusRequester, firstCardFr: Focu
                 Icons.Rounded.Mic, container = Glass,
             )
         }
+        TvButton(
+            stringResource(R.string.priv_btn), { app.newPrivateTab() },
+            Modifier.height(58.dp).rememberFocus(app, "home", "search:private").focusProperties { down = firstCardFr }.onFocusChanged { if (it.isFocused) onFocus() },
+            Icons.Rounded.VisibilityOff, container = Glass,
+        )
     }
 }
 
