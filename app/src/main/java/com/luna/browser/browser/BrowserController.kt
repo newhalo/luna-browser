@@ -605,6 +605,15 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             if (!request.isForMainFrame) return
             val desc = err.description?.toString() ?: ""
             if (desc.contains("ERR_ABORTED") || desc.contains("BLOCKED_BY_CLIENT")) return
+            // A bare domain that does not answer (no address, no certificate, no connection) often works with "www." in front.
+            val failed = request.url.toString()
+            val connectFailure = err.errorCode in setOf(
+                WebViewClient.ERROR_HOST_LOOKUP, WebViewClient.ERROR_CONNECT, WebViewClient.ERROR_TIMEOUT,
+                WebViewClient.ERROR_IO, WebViewClient.ERROR_FAILED_SSL_HANDSHAKE,
+            )
+            if (connectFailure && wwwTried.add(failed)) {
+                WwwFallback.alternative(failed)?.let { alt -> handler.post { load(alt) }; return }
+            }
             loading = false
             error = mapError(err.errorCode)
         }
@@ -615,6 +624,9 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             error = PageError(ErrorKind.Ssl, R.string.err_ssl_t, R.string.err_ssl_blocked_m)
         }
     }
+
+    /** Addresses already retried with "www." (once each, so a failing www page is not retried again). */
+    private val wwwTried = HashSet<String>()
 
     private fun mapError(code: Int): PageError {
         val cm = activity.getSystemService(ConnectivityManager::class.java)
