@@ -54,6 +54,9 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 - **Profiles** — up to five people (plus a guest) each get their own history, favourites, *continue watching* and open
   tabs, and, on a recent web engine, their own sign-ins. A profile can have a **4-digit PIN** (the picker then opens behind
   it). *Who's watching?* can appear when Luna opens; guest mode erases itself when it ends.
+- **Private tabs** — *Private* next to the search bar (or *New private tab* in the tab switcher) opens a tab that leaves no
+  history, *continue watching* entry, video position, thumbnail or saved tab, and keeps its own sign-ins (on a recent web
+  engine) until the last private tab closes.
 - **Per-site settings** — the toolbar's *Site* button sets desktop mode, text size, ad blocking and pointer mode
   for one site only, and has **Report a problem**: scan a QR code to open a pre-filled report on GitHub.
 - **Your phone as a remote** — scan the QR code in *Settings → Phone remote* and your phone becomes a full remote
@@ -253,6 +256,8 @@ Pages are rendered by the Android System WebView and get **no** JavaScript bridg
 - [ ] Emulator-based UI tests for D-pad navigation.
 - [ ] Gradle 9 and the newest Compose, once the plugins catch up.
 - [ ] Google Play listing: Play Console account, 12-tester closed test, then production (see [docs/PUBLISHING.md](docs/PUBLISHING.md)).
+
+**Next release:** *private tabs*.
 
 **Done in 0.8.0:** the *Sakura* theme, round particles, and the optional *Glass look*.
 

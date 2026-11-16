@@ -35,6 +35,14 @@ Luna can keep separate history, favourites, open tabs and (on a recent web engin
 guest. This is only a separation on the TV, not an account: profile names and avatars are stored on the device and never sent
 anywhere. Deleting a profile erases its data; a guest session erases itself when it ends.
 
+## Private tabs
+
+A private tab writes nothing about what it shows: no history entry, no *continue watching* card, no saved video position, no
+thumbnail, no site icon, and it is never saved with the open tabs. On a recent web engine it has its own cookies and site
+data, erased when the last private tab closes and again at every start of the app; on an older engine those are shared with
+normal tabs (Luna says so when you open one). Favourites you save yourself are kept, as with any tab. Private tabs do not
+hide anything from the sites you visit, your network or the TV's own system.
+
 ## Profile PINs
 
 A profile PIN is stored on the TV only as a salted SHA-256 hash and never sent anywhere. It keeps family members out of each

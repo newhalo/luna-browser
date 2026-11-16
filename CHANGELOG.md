@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- **Private tabs** (*Ẩn danh* / *Private* next to the search bar on Home, and *New private tab* in the tab switcher): no history, no *continue watching* entry, no saved video position, no thumbnail or site icon, never restored after a restart. A private tab has its own cookies and site data (where the web engine supports profiles), erased when the last private tab closes and at every start. A small badge marks private pages; Home hides *continue watching* and history suggestions while one is open.
+
 ## [0.8.0] - 2026-11-15
 
 ### Added

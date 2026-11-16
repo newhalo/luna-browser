@@ -646,12 +646,12 @@ class BrowserController(private val activity: Activity, private val app: AppStat
 
         override fun onReceivedTitle(view: WebView, t: String?) {
             title = t ?: ""
-            view.url?.let { app.store.updateTitle(it, title) }
+            if (!isPrivate) view.url?.let { app.store.updateTitle(it, title) }
         }
 
         override fun onReceivedIcon(view: WebView, icon: Bitmap?) {
             val u = view.url ?: return
-            if (icon == null || icon.width < 32) return
+            if (isPrivate || icon == null || icon.width < 32) return   // a saved icon would name the site on disk
             val f = File(app.store.iconsDir, hostOf(u) + ".png")
             val host = hostOf(u)
             Thread {
