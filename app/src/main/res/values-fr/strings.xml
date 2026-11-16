@@ -395,4 +395,5 @@
     <string name="priv_hint">Onglet privé · l\'historique, les positions vidéo et les connexions ne sont pas enregistrés</string>
     <string name="priv_cleared">Données privées effacées</string>
     <string name="priv_shared">Le moteur web de ce système ne peut pas isoler les connexions privées : les cookies de cet onglet sont conservés comme d\'habitude. L\'historique et les positions vidéo ne sont toujours pas enregistrés.</string>
+    <string name="err_ssl_proceed">Ouvrir quand même (non sécurisé)</string>
 </resources>

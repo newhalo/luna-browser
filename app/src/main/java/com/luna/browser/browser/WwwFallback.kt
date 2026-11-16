@@ -3,12 +3,28 @@ package com.luna.browser.browser
 import java.net.URI
 
 /**
- * Some sites answer only on `www.example.com`: the bare `example.com` has no address or no certificate, so typing it (or
- * following an old link to it) fails. When a page fails to connect, Luna tries the same address once with `www.` in front.
- * Kept apart from the Android classes so it is unit-tested.
+ * When a page cannot be reached, browsers try the obvious neighbours of the address before giving up: some sites answer only
+ * on `www.example.com` (the bare name has no address or no certificate), and a site typed without `https://` may only speak
+ * plain `http://`. Kept apart from the Android classes so it is unit-tested.
  */
 object WwwFallback {
     private val SECOND_LEVEL = setOf("com", "co", "net", "org", "gov", "edu", "ac")
+
+    /**
+     * The addresses to try, in order, after [url] failed to connect. [bare] says the viewer typed it without a scheme, which is
+     * the only case where falling back from https to http is acceptable (an explicit https address is never downgraded).
+     */
+    fun candidates(url: String, bare: Boolean): List<String> {
+        val out = mutableListOf<String>()
+        val www = alternative(url)
+        www?.let { out.add(it) }
+        if (bare && url.startsWith("https://", ignoreCase = true)) {
+            val http = "http://" + url.substring(8)
+            out.add(http)
+            www?.let { out.add("http://" + it.substring(8)) }
+        }
+        return out
+    }
 
     /** The same address on `www.` + host, or null when that makes no sense (already `www`, a subdomain, an IP, not http/https). */
     fun alternative(url: String): String? {

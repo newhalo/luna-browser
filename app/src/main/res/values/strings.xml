@@ -416,4 +416,5 @@
     <string name="priv_hint">Private tab · history, video positions and sign-ins are not saved</string>
     <string name="priv_cleared">Private data erased</string>
     <string name="priv_shared">This system\'s web engine can\'t keep private sign-ins apart: cookies from this tab are kept like normal ones. History and video positions are still not saved.</string>
+    <string name="err_ssl_proceed">Open anyway (not secure)</string>
 </resources>

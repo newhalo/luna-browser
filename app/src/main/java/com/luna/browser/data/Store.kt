@@ -562,11 +562,13 @@ class Store(ctx: Context) {
     // ---- Address resolution ----
     fun resolve(input: String): String {
         val t = input.trim()
-        if (t.isEmpty()) return ""
-        if (Regex("^[a-zA-Z][a-zA-Z0-9+.-]*://.*").matches(t)) return t
-        if (t.startsWith("localhost") || Regex("^(\\d{1,3}\\.){3}\\d{1,3}(:\\d+)?(/.*)?$").matches(t)) return "http://$t"
-        if (!t.contains(' ') && t.contains('.')) return "https://$t"
-        return searchUrl(t)
+        return when (AddressInput.classify(t)) {
+            AddressInput.Kind.Empty -> ""
+            AddressInput.Kind.Explicit -> t
+            AddressInput.Kind.Local -> "http://$t"
+            AddressInput.Kind.Bare -> "https://$t"
+            AddressInput.Kind.Search -> searchUrl(t)
+        }
     }
 
     /** The address of a web search for [query] with the chosen search engine. */

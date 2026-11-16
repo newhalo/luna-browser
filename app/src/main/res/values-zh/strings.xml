@@ -391,4 +391,5 @@
     <string name="priv_hint">无痕标签页 · 不保存历史记录、视频播放位置和登录状态</string>
     <string name="priv_cleared">已清除无痕数据</string>
     <string name="priv_shared">此系统的网页引擎无法隔离无痕登录：该标签页的 Cookie 会像普通标签页一样保留。历史记录和视频播放位置仍不会保存。</string>
+    <string name="err_ssl_proceed">仍然打开（不安全）</string>
 </resources>

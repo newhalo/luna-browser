@@ -33,4 +33,20 @@ class WwwFallbackTest {
         val alt = WwwFallback.alternative("https://vn2c.my")!!
         assertNull(WwwFallback.alternative(alt))
     }
+
+    @Test fun bareTypedSitesAlsoTryPlainHttp() {
+        assertEquals(
+            listOf("https://www.vn2c.my/", "http://vn2c.my/", "http://www.vn2c.my/"),
+            WwwFallback.candidates("https://vn2c.my/", bare = true),
+        )
+    }
+
+    @Test fun anExplicitHttpsAddressIsNeverDowngraded() {
+        assertEquals(listOf("https://www.vn2c.my/"), WwwFallback.candidates("https://vn2c.my/", bare = false))
+        assertEquals(emptyList<String>(), WwwFallback.candidates("https://www.vn2c.my/", bare = false))
+    }
+
+    @Test fun aWwwSiteTypedBareOnlyTriesHttp() {
+        assertEquals(listOf("http://www.example.com"), WwwFallback.candidates("https://www.example.com", bare = true))
+    }
 }

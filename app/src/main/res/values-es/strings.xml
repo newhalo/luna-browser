@@ -395,4 +395,5 @@
     <string name="priv_hint">Pestaña privada · no se guardan el historial, las posiciones de vídeo ni los inicios de sesión</string>
     <string name="priv_cleared">Datos privados borrados</string>
     <string name="priv_shared">El motor web de este sistema no puede separar los inicios de sesión privados: las cookies de esta pestaña se conservan como las normales. El historial y las posiciones de vídeo siguen sin guardarse.</string>
+    <string name="err_ssl_proceed">Abrir de todos modos (no seguro)</string>
 </resources>

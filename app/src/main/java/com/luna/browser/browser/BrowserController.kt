@@ -59,7 +59,14 @@ import kotlin.math.min
 enum class ErrorKind { Offline, NotFound, Timeout, Ssl, Other }
 
 /** A page-load error. Texts are resource ids so they follow the language chosen at display time. */
-data class PageError(val kind: ErrorKind, @StringRes val title: Int, @StringRes val message: Int)
+data class PageError(val kind: ErrorKind, @StringRes val title: Int, @StringRes val message: Int, val sslHost: String? = null)
+
+/** Sites the viewer chose to open despite a certificate problem. Memory only: gone when Luna closes. */
+object SslExceptions {
+    private val hosts: MutableSet<String> = java.util.concurrent.ConcurrentHashMap.newKeySet()
+    fun allow(host: String) { if (host.isNotEmpty()) hosts.add(host.lowercase()) }
+    fun allowed(host: String) = host.isNotEmpty() && host.lowercase() in hosts
+}
 
 data class VideoState(
     val paused: Boolean,
@@ -294,12 +301,34 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     }
 
     // ---- Navigation actions ----
-    fun load(target: String) {
+    /**
+     * Opens [target]. [typed] is what the viewer typed when it was a bare site name: then, if the site cannot be reached, Luna also
+     * tries `www.` and plain http, and as a last resort searches for the text.
+     */
+    fun load(target: String, typed: String? = null) {
+        fallbacks.clear()
+        fallbacks.addAll(WwwFallback.candidates(target, bare = typed != null))
+        searchFallback = typed
+        loadInternal(target)
+    }
+
+    private fun loadInternal(target: String) {
         prepareFor(target)
         error = null
         url = target
         filterPageUrl = target
         webView.loadUrl(target)
+    }
+
+    /** Addresses still to try if the page just requested cannot be reached (see [load]). */
+    private val fallbacks = ArrayDeque<String>()
+    private var searchFallback: String? = null
+
+    /** Opens the page the viewer was warned about, for this session only. */
+    fun proceedAnyway(host: String) {
+        SslExceptions.allow(host)
+        error = null
+        if (url.isNotEmpty()) webView.loadUrl(url) else webView.reload()
     }
 
     fun reload() {
@@ -585,6 +614,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         override fun onPageFinished(view: WebView, pageUrl: String?) {
             loading = false
             progress = 1f
+            if (error == null) { fallbacks.clear(); searchFallback = null }   // reached: later failures are another page's
             pageUrl?.let { if (!it.startsWith("data:")) url = it }
             title = view.title ?: ""
             syncNav()
@@ -605,23 +635,28 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             if (!request.isForMainFrame) return
             val desc = err.description?.toString() ?: ""
             if (desc.contains("ERR_ABORTED") || desc.contains("BLOCKED_BY_CLIENT")) return
-            // A bare domain that does not answer (no address, no certificate, no connection) often works with "www." in front.
-            val failed = request.url.toString()
+            // A site that does not answer (no address, no certificate, no connection) often works with "www." or plain http;
+            // text that is not a site at all ends up as a search.
             val connectFailure = err.errorCode in setOf(
                 WebViewClient.ERROR_HOST_LOOKUP, WebViewClient.ERROR_CONNECT, WebViewClient.ERROR_TIMEOUT,
                 WebViewClient.ERROR_IO, WebViewClient.ERROR_FAILED_SSL_HANDSHAKE,
             )
-            if (connectFailure && wwwTried.add(failed)) {
-                WwwFallback.alternative(failed)?.let { alt -> handler.post { load(alt) }; return }
+            if (connectFailure) {
+                fallbacks.removeFirstOrNull()?.let { alt -> handler.post { loadInternal(alt) }; return }
+                if (err.errorCode == WebViewClient.ERROR_HOST_LOOKUP) {
+                    searchFallback?.let { q -> searchFallback = null; handler.post { loadInternal(app.store.searchUrl(q)) }; return }
+                }
             }
             loading = false
             error = mapError(err.errorCode)
         }
 
         override fun onReceivedSslError(view: WebView, handler: SslErrorHandler, err: SslError) {
+            val host = runCatching { android.net.Uri.parse(err.url).host }.getOrNull().orEmpty()
+            if (SslExceptions.allowed(host)) { handler.proceed(); return }
             handler.cancel()
             loading = false
-            error = PageError(ErrorKind.Ssl, R.string.err_ssl_t, R.string.err_ssl_blocked_m)
+            error = PageError(ErrorKind.Ssl, R.string.err_ssl_t, R.string.err_ssl_blocked_m, sslHost = host.ifEmpty { null })
         }
     }
 

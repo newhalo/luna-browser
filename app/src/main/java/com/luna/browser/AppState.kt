@@ -408,7 +408,9 @@ class AppState(val activity: Activity) {
         if (locked) return
         val url = store.resolve(input)
         if (url.isEmpty()) return
-        browser.load(url)
+        // A site typed without a scheme may need "www." or plain http, or turn out not to be a site at all (then it is searched for).
+        val typed = if (com.luna.browser.data.AddressInput.classify(input) == com.luna.browser.data.AddressInput.Kind.Bare) input.trim() else null
+        browser.load(url, typed)
         if (screen != Screen.Browser) navigate(Screen.Browser)
     }
 

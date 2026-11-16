@@ -391,4 +391,5 @@
     <string name="priv_hint">Tab ẩn danh · không lưu lịch sử, vị trí video và đăng nhập</string>
     <string name="priv_cleared">Đã xóa dữ liệu ẩn danh</string>
     <string name="priv_shared">Công cụ web của hệ thống này không tách được đăng nhập ẩn danh: cookie của tab này được giữ như thường. Lịch sử và vị trí video vẫn không được lưu.</string>
+    <string name="err_ssl_proceed">Vẫn mở (không an toàn)</string>
 </resources>

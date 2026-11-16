@@ -414,6 +414,8 @@ private fun ErrorPanel(app: AppState, err: PageError) {
             Spacer(Modifier.height(28.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                 TvButton(stringResource(R.string.err_retry), { b.retry() }, Modifier.focusRequester(fr), Icons.Rounded.Refresh, primary = true)
+                // A certificate problem (often a wrong date on the TV, or a small site's expired certificate): open it anyway, knowingly.
+                err.sslHost?.let { host -> TvButton(stringResource(R.string.err_ssl_proceed), { b.proceedAnyway(host) }, icon = Icons.Rounded.ErrorOutline) }
                 TvButton(stringResource(R.string.err_change), { app.openAddress(b.url) }, icon = Icons.Rounded.Search)
                 TvButton(stringResource(R.string.err_home), { app.goHome() }, icon = Icons.Rounded.Home)
             }

@@ -395,4 +395,5 @@
     <string name="priv_hint">Privater Tab · Verlauf, Videopositionen und Anmeldungen werden nicht gespeichert</string>
     <string name="priv_cleared">Private Daten gelöscht</string>
     <string name="priv_shared">Die Web-Engine dieses Systems kann private Anmeldungen nicht trennen: Cookies dieses Tabs bleiben wie sonst erhalten. Verlauf und Videopositionen werden trotzdem nicht gespeichert.</string>
+    <string name="err_ssl_proceed">Trotzdem öffnen (unsicher)</string>
 </resources>
