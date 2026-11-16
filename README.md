@@ -21,7 +21,8 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 **Play / Pause / Left / Right**, a built-in ad and pop-up blocker, and a home screen that feels like a streaming app.
 
 > **Status:** early (0.x) but daily-driven on a real TV. Latest release:
-> [**v0.8.0**](https://github.com/newhalo/luna-browser/releases/latest) — a pink *Sakura* theme, round background particles and an
+> [**v0.9.0**](https://github.com/newhalo/luna-browser/releases/latest) — *private tabs*, and sites typed without `www`/`https` now open
+> (Luna retries `www.`, plain http, or searches); on top of 0.8's pink *Sakura* theme, round background particles and an
 > optional frosted *Glass look*; on top of 0.7's six themes, phone page that fits the screen, profile PINs, live tab thumbnails
 > and reading mode with read aloud.
 
@@ -257,7 +258,7 @@ Pages are rendered by the Android System WebView and get **no** JavaScript bridg
 - [ ] Gradle 9 and the newest Compose, once the plugins catch up.
 - [ ] Google Play listing: Play Console account, 12-tester closed test, then production (see [docs/PUBLISHING.md](docs/PUBLISHING.md)).
 
-**Next release:** *private tabs*.
+**Done in 0.9.0:** *private tabs*, address fallbacks (`www.`, plain http, search) and *Open anyway* for certificate errors.
 
 **Done in 0.8.0:** the *Sakura* theme, round particles, and the optional *Glass look*.
 

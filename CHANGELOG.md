@@ -6,8 +6,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-11-16
+
 ### Added
 - **Private tabs** (*Ẩn danh* / *Private* next to the search bar on Home, and *New private tab* in the tab switcher): no history, no *continue watching* entry, no saved video position, no thumbnail or site icon, never restored after a restart. A private tab has its own cookies and site data (where the web engine supports profiles), erased when the last private tab closes and at every start. A small badge marks private pages; Home hides *continue watching* and history suggestions while one is open.
+
+### Fixed
+- Sites that answer only on `www.` (for example `vn2c.my`, the old address of a film site) no longer end in "Page not responding": when a page cannot be reached Luna also tries `www.`; for a site typed without `https://` it then tries plain `http://`, and text that is not a site at all is searched for. An explicit `https://` address is never downgraded.
+- `3.14` or `v1.2.3` typed in the address box are searched for instead of being opened as websites.
+
+### Added
+- A certificate error offers **Open anyway (not secure)** for that site until Luna is closed (a wrong date on the TV or a small site's expired certificate used to leave no way in).
 
 ## [0.8.0] - 2026-11-15
 
