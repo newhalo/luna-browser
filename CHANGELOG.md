@@ -6,6 +6,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed
+- Pointer snapping did nothing on sites that overwrite `window.innerWidth` (vn2d does): the arrows scrolled blindly and the pointer drifted. Luna now measures the page with `clientWidth`/`clientHeight`; the pop-up guard got the same fix.
+- Episode lists that scroll sideways (episodes 16 and up hidden to the right): pressing Right at the end of the row now scrolls the row, so every episode can be reached.
+
 ## [0.9.1] - 2026-11-17
 
 ### Added

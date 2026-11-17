@@ -59,9 +59,11 @@ else if(d.s&&window===window.top){var c=window.__lunaRemote;if(!c||d.s[5]>=c[5]*
      * transparent layers with a huge z-index) that ad scripts lay over the video player.
      */
     const val OVERLAY_JS = """(function(){if(window.__lunaGuard)return;window.__lunaGuard=1;
+function vw(){return document.documentElement.clientWidth||+window.innerWidth||1;}
+function vh(){return document.documentElement.clientHeight||+window.innerHeight||1;}
 function bad(e){try{var s=getComputedStyle(e);if(s.position!=='fixed'&&s.position!=='absolute')return false;
 var z=parseInt(s.zIndex,10)||0;if(z<99999)return false;var r=e.getBoundingClientRect();
-if(r.width*r.height<innerWidth*innerHeight*0.35)return false;
+if(r.width*r.height<vw()*vh()*0.35)return false;
 if(e.tagName==='IFRAME'){var src=e.getAttribute('src')||'';return src===''||src==='about:blank'||parseFloat(s.opacity)<0.1;}
 if(parseFloat(s.opacity)<0.1)return true;var bg=s.backgroundColor;
 var clear=(bg==='transparent'||bg==='rgba(0, 0, 0, 0)')&&s.backgroundImage==='none';
@@ -74,7 +76,7 @@ if(s.position!=='fixed'&&s.position!=='absolute')continue;if((parseInt(s.zIndex,
 var t=e.innerText||'';if(t.length<800&&abRe.test(t)){e.remove();found=true;}}
 if(!found)return;
 var top=document.body.children;for(var j=top.length-1;j>=0;j--){var b=top[j],bs=getComputedStyle(b),br=b.getBoundingClientRect();
-if(bs.position==='fixed'&&br.width*br.height>innerWidth*innerHeight*0.8&&!(b.innerText||'').trim())b.remove();}
+if(bs.position==='fixed'&&br.width*br.height>vw()*vh()*0.8&&!(b.innerText||'').trim())b.remove();}
 document.documentElement.style.setProperty('overflow','auto','important');document.body.style.setProperty('overflow','auto','important');}
 function sweep(){antiAdblock();var list=[];if(document.body)list=Array.prototype.slice.call(document.body.children);
 list=list.concat(Array.prototype.slice.call(document.querySelectorAll('iframe')),Array.prototype.slice.call(document.documentElement.children));

@@ -1080,6 +1080,12 @@ class BrowserController(private val activity: Activity, private val app: AppStat
                     // Look again from where the pointer sat on the page, which has moved up or down by the scrolled distance.
                     handler.postDelayed({ jumpTo(code, false, cursorY - (webView.scrollY - before)) }, 260)
                 }
+            } else if (retry) {
+                // Nothing more that way: the pointer may sit on a row that scrolls sideways (episode lists), so scroll it once and look again.
+                scrollWheelH((if (code == KeyEvent.KEYCODE_DPAD_RIGHT) 1 else -1) * viewW * 0.3f)
+                cursorActive = true
+                scheduleIdleHide()
+                handler.postDelayed({ jumpTo(code, false) }, 220)
             } else {
                 val s = 40 * density
                 moveCursor(if (code == KeyEvent.KEYCODE_DPAD_RIGHT) s else -s, 0f)
@@ -1195,6 +1201,17 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         val coords = arrayOf(MotionEvent.PointerCoords().apply { x = cursorX; y = cursorY; setAxisValue(MotionEvent.AXIS_VSCROLL, -ticks) })
         val ev = MotionEvent.obtain(now, now, MotionEvent.ACTION_SCROLL, 1, props, coords, 0, 0, 1f, 1f, 0, 0, InputDevice.SOURCE_MOUSE, 0)
         if (!webView.dispatchGenericMotionEvent(ev)) webView.scrollBy(0, pixels.toInt())
+        ev.recycle()
+    }
+
+    /** Scroll sideways by pixels (positive = right) under the pointer, for rows that overflow horizontally. */
+    private fun scrollWheelH(pixels: Float) {
+        val factor = ViewConfiguration.get(activity).getScaledHorizontalScrollFactor().coerceAtLeast(1f)
+        val props = arrayOf(MotionEvent.PointerProperties().apply { id = 0; toolType = MotionEvent.TOOL_TYPE_MOUSE })
+        val coords = arrayOf(MotionEvent.PointerCoords().apply { x = cursorX; y = cursorY; setAxisValue(MotionEvent.AXIS_HSCROLL, pixels * 1.4f / factor) })
+        val now = SystemClock.uptimeMillis()
+        val ev = MotionEvent.obtain(now, now, MotionEvent.ACTION_SCROLL, 1, props, coords, 0, 0, 1f, 1f, 0, 0, InputDevice.SOURCE_MOUSE, 0)
+        webView.dispatchGenericMotionEvent(ev)
         ev.recycle()
     }
 
@@ -1481,7 +1498,7 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
     private companion object {
         const val HOLD_MS = 220L
         /** Lists the visible clickable elements (links, buttons, inputs, anything with a pointer cursor) in view pixels. */
-        const val TARGETS_JS = """(function(){try{var d=window.devicePixelRatio||1,W=innerWidth,H=innerHeight,out=[],seen={};
+        const val TARGETS_JS = """(function(){try{var d=window.devicePixelRatio||1,de=document.documentElement,W=de.clientWidth||+window.innerWidth||0,H=de.clientHeight||+window.innerHeight||0,out=[],seen={};
 function ok(e){var b=e.getBoundingClientRect();if(b.width<8||b.height<8)return;
 var l=Math.max(b.left,0),t=Math.max(b.top,0),r=Math.min(b.right,W),bt=Math.min(b.bottom,H);if(r-l<8||bt-t<8)return;
 var h=document.elementFromPoint((l+r)/2,(t+bt)/2);if(!h||!(h===e||e.contains(h)))return;
