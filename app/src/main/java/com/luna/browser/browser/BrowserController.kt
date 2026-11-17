@@ -1071,11 +1071,13 @@ class BrowserController(private val activity: Activity, private val app: AppStat
                 return@queryTargets
             }
             if (vertical) {
-                // Nothing that way on screen: scroll, then look again.
-                scrollWheel((if (code == KeyEvent.KEYCODE_DPAD_DOWN) 1 else -1) * viewH * 0.4f)
-                cursorActive = true
-                scheduleIdleHide()
-                if (retry) handler.postDelayed({ jumpTo(code, false) }, 260)
+                // Nothing that way on screen: scroll once, then look again (the second look never scrolls).
+                if (retry) {
+                    scrollWheel((if (code == KeyEvent.KEYCODE_DPAD_DOWN) 1 else -1) * viewH * 0.4f)
+                    cursorActive = true
+                    scheduleIdleHide()
+                    handler.postDelayed({ jumpTo(code, false) }, 260)
+                }
             } else {
                 val s = 40 * density
                 moveCursor(if (code == KeyEvent.KEYCODE_DPAD_RIGHT) s else -s, 0f)
