@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.9.1] - 2026-11-17
+
 ### Added
 - **Pointer snaps to links**: a short press of an arrow jumps the pointer to the nearest clickable item in that direction; holding still moves it freely and settles on a nearby link when released. Turn off in Settings.
 

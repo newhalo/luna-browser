@@ -21,7 +21,8 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 **Play / Pause / Left / Right**, a built-in ad and pop-up blocker, and a home screen that feels like a streaming app.
 
 > **Status:** early (0.x) but daily-driven on a real TV. Latest release:
-> [**v0.9.0**](https://github.com/newhalo/luna-browser/releases/latest) — *private tabs*, and sites typed without `www`/`https` now open
+> [**v0.9.1**](https://github.com/newhalo/luna-browser/releases/latest) — the pointer *snaps to links* (a short arrow press jumps to the
+> nearest link or button) and OK no longer misses far down a page; on top of 0.9's *private tabs*, and sites typed without `www`/`https` now open
 > (Luna retries `www.`, plain http, or searches); on top of 0.8's pink *Sakura* theme, round background particles and an
 > optional frosted *Glass look*; on top of 0.7's six themes, phone page that fits the screen, profile PINs, live tab thumbnails
 > and reading mode with read aloud.
@@ -257,6 +258,8 @@ Pages are rendered by the Android System WebView and get **no** JavaScript bridg
 - [ ] Emulator-based UI tests for D-pad navigation.
 - [ ] Gradle 9 and the newest Compose, once the plugins catch up.
 - [ ] Google Play listing: Play Console account, 12-tester closed test, then production (see [docs/PUBLISHING.md](docs/PUBLISHING.md)).
+
+**Done in 0.9.1:** the pointer snaps to links and buttons (Settings: *Snap pointer to links*); a click far down a page lands where the pointer is.
 
 **Done in 0.9.0:** *private tabs*, address fallbacks (`www.`, plain http, search) and *Open anyway* for certificate errors.
 
