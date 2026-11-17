@@ -1035,7 +1035,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         if (first) { heldSince = SystemClock.uptimeMillis(); lastTick = heldSince; handler.post(ticker) }
     }
 
-    /** Clickable things on screen, as [left, top, right, bottom] in view pixels; the answer arrives on the main thread. */
+    /** Clickable things on screen, as [left, top, right, bottom, fixed] in view pixels; the answer arrives on the main thread. */
     private fun queryTargets(done: (List<IntArray>) -> Unit) {
         webView.evaluateJavascript(TARGETS_JS) { v ->
             val out = ArrayList<IntArray>()
@@ -1043,7 +1043,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
                 val a = org.json.JSONArray(v)
                 for (i in 0 until a.length()) {
                     val r = a.getJSONArray(i)
-                    out.add(intArrayOf(r.getInt(0), r.getInt(1), r.getInt(2), r.getInt(3)))
+                    out.add(intArrayOf(r.getInt(0), r.getInt(1), r.getInt(2), r.getInt(3), r.optInt(4, 0)))
                 }
             }
             done(out)
@@ -1099,7 +1099,8 @@ class BrowserController(private val activity: Activity, private val app: AppStat
                 else -> { major = -dy; minor = kotlin.math.abs(dx) }
             }
             if (major < min) continue
-            val score = major + 2.2f * minor
+            // Floating buttons ("back to top", chat bubbles) stay on screen everywhere: choose them only when nothing else fits.
+            val score = major + 2.2f * minor + (if (r.size > 4 && r[4] == 1) viewH * 0.6f else 0f)
             if (score < bestScore) { bestScore = score; best = r }
         }
         return best
@@ -1480,7 +1481,8 @@ function ok(e){var b=e.getBoundingClientRect();if(b.width<8||b.height<8)return;
 var l=Math.max(b.left,0),t=Math.max(b.top,0),r=Math.min(b.right,W),bt=Math.min(b.bottom,H);if(r-l<8||bt-t<8)return;
 var h=document.elementFromPoint((l+r)/2,(t+bt)/2);if(!h||!(h===e||e.contains(h)))return;
 var s=getComputedStyle(e);if(s.visibility==='hidden'||s.pointerEvents==='none'||parseFloat(s.opacity)<0.05)return;
-out.push([Math.round(l*d),Math.round(t*d),Math.round(r*d),Math.round(bt*d)]);}
+var f=0;for(var n=e,k=0;n&&k<8;n=n.parentElement,k++){if(getComputedStyle(n).position==='fixed'){f=1;break;}}
+out.push([Math.round(l*d),Math.round(t*d),Math.round(r*d),Math.round(bt*d),f]);}
 var q=document.querySelectorAll('a[href],button,input:not([type=hidden]),select,textarea,summary,label[for],[role=button],[role=link],[role=tab],[role=menuitem],[role=checkbox],[onclick],[tabindex]:not([tabindex="-1"])');
 for(var i=0;i<q.length&&out.length<250;i++)ok(q[i]);
 if(out.length<250){var c=document.querySelectorAll('div,span,li,img,td,svg');var n=0;
