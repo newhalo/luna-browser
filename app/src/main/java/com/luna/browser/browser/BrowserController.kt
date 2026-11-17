@@ -976,7 +976,9 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             lastTick = now
             val dx = (if (KeyEvent.KEYCODE_DPAD_RIGHT in held) 1 else 0) - (if (KeyEvent.KEYCODE_DPAD_LEFT in held) 1 else 0)
             val dy = (if (KeyEvent.KEYCODE_DPAD_DOWN in held) 1 else 0) - (if (KeyEvent.KEYCODE_DPAD_UP in held) 1 else 0)
-            val accel = 1f + min((now - heldSince) / 1000f * 2f, 3f) // ramps up to 4x over 1.5 s
+            // Ramps up to 4x over 1.5 s; with snapping the first moments are slow (0.4x) so small nudges are easy.
+            val accel = if (snapOn) 0.4f + min((now - heldSince) / 1000f * 2.4f, 3.6f) else 1f + min((now - heldSince) / 1000f * 2f, 3f)
+            freeDist += kotlin.math.hypot(dx.toFloat(), dy.toFloat()) * (max(viewW, 960) / 1920f) * (250 + 150 * app.store.int(K.CURSOR_SPEED)) * accel * dt
             val base = (250 + 150 * app.store.int(K.CURSOR_SPEED)) * (max(viewW, 960) / 1920f)
             moveCursor(dx * base * accel * dt, dy * base * accel * dt)
             handler.postDelayed(this, 16)
@@ -987,7 +989,11 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         val code = e.keyCode
         if (e.action == KeyEvent.ACTION_UP) {
             if (code == pendingCode) { handler.removeCallbacks(startHold); pendingCode = 0; jumpTo(code, true); return true }
-            if (held.remove(code) && held.isEmpty() && freeMoved) { freeMoved = false; snapToNearby() }
+            if (held.remove(code) && held.isEmpty() && freeMoved) {
+                freeMoved = false
+                // A small nudge is a deliberate fine adjustment: leave the pointer exactly where it is.
+                if (freeDist > 90 * density) snapToNearby()
+            }
             return true
         }
         if (e.repeatCount > 0 || code in held || code == pendingCode) return true
@@ -1022,6 +1028,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     private val snapOn get() = app.store.bool(K.SNAP)
     private var pendingCode = 0
     private var freeMoved = false
+    private var freeDist = 0f
     private val startHold = Runnable { beginHold() }
 
     /** The arrow stayed down: from now on the pointer moves freely. */
@@ -1032,6 +1039,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         val first = held.isEmpty()
         held.add(c)
         freeMoved = true
+        if (first) freeDist = 0f
         if (first) { heldSince = SystemClock.uptimeMillis(); lastTick = heldSince; handler.post(ticker) }
     }
 
@@ -1071,8 +1079,12 @@ class BrowserController(private val activity: Activity, private val app: AppStat
                 return@queryTargets
             }
             if (vertical) {
-                // Nothing that way on screen: scroll once, then look again (the second look never scrolls).
-                if (retry) {
+                // Nothing near that way: while the pointer is still in the middle of the screen just move it a step
+                // (the page stays put); only near the top / bottom edge scroll once, then look again.
+                val inMiddle = if (code == KeyEvent.KEYCODE_DPAD_DOWN) cursorY < viewH * 0.68f else cursorY > viewH * 0.32f
+                if (inMiddle) {
+                    placeCursor(cursorX, cursorY + (if (code == KeyEvent.KEYCODE_DPAD_DOWN) 1 else -1) * viewH * 0.2f)
+                } else if (retry) {
                     val before = webView.scrollY
                     scrollWheel((if (code == KeyEvent.KEYCODE_DPAD_DOWN) 1 else -1) * viewH * 0.4f)
                     cursorActive = true
