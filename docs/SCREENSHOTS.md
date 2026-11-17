@@ -27,6 +27,8 @@
 | **Read aloud:** OK starts and pauses; the paragraph being read is highlighted | **Tabs** show a fresh screenshot of the page you just left |
 | ![Profile PIN pad](screenshots/21-profile-pin.jpg) | ![Locked profile picker](screenshots/22-profile-locked.jpg) |
 | **Profile PIN:** four digits with the remote's number keys or the on-screen pad | The picker opens first when the remembered profile has a PIN |
+| ![Home in a private tab](screenshots/27-private-tab.jpg) | ![Home settings](screenshots/16-settings-home.jpg) |
+| **Private tab:** *Private* next to the search bar; the greeting says what is not kept | **Home settings:** first screen, *Continue watching* and thumbnail size |
 
 ![Themes: Luna, Dusk, Forest, Ocean, Night sky, Graphite](screenshots/25-themes.jpg)
 
