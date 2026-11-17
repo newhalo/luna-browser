@@ -1100,7 +1100,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             }
             if (major < min) continue
             // Floating buttons ("back to top", chat bubbles) stay on screen everywhere: reachable only from the same row or column.
-            if (r.size > 4 && r[4] == 1 && minor > 80 * density) continue
+            if (r.size > 4 && r[4] == 1 && minor > 40 * density) continue
             val score = major + 2.2f * minor
             if (score < bestScore) { bestScore = score; best = r }
         }
@@ -1477,11 +1477,12 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
     private companion object {
         const val HOLD_MS = 220L
         /** Lists the visible clickable elements (links, buttons, inputs, anything with a pointer cursor) in view pixels. */
-        const val TARGETS_JS = """(function(){try{var d=window.devicePixelRatio||1,W=innerWidth,H=innerHeight,out=[];
+        const val TARGETS_JS = """(function(){try{var d=window.devicePixelRatio||1,W=innerWidth,H=innerHeight,out=[],seen={};
 function ok(e){var b=e.getBoundingClientRect();if(b.width<8||b.height<8)return;
 var l=Math.max(b.left,0),t=Math.max(b.top,0),r=Math.min(b.right,W),bt=Math.min(b.bottom,H);if(r-l<8||bt-t<8)return;
 var h=document.elementFromPoint((l+r)/2,(t+bt)/2);if(!h||!(h===e||e.contains(h)))return;
 var s=getComputedStyle(e);if(s.visibility==='hidden'||s.pointerEvents==='none'||parseFloat(s.opacity)<0.05)return;
+var hr=e.href;if(hr&&typeof hr==='string'){var pr=seen[hr]||(seen[hr]=[]);for(var u=0;u<pr.length;u++){var q=pr[u];if(Math.max(q[0]-r,l-q[2],0)<40&&Math.max(q[1]-bt,t-q[3],0)<40)return;}pr.push([l,t,r,bt]);}
 var f=0;for(var n=e,k=0;n&&k<8;n=n.parentElement,k++){if(getComputedStyle(n).position==='fixed'){f=1;break;}}
 out.push([Math.round(l*d),Math.round(t*d),Math.round(r*d),Math.round(bt*d),f]);}
 var q=document.querySelectorAll('a[href],button,input:not([type=hidden]),select,textarea,summary,label[for],[role=button],[role=link],[role=tab],[role=menuitem],[role=checkbox],[onclick],[tabindex]:not([tabindex="-1"])');
