@@ -976,7 +976,9 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             lastTick = now
             val dx = (if (KeyEvent.KEYCODE_DPAD_RIGHT in held) 1 else 0) - (if (KeyEvent.KEYCODE_DPAD_LEFT in held) 1 else 0)
             val dy = (if (KeyEvent.KEYCODE_DPAD_DOWN in held) 1 else 0) - (if (KeyEvent.KEYCODE_DPAD_UP in held) 1 else 0)
-            val accel = 1f + min((now - heldSince) / 1000f * 2f, 3f) // ramps up to 4x over 1.5 s
+            // Ramps up to 4x over 1.5 s; with snapping the first moments are slow (0.4x) so small nudges are easy.
+            val accel = if (snapOn) 0.4f + min((now - heldSince) / 1000f * 2.4f, 3.6f) else 1f + min((now - heldSince) / 1000f * 2f, 3f)
+            freeDist += kotlin.math.hypot(dx.toFloat(), dy.toFloat()) * (max(viewW, 960) / 1920f) * (250 + 150 * app.store.int(K.CURSOR_SPEED)) * accel * dt
             val base = (250 + 150 * app.store.int(K.CURSOR_SPEED)) * (max(viewW, 960) / 1920f)
             moveCursor(dx * base * accel * dt, dy * base * accel * dt)
             handler.postDelayed(this, 16)
@@ -987,7 +989,11 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         val code = e.keyCode
         if (e.action == KeyEvent.ACTION_UP) {
             if (code == pendingCode) { handler.removeCallbacks(startHold); pendingCode = 0; jumpTo(code, true); return true }
-            if (held.remove(code) && held.isEmpty() && freeMoved) { freeMoved = false; snapToNearby() }
+            if (held.remove(code) && held.isEmpty() && freeMoved) {
+                freeMoved = false
+                // A small nudge is a deliberate fine adjustment: leave the pointer exactly where it is.
+                if (freeDist > 90 * density) snapToNearby()
+            }
             return true
         }
         if (e.repeatCount > 0 || code in held || code == pendingCode) return true
@@ -1022,6 +1028,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     private val snapOn get() = app.store.bool(K.SNAP)
     private var pendingCode = 0
     private var freeMoved = false
+    private var freeDist = 0f
     private val startHold = Runnable { beginHold() }
 
     /** The arrow stayed down: from now on the pointer moves freely. */
@@ -1032,6 +1039,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         val first = held.isEmpty()
         held.add(c)
         freeMoved = true
+        if (first) freeDist = 0f
         if (first) { heldSince = SystemClock.uptimeMillis(); lastTick = heldSince; handler.post(ticker) }
     }
 
@@ -1071,8 +1079,12 @@ class BrowserController(private val activity: Activity, private val app: AppStat
                 return@queryTargets
             }
             if (vertical) {
-                // Nothing that way on screen: scroll once, then look again (the second look never scrolls).
-                if (retry) {
+                // Nothing near that way: while the pointer is still in the middle of the screen just move it a step
+                // (the page stays put); only near the top / bottom edge scroll once, then look again.
+                val inMiddle = if (code == KeyEvent.KEYCODE_DPAD_DOWN) cursorY < viewH * 0.68f else cursorY > viewH * 0.32f
+                if (inMiddle) {
+                    placeCursor(cursorX, cursorY + (if (code == KeyEvent.KEYCODE_DPAD_DOWN) 1 else -1) * viewH * 0.2f)
+                } else if (retry) {
                     val before = webView.scrollY
                     scrollWheel((if (code == KeyEvent.KEYCODE_DPAD_DOWN) 1 else -1) * viewH * 0.4f)
                     cursorActive = true
@@ -1093,28 +1105,15 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         }
     }
 
+    /** Only items near the pointer count (see [SnapRules]), so a press never sends the pointer across the page. */
     private fun pickTarget(list: List<IntArray>, cx: Float, cy: Float, code: Int): IntArray? {
-        var best: IntArray? = null
-        var bestScore = Float.MAX_VALUE
-        val min = 8 * density
-        for (r in list) {
-            val dx = (r[0] + r[2]) / 2f - cx
-            val dy = (r[1] + r[3]) / 2f - cy
-            val major: Float
-            val minor: Float
-            when (code) {
-                KeyEvent.KEYCODE_DPAD_RIGHT -> { major = dx; minor = kotlin.math.abs(dy) }
-                KeyEvent.KEYCODE_DPAD_LEFT -> { major = -dx; minor = kotlin.math.abs(dy) }
-                KeyEvent.KEYCODE_DPAD_DOWN -> { major = dy; minor = kotlin.math.abs(dx) }
-                else -> { major = -dy; minor = kotlin.math.abs(dx) }
-            }
-            if (major < min) continue
-            // Floating buttons ("back to top", chat bubbles) stay on screen everywhere: reachable only from the same row or column.
-            if (r.size > 4 && r[4] == 1 && minor > 40 * density) continue
-            val score = major + 2.2f * minor
-            if (score < bestScore) { bestScore = score; best = r }
+        val dir = when (code) {
+            KeyEvent.KEYCODE_DPAD_RIGHT -> SnapRules.RIGHT
+            KeyEvent.KEYCODE_DPAD_LEFT -> SnapRules.LEFT
+            KeyEvent.KEYCODE_DPAD_DOWN -> SnapRules.DOWN
+            else -> SnapRules.UP
         }
-        return best
+        return SnapRules.pick(list, cx, cy, dir, viewW, viewH, density)
     }
 
     /** After free movement: if the pointer stopped on or right next to a clickable item, centre it on that item. */
@@ -1498,18 +1497,20 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
     private companion object {
         const val HOLD_MS = 220L
         /** Lists the visible clickable elements (links, buttons, inputs, anything with a pointer cursor) in view pixels. */
-        const val TARGETS_JS = """(function(){try{var d=window.devicePixelRatio||1,de=document.documentElement,W=de.clientWidth||+window.innerWidth||0,H=de.clientHeight||+window.innerHeight||0,out=[],seen={};
+        const val TARGETS_JS = """(function(){try{var de=document.documentElement,v=window.visualViewport,s=(v&&v.scale>0)?v.scale:1,ox=v?(+v.offsetLeft||0):0,oy=v?(+v.offsetTop||0):0,
+d=(window.devicePixelRatio||1)*s,W=(v&&v.width>0)?v.width:(de.clientWidth||+window.innerWidth||0),H=(v&&v.height>0)?v.height:(de.clientHeight||+window.innerHeight||0),out=[],seen={};
 function ok(e){var b=e.getBoundingClientRect();if(b.width<8||b.height<8)return;
-var l=Math.max(b.left,0),t=Math.max(b.top,0),r=Math.min(b.right,W),bt=Math.min(b.bottom,H);if(r-l<8||bt-t<8)return;
+var cr=e.getClientRects();if(cr.length>1){var ba=0;for(var z=0;z<cr.length;z++){var c=cr[z],ca=c.width*c.height;if(ca>ba&&c.bottom>oy&&c.top<oy+H){ba=ca;b=c;}}if(b.width<8||b.height<8)return;}
+var l=Math.max(b.left,ox),t=Math.max(b.top,oy),r=Math.min(b.right,ox+W),bt=Math.min(b.bottom,oy+H);if(r-l<8||bt-t<8)return;
 var h=document.elementFromPoint((l+r)/2,(t+bt)/2);if(!h||!(h===e||e.contains(h)))return;
 var s=getComputedStyle(e);if(s.visibility==='hidden'||s.pointerEvents==='none'||parseFloat(s.opacity)<0.05)return;
 var hr=e.href;if(hr&&typeof hr==='string'){var pr=seen[hr]||(seen[hr]=[]);for(var u=0;u<pr.length;u++){var q=pr[u];if(Math.max(q[0]-r,l-q[2],0)<40&&Math.max(q[1]-bt,t-q[3],0)<40)return;}pr.push([l,t,r,bt]);}
 var f=0;for(var n=e,k=0;n&&k<8;n=n.parentElement,k++){if(getComputedStyle(n).position==='fixed'){f=1;break;}}
-out.push([Math.round(l*d),Math.round(t*d),Math.round(r*d),Math.round(bt*d),f]);}
+out.push([Math.round((l-ox)*d),Math.round((t-oy)*d),Math.round((r-ox)*d),Math.round((bt-oy)*d),f]);}
 var q=document.querySelectorAll('a[href],button,input:not([type=hidden]),select,textarea,summary,label[for],[role=button],[role=link],[role=tab],[role=menuitem],[role=checkbox],[onclick],[tabindex]:not([tabindex="-1"])');
 for(var i=0;i<q.length&&out.length<250;i++)ok(q[i]);
 if(out.length<250){var c=document.querySelectorAll('div,span,li,img,td,svg');var n=0;
-for(var j=0;j<c.length&&n<1200&&out.length<250;j++){var e=c[j];var b=e.getBoundingClientRect();if(b.bottom<0||b.top>H||b.right<0||b.left>W)continue;n++;
+for(var j=0;j<c.length&&n<1200&&out.length<250;j++){var e=c[j];var b=e.getBoundingClientRect();if(b.bottom<oy||b.top>oy+H||b.right<ox||b.left>ox+W)continue;n++;
 if(getComputedStyle(e).cursor!=='pointer')continue;var p=e.parentElement;if(p&&getComputedStyle(p).cursor==='pointer')continue;if(e.closest('a[href],button'))continue;ok(e);}}
 return out;}catch(x){return [];}})()"""
         /** Sets the value of the focused input the way a user typing would (frameworks listen to input events). */
