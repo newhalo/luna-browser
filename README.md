@@ -79,8 +79,8 @@ Up to five people plus a guest, each with their own history and sign-ins, option
 </table>
 
 > [!NOTE]
-> **Latest: [v0.9.2](https://github.com/newhalo/luna-browser/releases/latest).** Pointer snapping now also works on sites
-> that hide the window size, and episode rows that scroll sideways can be reached with **→**. 0.9.1 brought the
+> **Latest: [v0.9.3](https://github.com/newhalo/luna-browser/releases/latest).** The snapping pointer now only jumps to
+> links close by, lands exactly on them even on zoomed pages, and scrolls the page only at the screen edge. 0.9.1 brought the
 > *snapping pointer*, 0.9.0 *private tabs* and smarter address typing. Every release: [CHANGELOG.md](CHANGELOG.md).
 
 ## Features
