@@ -92,8 +92,8 @@ Up to five people plus a guest, each with their own history and sign-ins, option
 <td width="55%"><img src="docs/screenshots/03-web-cursor.jpg" alt="The on-screen pointer resting on a link of a Wikipedia page"></td>
 <td valign="top">
 
-A **short press** of an arrow jumps the pointer to the nearest link or button in that direction, and scrolls when there
-is none (also sideways, for rows of episodes). **Hold** an arrow to move freely: it accelerates, scrolls at the edge and
+A **short press** of an arrow jumps the pointer to the next link or button close by in that direction, and scrolls when
+there is none nearby (also sideways, for rows of episodes), so it never flies across the page. **Hold** an arrow to move freely: it accelerates, scrolls at the edge and
 settles on a nearby link when you let go. **OK** clicks.
 
 Prefer the classic way? Hold **OK** for link-to-link focus, or switch snapping off in Settings.
@@ -217,7 +217,7 @@ favourites are kept. Store plans: [docs/PUBLISHING.md](docs/PUBLISHING.md).
 
 | Key | On a web page | In fullscreen video |
 |---|---|---|
-| **D-pad** | short press: jump to the nearest link or button that way (scrolls when there is none); hold: move freely, settle on a link on release; **Up** at the very top opens the toolbar | **← / →** seek (hold to accelerate) |
+| **D-pad** | short press: jump to the next nearby link or button that way (scrolls when there is none close by); hold: move freely, settle on a link on release; **Up** at the very top opens the toolbar | **← / →** seek (hold to accelerate) |
 | **OK** | click | show controls, then play / pause |
 | Hold **OK** | switch pointer ⇄ link-focus mode | — |
 | **Menu** / **Info** | show / hide the toolbar | same |

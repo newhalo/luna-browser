@@ -119,7 +119,7 @@ Deeper reading: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (design), [docs/DES
 ## Tests and verification
 
 - Prefer pure Kotlin for logic so it is unit-testable: filter engine, `ResumeRules`, `TabPolicy`, `SiteSettings`,
-  `TileSize`, `UpdateCheck`, `ReportLink`, `PadGestures`. UI changes need a **real-TV or emulator check** (screenshots via
+  `TileSize`, `UpdateCheck`, `ReportLink`, `PadGestures`, `SnapRules` (where a short arrow press moves the pointer). UI changes need a **real-TV or emulator check** (screenshots via
   `adb exec-out screencap -p` or `adb shell screencap` + `adb pull`; run adb from PowerShell on Windows, Git Bash mangles
   `/sdcard` paths).
 - `BundledListTest` guards `assets/filters/luna.txt`: when you edit it, bump its `! Version:` line (YYYY.MM.DD); installed apps

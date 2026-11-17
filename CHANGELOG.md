@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed
+- Pointer snapping only jumps to links **near the pointer**: the next item along the arrow (measured edge to edge from the item under the pointer), preferring the same row or column, within about 40 % of the screen that way. When nothing is near, the page scrolls (or the row slides sideways, or the pointer nudges) instead of the pointer flying to a far corner of the page. Modelled on link browsing in TV browsers and the CSS spatial navigation draft.
+
 ## [0.9.2] - 2026-11-17
 
 ### Fixed

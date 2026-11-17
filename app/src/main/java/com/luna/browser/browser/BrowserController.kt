@@ -1093,28 +1093,15 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         }
     }
 
+    /** Only items near the pointer count (see [SnapRules]), so a press never sends the pointer across the page. */
     private fun pickTarget(list: List<IntArray>, cx: Float, cy: Float, code: Int): IntArray? {
-        var best: IntArray? = null
-        var bestScore = Float.MAX_VALUE
-        val min = 8 * density
-        for (r in list) {
-            val dx = (r[0] + r[2]) / 2f - cx
-            val dy = (r[1] + r[3]) / 2f - cy
-            val major: Float
-            val minor: Float
-            when (code) {
-                KeyEvent.KEYCODE_DPAD_RIGHT -> { major = dx; minor = kotlin.math.abs(dy) }
-                KeyEvent.KEYCODE_DPAD_LEFT -> { major = -dx; minor = kotlin.math.abs(dy) }
-                KeyEvent.KEYCODE_DPAD_DOWN -> { major = dy; minor = kotlin.math.abs(dx) }
-                else -> { major = -dy; minor = kotlin.math.abs(dx) }
-            }
-            if (major < min) continue
-            // Floating buttons ("back to top", chat bubbles) stay on screen everywhere: reachable only from the same row or column.
-            if (r.size > 4 && r[4] == 1 && minor > 40 * density) continue
-            val score = major + 2.2f * minor
-            if (score < bestScore) { bestScore = score; best = r }
+        val dir = when (code) {
+            KeyEvent.KEYCODE_DPAD_RIGHT -> SnapRules.RIGHT
+            KeyEvent.KEYCODE_DPAD_LEFT -> SnapRules.LEFT
+            KeyEvent.KEYCODE_DPAD_DOWN -> SnapRules.DOWN
+            else -> SnapRules.UP
         }
-        return best
+        return SnapRules.pick(list, cx, cy, dir, viewW, viewH, density)
     }
 
     /** After free movement: if the pointer stopped on or right next to a clickable item, centre it on that item. */
