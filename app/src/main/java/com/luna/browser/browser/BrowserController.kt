@@ -1485,18 +1485,19 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
     private companion object {
         const val HOLD_MS = 220L
         /** Lists the visible clickable elements (links, buttons, inputs, anything with a pointer cursor) in view pixels. */
-        const val TARGETS_JS = """(function(){try{var d=window.devicePixelRatio||1,de=document.documentElement,W=de.clientWidth||+window.innerWidth||0,H=de.clientHeight||+window.innerHeight||0,out=[],seen={};
+        const val TARGETS_JS = """(function(){try{var de=document.documentElement,v=window.visualViewport,s=(v&&v.scale>0)?v.scale:1,ox=v?(+v.offsetLeft||0):0,oy=v?(+v.offsetTop||0):0,
+d=(window.devicePixelRatio||1)*s,W=(v&&v.width>0)?v.width:(de.clientWidth||+window.innerWidth||0),H=(v&&v.height>0)?v.height:(de.clientHeight||+window.innerHeight||0),out=[],seen={};
 function ok(e){var b=e.getBoundingClientRect();if(b.width<8||b.height<8)return;
-var l=Math.max(b.left,0),t=Math.max(b.top,0),r=Math.min(b.right,W),bt=Math.min(b.bottom,H);if(r-l<8||bt-t<8)return;
+var l=Math.max(b.left,ox),t=Math.max(b.top,oy),r=Math.min(b.right,ox+W),bt=Math.min(b.bottom,oy+H);if(r-l<8||bt-t<8)return;
 var h=document.elementFromPoint((l+r)/2,(t+bt)/2);if(!h||!(h===e||e.contains(h)))return;
 var s=getComputedStyle(e);if(s.visibility==='hidden'||s.pointerEvents==='none'||parseFloat(s.opacity)<0.05)return;
 var hr=e.href;if(hr&&typeof hr==='string'){var pr=seen[hr]||(seen[hr]=[]);for(var u=0;u<pr.length;u++){var q=pr[u];if(Math.max(q[0]-r,l-q[2],0)<40&&Math.max(q[1]-bt,t-q[3],0)<40)return;}pr.push([l,t,r,bt]);}
 var f=0;for(var n=e,k=0;n&&k<8;n=n.parentElement,k++){if(getComputedStyle(n).position==='fixed'){f=1;break;}}
-out.push([Math.round(l*d),Math.round(t*d),Math.round(r*d),Math.round(bt*d),f]);}
+out.push([Math.round((l-ox)*d),Math.round((t-oy)*d),Math.round((r-ox)*d),Math.round((bt-oy)*d),f]);}
 var q=document.querySelectorAll('a[href],button,input:not([type=hidden]),select,textarea,summary,label[for],[role=button],[role=link],[role=tab],[role=menuitem],[role=checkbox],[onclick],[tabindex]:not([tabindex="-1"])');
 for(var i=0;i<q.length&&out.length<250;i++)ok(q[i]);
 if(out.length<250){var c=document.querySelectorAll('div,span,li,img,td,svg');var n=0;
-for(var j=0;j<c.length&&n<1200&&out.length<250;j++){var e=c[j];var b=e.getBoundingClientRect();if(b.bottom<0||b.top>H||b.right<0||b.left>W)continue;n++;
+for(var j=0;j<c.length&&n<1200&&out.length<250;j++){var e=c[j];var b=e.getBoundingClientRect();if(b.bottom<oy||b.top>oy+H||b.right<ox||b.left>ox+W)continue;n++;
 if(getComputedStyle(e).cursor!=='pointer')continue;var p=e.parentElement;if(p&&getComputedStyle(p).cursor==='pointer')continue;if(e.closest('a[href],button'))continue;ok(e);}}
 return out;}catch(x){return [];}})()"""
         /** Sets the value of the focused input the way a user typing would (frameworks listen to input events). */
