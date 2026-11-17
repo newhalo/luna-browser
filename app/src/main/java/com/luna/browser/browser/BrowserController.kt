@@ -1060,10 +1060,10 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     }
 
     /** Short press: move the pointer onto the nearest clickable item in the arrow's direction. */
-    private fun jumpTo(code: Int, retry: Boolean) {
+    private fun jumpTo(code: Int, retry: Boolean, fromY: Float? = null) {
         if (viewW == 0 || !cursorMode) return
         queryTargets { list ->
-            val best = pickTarget(list, cursorX, cursorY, code)
+            val best = pickTarget(list, cursorX, fromY ?: cursorY, code)
             if (best != null) { placeCursor((best[0] + best[2]) / 2f, (best[1] + best[3]) / 2f); return@queryTargets }
             val vertical = code == KeyEvent.KEYCODE_DPAD_UP || code == KeyEvent.KEYCODE_DPAD_DOWN
             if (code == KeyEvent.KEYCODE_DPAD_UP && !webView.canScrollVertically(-1)) {
@@ -1073,10 +1073,12 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             if (vertical) {
                 // Nothing that way on screen: scroll once, then look again (the second look never scrolls).
                 if (retry) {
+                    val before = webView.scrollY
                     scrollWheel((if (code == KeyEvent.KEYCODE_DPAD_DOWN) 1 else -1) * viewH * 0.4f)
                     cursorActive = true
                     scheduleIdleHide()
-                    handler.postDelayed({ jumpTo(code, false) }, 260)
+                    // Look again from where the pointer sat on the page, which has moved up or down by the scrolled distance.
+                    handler.postDelayed({ jumpTo(code, false, cursorY - (webView.scrollY - before)) }, 260)
                 }
             } else {
                 val s = 40 * density
