@@ -1091,12 +1091,14 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         cursorActive = true
         scheduleIdleHide()
         clickPulse++
-        webView.requestFocus()
         // Clicks are delivered as a finger tap: Chromium ignores synthetic mouse-button events,
         // while taps work on every page and inside cross-site player iframes.
+        // The view takes focus only AFTER the tap: when it gains focus the page re-focuses the element it had focused
+        // before (often at the top of the page) and scrolls it into view, so the tap landed on the wrong thing
+        // (episode buttons far down a page "did nothing" and the page jumped up).
         val t = SystemClock.uptimeMillis()
         sendTap(MotionEvent.ACTION_DOWN, t)
-        handler.postDelayed({ sendTap(MotionEvent.ACTION_UP, t) }, 50)
+        handler.postDelayed({ sendTap(MotionEvent.ACTION_UP, t); if (!webView.hasFocus()) webView.requestFocus() }, 50)
     }
 
     private fun sendTap(action: Int, downTime: Long) {
