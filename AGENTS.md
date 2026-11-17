@@ -134,7 +134,7 @@ Deeper reading: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (design), [docs/DES
 - Repo line endings are LF (`.gitattributes`); don't commit CRLF. Docs are in **English**.
 - Commit message: short imperative subject, a body that says *why*. One concern per commit/PR.
 - Keep the docs in step: user-visible change → `README.md` (features / roadmap), `CHANGELOG.md` (*Unreleased*), the relevant
-  `docs/*.md`. New screenshots go in `docs/screenshots/` (README, 1280×720 JPEG) and, for store use, `store/screenshots/`
+  `docs/*.md`. New screenshots go in `docs/screenshots/` (listed in `docs/SCREENSHOTS.md`; the README keeps only a few, 1280×720 JPEG) and, for store use, `store/screenshots/`
   (1920×1080 PNG) — keep sample pages neutral (Wikipedia pages about the Blender open movies), never personal data.
 - Releases: bump `versionCode`/`versionName`, finish the changelog, tag `vX.Y.Z`, push the tag; the Release workflow builds
   the signed APK (and the `.aab` as an artifact). The tag push and anything outward-facing is the **maintainer's call**:
@@ -142,6 +142,6 @@ Deeper reading: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) (design), [docs/DES
 
 ## Known open items
 
-See the README *Roadmap*. Not planned on purpose: a download manager, DRM streaming. Not published on the Amazon Appstore by
+See the README *Roadmap* (what is next) and [docs/ROADMAP.md](docs/ROADMAP.md) (what each release added). Not planned on purpose: a download manager, DRM streaming. Not published on the Amazon Appstore by
 decision of the maintainer. Things not yet tested on real hardware are listed in `docs/PUBLISHING.md` (TV quality
 self-check) and in release notes.

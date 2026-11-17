@@ -32,8 +32,9 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 - **Streaming-style home screen** — animated background, a backdrop that follows the focused card, 16:9 cards with
   real thumbnails of the videos and pages you opened, "continue watching" with progress bars, your most-used sites,
   favourites, clock and voice search.
-- **Virtual cursor** — accelerates while you hold an arrow, hides itself when idle, scrolls at the screen edge,
-  clicks with **OK**. Hold **OK** to switch to link-to-link focus navigation.
+- **Virtual cursor that snaps to links** — a short arrow press jumps the pointer to the nearest link or button in that
+  direction; hold an arrow to move it freely (it accelerates, scrolls at the screen edge and settles on a nearby link when
+  you let go). **OK** clicks. Hold **OK** to switch to link-to-link focus navigation. Turn snapping off in Settings.
 - **Video first** — fullscreen controls for any HTML5 video, **even inside a player iframe from another domain**
   (where many video sites put it). Hold ← / → to seek: key repeats accumulate, accelerate (10 s → 30 s → 60 s) and
   are previewed on the progress bar, then sent as **one** seek, so the stream doesn't reload at every step.
@@ -88,41 +89,10 @@ an on-screen pointer you steer with the D-pad, one-press access to everything, v
 
 | | |
 |:--|:--|
-| ![Fullscreen video with seek preview](docs/screenshots/04-video-seek-preview.jpg) | ![Fullscreen video controls](docs/screenshots/05-video-controls.jpg) |
-| **Hold → to seek:** target time and bar preview, one seek on release | **OK** shows controls; OK again plays / pauses |
-| ![Floating browser toolbar](docs/screenshots/02-browser-toolbar.jpg) | ![Virtual cursor on a web page](docs/screenshots/03-web-cursor.jpg) |
-| **Menu** opens the floating toolbar | The on-screen pointer; **OK** clicks |
-| ![General settings with language, search engine and theme](docs/screenshots/06-settings-general.jpg) | ![Ad-blocking settings](docs/screenshots/07-settings-ad-blocking.jpg) |
-| Language (Automatic follows the TV), search engine, theme, background | Filter lists with rule counts and update dates |
-| ![Browsing settings](docs/screenshots/08-settings-browsing.jpg) | ![Error screen](docs/screenshots/09-error-state.jpg) |
-| Pointer speed, desktop sites, page text size | Clear errors with one-press recovery |
-| ![Tab switcher](docs/screenshots/12-tabs.jpg) | ![Per-site settings](docs/screenshots/13-site-settings.jpg) |
-| **Tabs:** the same 16:9 cards as Home; **Down** for close / new tab | **Site** button: desktop mode, text size, ad blocking and pointer mode for one site only |
-| ![Home with small thumbnails](docs/screenshots/14-home-small-tiles.jpg) | ![History as a grid](docs/screenshots/15-history-grid.jpg) |
-| **Thumbnail size** (Settings → Home): small tiles fit more on Home | **History** as a list or a grid, one button to switch |
-| ![Report a problem](docs/screenshots/17-report-problem.jpg) | ![Profiles](docs/screenshots/20-profiles.jpg) |
-| **Report a problem** (Site panel): scan the QR code with your phone to open a pre-filled GitHub report | **Profiles:** who's watching, with a guest mode that keeps nothing |
-| ![Reading mode](docs/screenshots/18-reading-mode.jpg) | ![Reading mode text](docs/screenshots/19-reading-text.jpg) |
-| **Reading mode** (toolbar *Read*): the article, large type, reading time | Up / Down scroll, Left / Right text size, Back returns to the page |
-| ![Read aloud](docs/screenshots/23-read-aloud.jpg) | ![Tab switcher with a live thumbnail](docs/screenshots/24-tab-live-thumbnail.jpg) |
-| **Read aloud:** OK starts and pauses; the paragraph being read is highlighted | **Tabs** show a fresh screenshot of the page you just left |
-| ![Profile PIN pad](docs/screenshots/21-profile-pin.jpg) | ![Locked profile picker](docs/screenshots/22-profile-locked.jpg) |
-| **Profile PIN:** four digits with the remote's number keys or the on-screen pad | The picker opens first when the remembered profile has a PIN |
+| ![Fullscreen video with seek preview](docs/screenshots/04-video-seek-preview.jpg) | ![Virtual cursor on a web page](docs/screenshots/03-web-cursor.jpg) |
+| **Hold → to seek:** target time and bar preview, one seek on release | The on-screen pointer; **OK** clicks |
 
-![Themes: Luna, Dusk, Forest, Ocean, Night sky, Graphite](docs/screenshots/25-themes.jpg)
-
-**Themes** (*Settings → General → Theme*): Luna, Dusk, Forest, Ocean, Night sky, Sakura and Graphite, each with its own colours and background motion.
-
-![Sakura theme with the Glass look](docs/screenshots/26-sakura-glass.jpg)
-
-**Sakura with the Glass look** (*Settings → General*): translucent buttons and cards with a light edge, petals drifting behind.
-
-### Your phone as a remote
-
-Scan the QR code on the TV (*Settings → Phone remote*): the page opens already paired. **Remote** is the D-pad and keys
-(switch it to **Touchpad** to steer the pointer by dragging), **Type** sends addresses, searches and text.
-
-![The phone page, fitted to the screen without scrolling: Remote tab (D-pad or touchpad, Back / Home / Menu, media keys, volume), Type tab (text box, actions, share bookmarklet) and the Saved favourites tab](docs/screenshots/11-phone-remote.jpg)
+More: tabs, reading mode, profiles, themes, settings and the phone page in the [full gallery](docs/SCREENSHOTS.md).
 
 ## Install
 
@@ -158,7 +128,7 @@ history and favourites are kept.
 
 | Key | On a web page | In fullscreen video |
 |---|---|---|
-| D-pad | move the pointer; at the screen edge scroll; **Up** at the very top opens the toolbar | **← / →** seek (hold to accelerate) |
+| D-pad | short press: jump to the nearest link or button in that direction (scrolls when there is none); hold: move the pointer freely and settle on a nearby link on release; **Up** at the very top opens the toolbar | **← / →** seek (hold to accelerate) |
 | **OK** | click | show controls, then play / pause |
 | Hold **OK** | switch pointer ⇄ link-focus mode | — |
 | **Menu** (or **Info**) | show / hide the toolbar | same |
@@ -199,7 +169,8 @@ app/src/main/assets/filters/luna.txt  Luna's own filter rules (Adblock Plus synt
 app/src/test/                         unit tests (filter engine, localisation, device compatibility, resume rules, phone remote)
 tools/sitecheck/                      on-TV ad-blocking report (Chrome DevTools + adb)
 tools/perf/                           on-TV frame timing
-docs/                                 architecture, design, ad blocking, performance, localization, compatibility, releasing
+docs/                                 architecture, design, ad blocking, performance, localization, compatibility, releasing,
+                                      phone remote, screenshots gallery, roadmap
 ```
 
 Start with [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
@@ -207,29 +178,9 @@ Start with [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 ## Phone remote
 
 Typing with a TV remote is slow, and not every remote has a Menu key. With *Settings → Phone remote* on (the default),
-Luna listens on your home network while it is on screen:
-
-1. On the TV open **Settings → Phone remote**: it shows a QR code, the address (such as `http://192.168.1.20:8765`)
-   and a 6-digit PIN.
-2. On a phone connected to the same Wi-Fi, scan the QR code with the camera: the page opens already paired (or open the
-   address by hand and enter the PIN once). The phone remembers the pairing.
-3. The **Remote** tab is a full remote in your hand: D-pad (hold an arrow to keep the pointer moving), **OK**, Back,
-   Home, Menu, rewind / play-pause / fast-forward and volume. The **Type** tab sends text: type an address or words and
-   tap **Open on TV** or **Search on TV**; to fill a text box on a page (a site's search box, a login) put the pointer
-   on the box, press OK, then tap **Type into the page** (or **Type and press Enter**).
-
-**Share a page from your phone.** On the **Type** tab, *Copy bookmarklet* gives you a one-line bookmark. Save it in your
-phone's browser; opening it on any page brings you back to this page with that address ready, and one tap on *Open on TV*
-sends it. (A real Android *Share* button would need HTTPS, which a TV on a home network can't have.) The address is never
-sent until you tap.
-
-Several phones can be paired and used at the same time; they share the PIN, and wrong guesses are counted per phone,
-so one stale page can't lock the others out.
-
-**Safety.** Every request needs the PIN; five wrong PINs lock that phone for 30 seconds; it only opens web pages,
-searches, presses the remote keys inside Luna, changes the volume and types into the focused field; and it stops
-listening when Luna is not on screen. The traffic is plain HTTP on your local network, so turn it off (the same
-settings page) on networks you don't trust. *New PIN* unpairs all phones. Details: [SECURITY.md](SECURITY.md).
+scan the QR code shown there and your phone becomes a remote, a touchpad, a keyboard and a favourites list: a web page
+served by the TV on your Wi-Fi, nothing to install, protected by a PIN, and only listening while Luna is on screen.
+Pairing steps, sharing a page from your phone and the safety rules: [docs/PHONE_REMOTE.md](docs/PHONE_REMOTE.md).
 
 ## Privacy
 
@@ -259,23 +210,11 @@ Pages are rendered by the Android System WebView and get **no** JavaScript bridg
 - [ ] Gradle 9 and the newest Compose, once the plugins catch up.
 - [ ] Google Play listing: Play Console account, 12-tester closed test, then production (see [docs/PUBLISHING.md](docs/PUBLISHING.md)).
 
-**Done in 0.9.1:** the pointer snaps to links and buttons (Settings: *Snap pointer to links*); a click far down a page lands where the pointer is.
-
-**Done in 0.9.0:** *private tabs*, address fallbacks (`www.`, plain http, search) and *Open anyway* for certificate errors.
-
-**Done in 0.8.0:** the *Sakura* theme, round particles, and the optional *Glass look*.
-
-**Done in 0.7.1:** *themes* (Luna, Dusk, Forest, Ocean, Night sky, Graphite), a phone page that fits the screen, and D-pad fixes on Home and in Settings.
-**Done in 0.7.0:** *profile PINs*, *live tab thumbnails*, *reading text size* (remembered) and *read aloud*.
-**Done in 0.6.0:** *web engine check* (About warns when the TV's WebView is too old, and the Home screen says so), *reading mode*, *favourites from the phone* (a Favorites tab: open, save, remove), and *profiles* with a guest mode.
-**Done in 0.5.0:** an update notice (once a day, builds outside a store only), store-ready packaging, *Report a problem* from the *Site* panel (a QR code opens a pre-filled GitHub report; the page address is cut at the "?" and nothing is sent by the TV), and links shared from the phone's browser.
-**Done in 0.4.x:** tabs, per-site settings, phone touchpad, inline video positions, filter-rule updates without a release, history grid, thumbnail size, and the toolchain upgrade (Android Gradle Plugin 8.13, Gradle 8.14, Kotlin 2.1, Compose BOM 2024.12).
-
 **Not planned**
 - A download manager: a TV browser is for watching; use a phone or computer for files.
 - DRM streaming services (Netflix, Disney+, …): a WebView can't provide the hardware DRM they need; use their own apps.
 
-Ideas and bug reports are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
+What each release added: [CHANGELOG.md](CHANGELOG.md) and the [full roadmap](docs/ROADMAP.md). Ideas and bug reports are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Contributing
 

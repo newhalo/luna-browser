@@ -84,4 +84,4 @@ buffering and playback-failed overlays · empty History / Favourites · filter-l
 
 ## Screenshots
 
-See the gallery in the [README](../README.md#screenshots). Source images live in `docs/screenshots/`.
+See the [screenshots gallery](SCREENSHOTS.md). Source images live in `docs/screenshots/`.
