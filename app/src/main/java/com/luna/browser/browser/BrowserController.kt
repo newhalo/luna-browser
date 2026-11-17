@@ -1488,6 +1488,7 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
         const val TARGETS_JS = """(function(){try{var de=document.documentElement,v=window.visualViewport,s=(v&&v.scale>0)?v.scale:1,ox=v?(+v.offsetLeft||0):0,oy=v?(+v.offsetTop||0):0,
 d=(window.devicePixelRatio||1)*s,W=(v&&v.width>0)?v.width:(de.clientWidth||+window.innerWidth||0),H=(v&&v.height>0)?v.height:(de.clientHeight||+window.innerHeight||0),out=[],seen={};
 function ok(e){var b=e.getBoundingClientRect();if(b.width<8||b.height<8)return;
+var cr=e.getClientRects();if(cr.length>1){var ba=0;for(var z=0;z<cr.length;z++){var c=cr[z],ca=c.width*c.height;if(ca>ba&&c.bottom>oy&&c.top<oy+H){ba=ca;b=c;}}if(b.width<8||b.height<8)return;}
 var l=Math.max(b.left,ox),t=Math.max(b.top,oy),r=Math.min(b.right,ox+W),bt=Math.min(b.bottom,oy+H);if(r-l<8||bt-t<8)return;
 var h=document.elementFromPoint((l+r)/2,(t+bt)/2);if(!h||!(h===e||e.contains(h)))return;
 var s=getComputedStyle(e);if(s.visibility==='hidden'||s.pointerEvents==='none'||parseFloat(s.opacity)<0.05)return;
