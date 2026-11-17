@@ -396,4 +396,6 @@
     <string name="priv_cleared">Dados anônimos apagados</string>
     <string name="priv_shared">O mecanismo web deste sistema não consegue separar logins anônimos: os cookies desta aba são mantidos como os normais. O histórico e as posições de vídeo continuam sem ser salvos.</string>
     <string name="err_ssl_proceed">Abrir mesmo assim (inseguro)</string>
+    <string name="set_snap">Ponteiro salta para links</string>
+    <string name="set_snap_d">Um toque curto numa seta leva o ponteiro ao link ou botão mais próximo nessa direção. Mantenha a seta premida para mover livremente.</string>
 </resources>

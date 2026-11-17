@@ -159,6 +159,7 @@ object K {
     const val SHOW_RECENT = "showRecent"
     const val CURSOR_SPEED = "cursorSpeed"
     const val CURSOR_START = "cursorStart"
+    const val SNAP = "pointerSnap"
     const val DESKTOP = "desktop"
     const val ZOOM = "zoom"
     const val ADBLOCK = "adblock"
@@ -231,7 +232,7 @@ class Store(ctx: Context) {
     private val defaults = mapOf(
         K.ENGINE to "Google", K.LAUNCH to "home",
         K.SHOW_CONTINUE to "true", K.SHOW_RECENT to "true",
-        K.CURSOR_SPEED to "3", K.CURSOR_START to "true",
+        K.CURSOR_SPEED to "3", K.CURSOR_START to "true", K.SNAP to "true",
         K.DESKTOP to "true", K.ZOOM to "125",
         K.ADBLOCK to "true", K.BLOCK_POPUPS to "true",
         K.SEEK_STEP to "10", K.THIRD_PARTY to "true",

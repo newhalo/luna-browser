@@ -314,6 +314,7 @@ private fun rows(category: Int, app: AppState): List<SRow> {
         )
         2 -> listOfNotNull(
             Toggle(K.CURSOR_START, app.s(R.string.set_cursor_start), app.s(R.string.set_cursor_start_d)),
+            Toggle(K.SNAP, app.s(R.string.set_snap), app.s(R.string.set_snap_d)),
             Choice(K.CURSOR_SPEED, app.s(R.string.set_cursor_speed), app.s(R.string.set_cursor_speed_d), (1..5).map { it.toString() to app.s(R.string.level_n, it) }),
             Toggle(K.DESKTOP, app.s(R.string.set_desktop), app.s(R.string.set_desktop_d)),
             Choice(K.ZOOM, app.s(R.string.set_zoom), app.s(R.string.set_zoom_d), listOf("100", "125", "150", "175").map { it to "$it%" }),

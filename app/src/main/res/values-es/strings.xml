@@ -396,4 +396,6 @@
     <string name="priv_cleared">Datos privados borrados</string>
     <string name="priv_shared">El motor web de este sistema no puede separar los inicios de sesión privados: las cookies de esta pestaña se conservan como las normales. El historial y las posiciones de vídeo siguen sin guardarse.</string>
     <string name="err_ssl_proceed">Abrir de todos modos (no seguro)</string>
+    <string name="set_snap">El puntero salta a los enlaces</string>
+    <string name="set_snap_d">Una pulsación corta de una flecha lleva el puntero al enlace o botón más cercano en esa dirección. Mantén la flecha para moverlo libremente.</string>
 </resources>

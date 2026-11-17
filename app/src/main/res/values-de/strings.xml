@@ -396,4 +396,6 @@
     <string name="priv_cleared">Private Daten gelöscht</string>
     <string name="priv_shared">Die Web-Engine dieses Systems kann private Anmeldungen nicht trennen: Cookies dieses Tabs bleiben wie sonst erhalten. Verlauf und Videopositionen werden trotzdem nicht gespeichert.</string>
     <string name="err_ssl_proceed">Trotzdem öffnen (unsicher)</string>
+    <string name="set_snap">Zeiger rastet auf Links ein</string>
+    <string name="set_snap_d">Ein kurzer Druck auf eine Pfeiltaste springt zum nächsten Link oder Button in dieser Richtung. Pfeiltaste gedrückt halten, um den Zeiger frei zu bewegen.</string>
 </resources>

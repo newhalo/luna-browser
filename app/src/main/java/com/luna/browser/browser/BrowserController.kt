@@ -986,13 +986,21 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     private fun handleCursorKey(e: KeyEvent): Boolean {
         val code = e.keyCode
         if (e.action == KeyEvent.ACTION_UP) {
-            held.remove(code)
+            if (code == pendingCode) { handler.removeCallbacks(startHold); pendingCode = 0; jumpTo(code, true); return true }
+            if (held.remove(code) && held.isEmpty() && freeMoved) { freeMoved = false; snapToNearby() }
             return true
         }
-        if (e.repeatCount > 0 || code in held) return true
+        if (e.repeatCount > 0 || code in held || code == pendingCode) return true
         // Pressing Up once the pointer already sits at the very top reveals the toolbar.
         if (code == KeyEvent.KEYCODE_DPAD_UP && held.isEmpty() && cursorY <= 2f && !webView.canScrollVertically(-1)) {
             showToolbar()
+            return true
+        }
+        if (snapOn) {
+            // A short press jumps to the nearest clickable item in that direction; holding moves the pointer freely.
+            if (pendingCode != 0) { handler.removeCallbacks(startHold); beginHold() }
+            if (held.isEmpty() && pendingCode == 0) { pendingCode = code; handler.postDelayed(startHold, HOLD_MS); return true }
+            held.add(code)
             return true
         }
         val wasEmpty = held.isEmpty()
@@ -1008,6 +1016,112 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             handler.post(ticker)
         }
         return true
+    }
+
+    // ---- Pointer snapping ----
+    private val snapOn get() = app.store.bool(K.SNAP)
+    private var pendingCode = 0
+    private var freeMoved = false
+    private val startHold = Runnable { beginHold() }
+
+    /** The arrow stayed down: from now on the pointer moves freely. */
+    private fun beginHold() {
+        val c = pendingCode
+        pendingCode = 0
+        if (c == 0 || !cursorMode || customView != null) return
+        val first = held.isEmpty()
+        held.add(c)
+        freeMoved = true
+        if (first) { heldSince = SystemClock.uptimeMillis(); lastTick = heldSince; handler.post(ticker) }
+    }
+
+    /** Clickable things on screen, as [left, top, right, bottom] in view pixels; the answer arrives on the main thread. */
+    private fun queryTargets(done: (List<IntArray>) -> Unit) {
+        webView.evaluateJavascript(TARGETS_JS) { v ->
+            val out = ArrayList<IntArray>()
+            runCatching {
+                val a = org.json.JSONArray(v)
+                for (i in 0 until a.length()) {
+                    val r = a.getJSONArray(i)
+                    out.add(intArrayOf(r.getInt(0), r.getInt(1), r.getInt(2), r.getInt(3)))
+                }
+            }
+            done(out)
+        }
+    }
+
+    private fun placeCursor(x: Float, y: Float) {
+        cursorX = x.coerceIn(0f, viewW - 1f)
+        cursorY = y.coerceIn(0f, viewH - 1f)
+        lastMove = SystemClock.uptimeMillis()
+        cursorActive = true
+        scheduleIdleHide()
+        sendMouse(MotionEvent.ACTION_HOVER_MOVE, 0)
+    }
+
+    /** Short press: move the pointer onto the nearest clickable item in the arrow's direction. */
+    private fun jumpTo(code: Int, retry: Boolean) {
+        if (viewW == 0 || !cursorMode) return
+        queryTargets { list ->
+            val best = pickTarget(list, cursorX, cursorY, code)
+            if (best != null) { placeCursor((best[0] + best[2]) / 2f, (best[1] + best[3]) / 2f); return@queryTargets }
+            val vertical = code == KeyEvent.KEYCODE_DPAD_UP || code == KeyEvent.KEYCODE_DPAD_DOWN
+            if (code == KeyEvent.KEYCODE_DPAD_UP && !webView.canScrollVertically(-1)) {
+                if (cursorY <= 2f || list.isEmpty()) showToolbar() else placeCursor(cursorX, 0f)
+                return@queryTargets
+            }
+            if (vertical) {
+                // Nothing that way on screen: scroll, then look again.
+                scrollWheel((if (code == KeyEvent.KEYCODE_DPAD_DOWN) 1 else -1) * viewH * 0.4f)
+                cursorActive = true
+                scheduleIdleHide()
+                if (retry) handler.postDelayed({ jumpTo(code, false) }, 260)
+            } else {
+                val s = 40 * density
+                moveCursor(if (code == KeyEvent.KEYCODE_DPAD_RIGHT) s else -s, 0f)
+            }
+        }
+    }
+
+    private fun pickTarget(list: List<IntArray>, cx: Float, cy: Float, code: Int): IntArray? {
+        var best: IntArray? = null
+        var bestScore = Float.MAX_VALUE
+        val min = 8 * density
+        for (r in list) {
+            val dx = (r[0] + r[2]) / 2f - cx
+            val dy = (r[1] + r[3]) / 2f - cy
+            val major: Float
+            val minor: Float
+            when (code) {
+                KeyEvent.KEYCODE_DPAD_RIGHT -> { major = dx; minor = kotlin.math.abs(dy) }
+                KeyEvent.KEYCODE_DPAD_LEFT -> { major = -dx; minor = kotlin.math.abs(dy) }
+                KeyEvent.KEYCODE_DPAD_DOWN -> { major = dy; minor = kotlin.math.abs(dx) }
+                else -> { major = -dy; minor = kotlin.math.abs(dx) }
+            }
+            if (major < min) continue
+            val score = major + 2.2f * minor
+            if (score < bestScore) { bestScore = score; best = r }
+        }
+        return best
+    }
+
+    /** After free movement: if the pointer stopped on or right next to a clickable item, centre it on that item. */
+    private fun snapToNearby() {
+        queryTargets { list ->
+            var best: IntArray? = null
+            var bd = 36 * density
+            var ba = Long.MAX_VALUE
+            val big = viewW.toLong() * viewH / 4
+            for (r in list) {
+                val area = (r[2] - r[0]).toLong() * (r[3] - r[1])
+                if (area > big) continue
+                val ddx = maxOf(r[0] - cursorX, 0f, cursorX - r[2])
+                val ddy = maxOf(r[1] - cursorY, 0f, cursorY - r[3])
+                val d = kotlin.math.hypot(ddx, ddy)
+                if (d < bd || (d == bd && area < ba)) { bd = d; ba = area; best = r }
+            }
+            best?.let { placeCursor((it[0] + it[2]) / 2f, (it[1] + it[3]) / 2f) }
+        }
     }
 
     // ---- Phone touchpad ----
@@ -1359,6 +1473,20 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
     }
 
     private companion object {
+        const val HOLD_MS = 220L
+        /** Lists the visible clickable elements (links, buttons, inputs, anything with a pointer cursor) in view pixels. */
+        const val TARGETS_JS = """(function(){try{var d=window.devicePixelRatio||1,W=innerWidth,H=innerHeight,out=[];
+function ok(e){var b=e.getBoundingClientRect();if(b.width<8||b.height<8)return;
+var l=Math.max(b.left,0),t=Math.max(b.top,0),r=Math.min(b.right,W),bt=Math.min(b.bottom,H);if(r-l<8||bt-t<8)return;
+var h=document.elementFromPoint((l+r)/2,(t+bt)/2);if(!h||!(h===e||e.contains(h)))return;
+var s=getComputedStyle(e);if(s.visibility==='hidden'||s.pointerEvents==='none'||parseFloat(s.opacity)<0.05)return;
+out.push([Math.round(l*d),Math.round(t*d),Math.round(r*d),Math.round(bt*d)]);}
+var q=document.querySelectorAll('a[href],button,input:not([type=hidden]),select,textarea,summary,label[for],[role=button],[role=link],[role=tab],[role=menuitem],[role=checkbox],[onclick],[tabindex]:not([tabindex="-1"])');
+for(var i=0;i<q.length&&out.length<250;i++)ok(q[i]);
+if(out.length<250){var c=document.querySelectorAll('div,span,li,img,td,svg');var n=0;
+for(var j=0;j<c.length&&n<1200&&out.length<250;j++){var e=c[j];var b=e.getBoundingClientRect();if(b.bottom<0||b.top>H||b.right<0||b.left>W)continue;n++;
+if(getComputedStyle(e).cursor!=='pointer')continue;var p=e.parentElement;if(p&&getComputedStyle(p).cursor==='pointer')continue;if(e.closest('a[href],button'))continue;ok(e);}}
+return out;}catch(x){return [];}})()"""
         /** Sets the value of the focused input the way a user typing would (frameworks listen to input events). */
         const val TYPE_JS = """(function(){var e=document.activeElement;
 while(e&&e.shadowRoot&&e.shadowRoot.activeElement)e=e.shadowRoot.activeElement;

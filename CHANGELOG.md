@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Added
+- **Pointer snaps to links**: a short press of an arrow jumps the pointer to the nearest clickable item in that direction; holding still moves it freely and settles on a nearby link when released. Turn off in Settings.
+
 ### Fixed
 - Pressing OK on a link far down a long page could do nothing and jump the page back up (episode numbers on video sites). The pointer click now lands where the pointer is.
 

@@ -392,4 +392,6 @@
     <string name="priv_cleared">已清除无痕数据</string>
     <string name="priv_shared">此系统的网页引擎无法隔离无痕登录：该标签页的 Cookie 会像普通标签页一样保留。历史记录和视频播放位置仍不会保存。</string>
     <string name="err_ssl_proceed">仍然打开（不安全）</string>
+    <string name="set_snap">指针吸附链接</string>
+    <string name="set_snap_d">短按方向键，指针会跳到该方向上最近的链接或按钮；长按方向键可自由移动。</string>
 </resources>

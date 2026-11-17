@@ -392,4 +392,6 @@
     <string name="priv_cleared">Đã xóa dữ liệu ẩn danh</string>
     <string name="priv_shared">Công cụ web của hệ thống này không tách được đăng nhập ẩn danh: cookie của tab này được giữ như thường. Lịch sử và vị trí video vẫn không được lưu.</string>
     <string name="err_ssl_proceed">Vẫn mở (không an toàn)</string>
+    <string name="set_snap">Con trỏ tự bắt vào liên kết</string>
+    <string name="set_snap_d">Nhấn nhanh mũi tên để con trỏ nhảy tới liên kết hoặc nút gần nhất theo hướng đó. Giữ mũi tên để di chuyển tự do.</string>
 </resources>

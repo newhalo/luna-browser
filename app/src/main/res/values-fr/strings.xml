@@ -396,4 +396,6 @@
     <string name="priv_cleared">Données privées effacées</string>
     <string name="priv_shared">Le moteur web de ce système ne peut pas isoler les connexions privées : les cookies de cet onglet sont conservés comme d\'habitude. L\'historique et les positions vidéo ne sont toujours pas enregistrés.</string>
     <string name="err_ssl_proceed">Ouvrir quand même (non sécurisé)</string>
+    <string name="set_snap">Pointeur aimanté aux liens</string>
+    <string name="set_snap_d">Un appui bref sur une flèche place le pointeur sur le lien ou le bouton le plus proche dans cette direction. Maintenez la flèche pour le déplacer librement.</string>
 </resources>

@@ -65,7 +65,7 @@ artwork or brand gradient), `SiteIcon`, `EmptyState`, `ToastHost`, `Aurora`, `Ba
 
 | Key | Page (cursor mode) | Fullscreen video |
 |---|---|---|
-| D-pad | Move the pointer (accelerates); push at the top/bottom edge to scroll; Up at the very top opens the toolbar | Left / Right seek (hold to accelerate), Up / Down show controls |
+| D-pad | Short press: the pointer jumps to the nearest link or button in that direction (setting *Snap pointer to links*); hold: move freely (accelerates) and snap to a nearby link on release; push at the top/bottom edge to scroll; Up at the very top opens the toolbar | Left / Right seek (hold to accelerate), Up / Down show controls |
 | OK | Click | First press shows controls, then play / pause |
 | Hold OK | Switch cursor ⇄ link-focus mode | — |
 | Menu / Info / Bookmark | Toggle the floating toolbar | Toggle toolbar |
