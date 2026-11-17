@@ -59,8 +59,15 @@ class SnapRulesTest {
 
     @Test fun floatingButtonsOnlyFromTheirOwnColumn() {
         val toTop = r(1800, 950, 1880, 1030, fixed = 1)
-        assertNull(pick(listOf(toTop), 1600, 700, SnapRules.DOWN))
+        assertNull(pick(listOf(toTop), 1700, 700, SnapRules.DOWN))
         assertArrayEquals(toTop, pick(listOf(toTop), 1840, 700, SnapRules.DOWN))
+    }
+
+    @Test fun downStaysInItsColumnInsteadOfZigzagging() {
+        // Article text on the left, an info box on the right: Down from a text link must not hop into the box.
+        val textLink = r(450, 300, 850, 340)
+        val boxLink = r(1150, 450, 1360, 490)
+        assertNull(pick(listOf(textLink, boxLink), 650, 320, SnapRules.DOWN))
     }
 
     @Test fun originIsTheSmallestItemUnderThePointer() {

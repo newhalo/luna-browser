@@ -24,7 +24,7 @@ object SnapRules {
     const val REACH_V = 0.45f
     /** Sideways off the current row / column, how far (fraction of the view) an item may be. */
     const val SIDE_H = 0.15f
-    const val SIDE_V = 0.2f
+    const val SIDE_V = 0.1f
 
     /** The smallest item under the point, or the point itself as an empty rectangle. */
     fun origin(list: List<IntArray>, x: Float, y: Float): FloatArray {
