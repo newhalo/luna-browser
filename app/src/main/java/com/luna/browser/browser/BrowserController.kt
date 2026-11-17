@@ -1099,8 +1099,9 @@ class BrowserController(private val activity: Activity, private val app: AppStat
                 else -> { major = -dy; minor = kotlin.math.abs(dx) }
             }
             if (major < min) continue
-            // Floating buttons ("back to top", chat bubbles) stay on screen everywhere: choose them only when nothing else fits.
-            val score = major + 2.2f * minor + (if (r.size > 4 && r[4] == 1) viewH * 0.6f else 0f)
+            // Floating buttons ("back to top", chat bubbles) stay on screen everywhere: reachable only from the same row or column.
+            if (r.size > 4 && r[4] == 1 && minor > 80 * density) continue
+            val score = major + 2.2f * minor
             if (score < bestScore) { bestScore = score; best = r }
         }
         return best
