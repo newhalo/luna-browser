@@ -21,5 +21,8 @@ class CookieBannersTest {
 
     @Test fun runsOncePerPage() {
         assertTrue(CookieBanners.JS.startsWith("(function(){if(window.__lunaCk)return;"))
+        // Run before the document exists, it must not mark itself done (the run at page end has to work).
+        val js = CookieBanners.JS
+        assertTrue(js.indexOf("if(!root)return;") in 0 until js.indexOf("window.__lunaCk=1"))
     }
 }

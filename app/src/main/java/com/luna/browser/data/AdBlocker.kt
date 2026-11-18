@@ -152,10 +152,11 @@ class AdBlocker(private val ctx: Context) {
 
     // ---- Queries (called from WebView threads) ----
 
-    fun shouldBlock(url: String, pageUrl: String, type: Int): Boolean {
+    /** [keep]: false in a private tab or the guest profile, whose blocked ads are counted but not written down. */
+    fun shouldBlock(url: String, pageUrl: String, type: Int, keep: Boolean = true): Boolean {
         if (!url.startsWith("http")) return false
         val hit = engine.match(url, pageUrl, type) ?: return false
-        countBlocked()
+        countBlocked(keep)
         // Debug builds: tools/sitecheck reads these lines to report which rule blocked what.
         if (debuggable) Log.d("LunaFilter", "blocked ${url.take(160)} on ${urlHost(pageUrl)} by $hit")
         return true
@@ -168,11 +169,17 @@ class AdBlocker(private val ctx: Context) {
 
     fun cosmeticCss(pageUrl: String): String = engine.css(pageUrl)
 
-    fun countBlocked() {
+    /** Blocked in a private tab or by the guest: shown until Luna closes, never saved (the guest leaves nothing behind). */
+    private val unsaved = AtomicInteger()
+
+    fun countBlocked(keep: Boolean = true) {
+        val total = if (keep) counter.incrementAndGet() + unsaved.get() else counter.get() + unsaved.incrementAndGet()
         main.post {
-            blockedCount = counter.incrementAndGet()
-            main.removeCallbacks(saveCount)
-            main.postDelayed(saveCount, 5_000)
+            blockedCount = total
+            if (keep) {
+                main.removeCallbacks(saveCount)
+                main.postDelayed(saveCount, 5_000)
+            }
         }
     }
 

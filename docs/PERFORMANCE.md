@@ -20,6 +20,22 @@ Measured with [`tools/perf`](../tools/perf) (`measure.ps1` + `frames.py`, which 
 
 \* measured on the first release build, before the GPU-layer reductions.
 
+### Check of v0.10.0 (2026-11-18, same TV, release build)
+
+| Metric | Result |
+|---|---|
+| Cold start, right after `adb install` (ART status `verify`, nothing compiled yet) | 1.13–1.15 s |
+| Cold start after compiling with the shipped profiles (`cmd package compile -m speed-profile -f`) | **0.71–0.73 s** |
+| Home, moving between cards: UI thread / GPU / frame-to-frame (median) | 14.8 ms / 28.1 ms / 27.5 ms (≈ 36 fps) |
+| Home, idle: GPU | 16.1 ms (unchanged) |
+
+A freshly sideloaded APK starts slower until Android's background optimisation (TV idle, usually overnight) compiles it
+with the baseline profiles that `profileinstaller` installs on first start; that is the platform, not Luna's code. The
+Home code did not change in 0.10.0; the card-moving numbers are higher than in the first table, measured with a
+different theme, Home content and card sizes, so compare runs with the same settings. An app-level
+`baseline-prof.txt` with wildcard rules was tried and did not change the shipped profile, so it is not used.
+`tools/perf/frames.js` gives the same summary as `frames.py` for machines without Python (`node frames.js file.txt`).
+
 ## What was found and fixed
 
 | Finding | Fix |

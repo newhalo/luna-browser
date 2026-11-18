@@ -12,7 +12,17 @@ object Suggest {
     enum class Kind { Tab, Favorite, History }
 
     /** One candidate. [visits] counts visits to its site; [order] is its place in the history (0 = most recent). */
-    data class Entry(val title: String, val url: String, val kind: Kind, val visits: Int = 0, val order: Int = 0)
+    data class Entry(val title: String, val url: String, val kind: Kind, val visits: Int = 0, val order: Int = 0) {
+        // Worked out once per entry, not at every key press: the candidates are kept while the box is open,
+        // and folding ~400 titles per letter typed is noticeable on a TV chip.
+        internal val hostName: String by lazy { host(url) }
+        internal val foldedTitle: String by lazy { fold(title) }
+        internal val titleWords: List<String> by lazy { foldedTitle.split(WORD_BREAK).filter { it.isNotEmpty() } }
+        internal val foldedUrl: String by lazy { fold(url) }
+    }
+
+    private val WORD_BREAK = Regex("[^\\p{L}\\p{N}]+")
+    private val MARKS = Regex("\\p{Mn}+")
 
     /** The best [limit] entries for [query] (at most one per address), best first; empty for an empty query. */
     fun rank(query: String, entries: List<Entry>, limit: Int = 6): List<Entry> {
@@ -31,15 +41,15 @@ object Suggest {
         .substringBefore(':').lowercase().removePrefix("www.").removePrefix("m.")
 
     private fun score(q: String, words: List<String>, e: Entry): Int? {
-        val host = host(e.url)
-        val title = fold(e.title)
-        val titleWords = title.split(Regex("[^\\p{L}\\p{N}]+")).filter { it.isNotEmpty() }
+        val host = e.hostName
+        val title = e.foldedTitle
+        val titleWords = e.titleWords
         val match = when {
             host.startsWith(q) -> 1000                                              // "you" -> youtube.com
             host.split('.').any { it.startsWith(q) } -> 700                         // "wiki" -> en.wikipedia.org
             words.all { w -> titleWords.any { it.startsWith(w) } } -> 500            // "big buck" -> Big Buck Bunny
             title.contains(q) -> 250
-            fold(e.url).contains(q) -> 200
+            e.foldedUrl.contains(q) -> 200
             else -> return null
         }
         val kindBonus = when (e.kind) { Kind.Tab -> 120; Kind.Favorite -> 100; Kind.History -> 0 }
@@ -49,5 +59,5 @@ object Suggest {
 
     /** Lower case without accents (đ -> d), for matching only. */
     fun fold(s: String): String =
-        Normalizer.normalize(s.lowercase(), Normalizer.Form.NFD).replace(Regex("\\p{Mn}+"), "").replace('đ', 'd')
+        Normalizer.normalize(s.lowercase(), Normalizer.Form.NFD).replace(MARKS, "").replace('đ', 'd')
 }

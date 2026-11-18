@@ -632,7 +632,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             if (!request.isForMainFrame) return false
             val target = request.url.toString()
             // Click-hijack: the page swaps itself for a known ad / betting page.
-            if (adblockOn() && url.startsWith("http") && app.ads.shouldBlock(target, url, Type.DOCUMENT)) {
+            if (adblockOn() && url.startsWith("http") && app.ads.shouldBlock(target, url, Type.DOCUMENT, keepCount)) {
                 notePopupBlocked(R.string.toast_blocked_redirect)
                 return true
             }
@@ -652,7 +652,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
 
         override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? {
             if (adblockOn() && !request.isForMainFrame &&
-                app.ads.shouldBlock(request.url.toString(), filterPageUrl, AdBlocker.typeOf(request))
+                app.ads.shouldBlock(request.url.toString(), filterPageUrl, AdBlocker.typeOf(request), keepCount)
             ) {
                 handler.post { pageBlocked++ }
                 return WebResourceResponse("text/plain", "utf-8", 204, "No Content", emptyMap(), ByteArrayInputStream(ByteArray(0)))
@@ -882,12 +882,15 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     }
     private var lastPopupToast = 0L
 
+    /** A private tab and the guest leave no trace, not even how many ads they blocked. */
+    private val keepCount: Boolean get() = !isPrivate && !app.store.isGuest
+
     /** Ads, trackers and pop-ups blocked on the page being shown (counted again from 0 on every new page). */
     var pageBlocked by mutableIntStateOf(0)
         private set
 
     private fun notePopupBlocked(@StringRes msg: Int) {
-        app.ads.countBlocked()
+        app.ads.countBlocked(keepCount)
         pageBlocked++
         val now = SystemClock.uptimeMillis()
         if (now - lastPopupToast > 4000) {

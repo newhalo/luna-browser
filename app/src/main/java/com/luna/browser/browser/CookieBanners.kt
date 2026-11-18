@@ -29,8 +29,9 @@ object CookieBanners {
         val sel = SELECTORS.joinToString(",")
         val css = "$sel{display:none!important;visibility:hidden!important;pointer-events:none!important}"
         val locks = LOCK_CLASSES.joinToString(",") { "'$it'" }
-        """(function(){if(window.__lunaCk)return;window.__lunaCk=1;
-var s=document.createElement('style');s.id='__luna_ck';s.textContent=${quote(css)};(document.head||document.documentElement).appendChild(s);
+        // Marked as done only once the style is in: run too early (no document yet), the run at page end does it.
+        """(function(){if(window.__lunaCk)return;var root=document.head||document.documentElement;if(!root)return;window.__lunaCk=1;
+var s=document.createElement('style');s.id='__luna_ck';s.textContent=${quote(css)};root.appendChild(s);
 function unlock(){var b=document.body,h=document.documentElement;if(!b||!document.querySelector(${quote(sel)}))return;
 [$locks].forEach(function(c){b.classList.remove(c);h.classList.remove(c);});
 [h,b].forEach(function(e){if(getComputedStyle(e).overflowY==='hidden'){e.style.setProperty('overflow','auto','important');}});}

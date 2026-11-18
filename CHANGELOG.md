@@ -10,6 +10,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Changed
 - The name under the icon in the TV launcher follows the TV's language: *Trình duyệt Luna*, *Navegador Luna*, *Navigateur Luna*, *Браузер Luna*, *Luna ブラウザ*, *Luna 브라우저*, *Luna 浏览器* (English and German keep *Luna Browser*). The store listing name is unchanged.
+- Address suggestions are ranked faster (accents are folded once per entry, not at every key press).
+
+### Security
+- The video bridge that lets the remote drive a player inside another site's iframe accepted commands from any frame: an ad frame could pause, seek or change the speed of the video. A frame now obeys only its own parent (Luna's relay from the top page), and the top page only Luna.
+- Blocked ads in private tabs and in the guest profile are no longer added to the saved total (the guest leaves nothing behind).
+
+### Fixed
+- Cookie banners could stay visible when the hiding script ran before the page had a document; it now waits for the page end run.
 
 ## [0.10.0] - 2026-11-18
 

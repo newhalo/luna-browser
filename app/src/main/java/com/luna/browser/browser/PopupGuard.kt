@@ -42,6 +42,9 @@ object PopupGuard {
      * frame with postMessage, and the frame that owns the biggest video reports its state back up.
      * State array: [paused, position, duration, buffering, failed, area, playback rate].
      * Commands: toggle, play, pause, seek (relative seconds), pct (jump to a percentage), rate (playback speed).
+     * A frame obeys a command only when it comes from its own parent (the relay from the top page): an ad frame posting
+     * `{__luna:1,a:...}` to the top page or to a sibling can't drive the player. The top page itself is driven only
+     * through `__lunaCmd` (called by Luna), and only accepts state reports from frames inside it.
      */
     const val VIDEO_BRIDGE_JS = """(function(){if(window.__lunaBridge)return;window.__lunaBridge=1;
 function best(){var vs=document.getElementsByTagName('video'),b=null,ba=-1;for(var i=0;i<vs.length;i++){var r=vs[i].getBoundingClientRect(),a=r.width*r.height;if(a>ba){ba=a;b=vs[i];}}return b;}
@@ -54,8 +57,9 @@ else if(a==='rate'){if(v>=0.25&&v<=4)b.playbackRate=v;}}
 function relay(m){for(var i=0;i<window.frames.length;i++){try{window.frames[i].postMessage(m,'*');}catch(e){}}}
 window.__lunaCmd=function(a,v){var b=best();var s=null;if(b){act(b,a,v);s=st(b);}relay({__luna:1,a:a,v:v});return s||window.__lunaRemote||null;};
 window.addEventListener('message',function(e){var d=e.data;if(!d||!d.__luna)return;
-if(d.a){var b=best();if(b){act(b,d.a,d.v);try{window.top.postMessage({__luna:1,s:st(b)},'*');}catch(x){}}relay(d);}
-else if(d.s&&window===window.top){var c=window.__lunaRemote;if(!c||d.s[5]>=c[5]*0.5)window.__lunaRemote=d.s;}});})()"""
+if(d.a){if(window===window.top||e.source!==window.parent||typeof d.a!=='string'||typeof d.v!=='number')return;
+var b=best();if(b){act(b,d.a,d.v);try{window.top.postMessage({__luna:1,s:st(b)},'*');}catch(x){}}relay(d);}
+else if(d.s&&window===window.top&&e.source&&e.source!==window&&Array.isArray(d.s)&&d.s.length>=6){var c=window.__lunaRemote;if(!c||d.s[5]>=c[5]*0.5)window.__lunaRemote=d.s;}});})()"""
 
     /**
      * Injected at document start: removes invisible full-screen click-catchers (blank iframes or
