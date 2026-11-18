@@ -49,4 +49,6 @@ To add a **new language** (say Italian, `it`):
 
 ## Not translated on purpose
 
-Site and engine names (YouTube, VnExpress, DuckDuckGo…), the native names in the language picker, and the app name.
+Site and engine names (YouTube, VnExpress, DuckDuckGo…) and the native names in the language picker. The name **Luna**
+stays as it is; only the word for "browser" around it is translated in the launcher name (`app_name`, e.g. *Trình duyệt
+Luna*). The launcher shows it in the TV's system language, not the language chosen inside Luna.

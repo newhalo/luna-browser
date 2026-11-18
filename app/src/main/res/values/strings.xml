@@ -2,7 +2,8 @@
 <!-- Default (English) strings. Every other language lives in values-<lang>/strings.xml.
      StringsTest checks that all languages have exactly these keys and placeholders. -->
 <resources>
-    <string name="app_name" translatable="false">Luna Browser</string>
+    <!-- The name under the icon in the TV launcher (follows the TV language). Keep "Luna" in every language. -->
+    <string name="app_name">Luna Browser</string>
 
     <!-- Navigation -->
     <string name="nav_history">History</string>

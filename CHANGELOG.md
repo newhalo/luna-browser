@@ -6,6 +6,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-11-18
+
+### Changed
+- The name under the icon in the TV launcher follows the TV's language: *Trình duyệt Luna*, *Navegador Luna*, *Navigateur Luna*, *Браузер Luna*, *Luna ブラウザ*, *Luna 브라우저*, *Luna 浏览器* (English and German keep *Luna Browser*). The store listing name is unchanged.
+
 ## [0.10.0] - 2026-11-18
 
 ### Added

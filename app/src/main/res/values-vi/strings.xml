@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Trình duyệt Luna</string>
     <string name="nav_history">Lịch sử</string>
     <string name="nav_favorites">Yêu thích</string>
     <string name="nav_settings">Cài đặt</string>

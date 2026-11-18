@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Браузер Luna</string>
     <string name="nav_history">История</string>
     <string name="nav_favorites">Избранное</string>
     <string name="nav_settings">Настройки</string>

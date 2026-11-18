@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">Navigateur Luna</string>
     <string name="nav_history">Historique</string>
     <string name="nav_favorites">Favoris</string>
     <string name="nav_settings">Réglages</string>

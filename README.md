@@ -79,7 +79,7 @@ Up to five people plus a guest, each with their own history and sign-ins, option
 </table>
 
 > [!NOTE]
-> **Latest: [v0.10.0](https://github.com/newhalo/luna-browser/releases/latest).** New video controls (speed, skip 30 s,
+> **Latest: [v0.10.1](https://github.com/newhalo/luna-browser/releases/latest).** New video controls (speed, skip 30 s,
 > number keys jump like on YouTube), **split screen**, **find on page**, address suggestions, optional **dark pages**,
 > hidden cookie banners and a count of what was blocked on each page. 0.9.3 tamed the *snapping pointer*, 0.9.0 brought
 > *private tabs*. Every release: [CHANGELOG.md](CHANGELOG.md).
@@ -228,7 +228,8 @@ adb connect <tv-ip>:5555
 adb install -r luna-browser-vX.Y.Z.apk
 ```
 
-Luna appears in the launcher as **Luna Browser**. To update, install the newer APK the same way; your history and
+Luna appears in the launcher as **Luna Browser**, in the TV's language (for example *Trình duyệt Luna* in Vietnamese,
+*Navegador Luna* in Spanish). To update, install the newer APK the same way; your history and
 favourites are kept. Store plans: [docs/PUBLISHING.md](docs/PUBLISHING.md).
 
 > [!IMPORTANT]
