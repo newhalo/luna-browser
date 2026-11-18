@@ -65,11 +65,13 @@ artwork or brand gradient), `SiteIcon`, `EmptyState`, `ToastHost`, `Aurora`, `Ba
 
 | Key | Page (cursor mode) | Fullscreen video |
 |---|---|---|
-| D-pad | Short press: the pointer jumps to the next nearby link or button in that direction, same row / column first, only within a zone around the pointer (`SnapRules`; setting *Snap pointer to links*), else scrolls; hold: move freely (accelerates) and snap to a nearby link on release; push at the top/bottom edge to scroll; Up at the very top opens the toolbar | Left / Right seek (hold to accelerate), Up / Down show controls |
+| D-pad | Short press: the pointer jumps to the next nearby link or button in that direction, same row / column first, only within a zone around the pointer (`SnapRules`; setting *Snap pointer to links*), else scrolls; hold: move freely (accelerates) and snap to a nearby link on release; push at the top/bottom edge to scroll; Up at the very top opens the toolbar | Left / Right seek (hold to accelerate); Down selects the button row (−10 s, play, +10 s, skip 30 s, speed, exit: Left / Right move, OK presses, Up returns); 0–9 jump to 0–90 %; CH+ / CH− skip 30 s |
 | OK | Click | First press shows controls, then play / pause |
 | Hold OK | Switch cursor ⇄ link-focus mode | — |
 | Menu / Info / Bookmark | Toggle the floating toolbar | Toggle toolbar |
 | Red colour key | Switch pointer ⇄ link mode | — |
+| Blue colour key | Split screen: the other half gets the keys (also: push the pointer across the middle) | — |
+| Up / Down while finding | Previous / next match (toolbar *Find*) | — |
 | Back | Close toolbar → page history → Home → exit | Hide controls → leave fullscreen |
 | Hold Back | Open the toolbar | Leave fullscreen and open the toolbar |
 | Play/Pause, FF, RW | Control the page's video | Same |

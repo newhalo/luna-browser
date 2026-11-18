@@ -76,4 +76,15 @@ class TabPolicyTest {
         assertEquals(emptyList<Int>(), r.first)
         assertEquals(0, r.second)
     }
+
+    @Test fun bothHalvesOfASplitScreenStayLive() {
+        // Tabs 0 and 1 are on screen side by side; tab 2 needs room: the old tab 3 goes, never a half on screen.
+        val live = listOf(LiveTab(0, 10), LiveTab(1, 5), LiveTab(3, 20))
+        assertEquals(3, TabPolicy.victim(live, target = 2, keep = setOf(0, 1), maxLive = 3))
+    }
+
+    @Test fun aSplitScreenPairsWithTheLastUsedTabThatHasAPage() {
+        assertEquals(2, TabPolicy.splitPartner(listOf(50L, 10L, 40L, 90L), listOf(true, true, true, false), current = 0))
+        assertNull(TabPolicy.splitPartner(listOf(50L, 10L), listOf(true, false), current = 0))
+    }
 }

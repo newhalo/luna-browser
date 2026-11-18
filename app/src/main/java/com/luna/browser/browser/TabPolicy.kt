@@ -21,12 +21,19 @@ object TabPolicy {
      * The live tab to freeze so that [target] can become live: the least recently used one that is neither the
      * target nor the tab being shown ([current]). Null when there is already room.
      */
-    fun victim(live: List<LiveTab>, target: Int, current: Int, maxLive: Int): Int? {
+    fun victim(live: List<LiveTab>, target: Int, current: Int, maxLive: Int): Int? = victim(live, target, setOf(current), maxLive)
+
+    /** As above, but none of the tabs in [keep] (the ones on screen: both halves of a split screen) is frozen while another can be. */
+    fun victim(live: List<LiveTab>, target: Int, keep: Set<Int>, maxLive: Int): Int? {
         val others = live.filter { it.index != target }
         if (others.size < maxLive) return null
-        return others.filter { it.index != current }.minByOrNull { it.lastUsed }?.index
+        return others.filter { it.index !in keep }.minByOrNull { it.lastUsed }?.index
             ?: others.minByOrNull { it.lastUsed }?.index
     }
+
+    /** The tab to show next to [current] in a split screen: the most recently used other tab that has a page, or null. */
+    fun splitPartner(lastUsed: List<Long>, hasPage: List<Boolean>, current: Int): Int? =
+        lastUsed.indices.filter { it != current && hasPage[it] }.maxByOrNull { lastUsed[it] }
 
     /** After removing the tab at [removed], which index should be current. */
     fun indexAfterClose(current: Int, removed: Int, sizeAfter: Int): Int = when {

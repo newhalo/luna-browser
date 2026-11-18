@@ -81,12 +81,15 @@ data class ListStatus(val rules: Int = 0, val updatedAt: Long = 0L, val failed: 
 class AdBlocker(private val ctx: Context) {
     @Volatile
     private var engine: FilterEngine = FilterBuilder().build()
-    private val counter = AtomicInteger()
     private val main = Handler(Looper.getMainLooper())
     private val dir = File(ctx.filesDir, "filters").apply { mkdirs() }
     private val prefs = ctx.getSharedPreferences("luna_filters", Context.MODE_PRIVATE)
+    /** Everything blocked since Luna was installed: a number only, nothing about what or where. */
+    private val counter = AtomicInteger(prefs.getInt("blocked", 0))
+    private val saveCount = Runnable { prefs.edit().putInt("blocked", counter.get()).apply() }
 
-    var blockedCount by mutableIntStateOf(0)
+    /** Total blocked since install (shown in Settings); each page counts its own in `BrowserController.pageBlocked`. */
+    var blockedCount by mutableIntStateOf(counter.get())
         private set
     var listSize by mutableIntStateOf(0)
         private set
@@ -166,7 +169,11 @@ class AdBlocker(private val ctx: Context) {
     fun cosmeticCss(pageUrl: String): String = engine.css(pageUrl)
 
     fun countBlocked() {
-        main.post { blockedCount = counter.incrementAndGet() }
+        main.post {
+            blockedCount = counter.incrementAndGet()
+            main.removeCallbacks(saveCount)
+            main.postDelayed(saveCount, 5_000)
+        }
     }
 
     // ---- Updates ----

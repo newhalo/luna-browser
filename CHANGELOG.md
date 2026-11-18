@@ -6,6 +6,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-11-18
+
+### Added
+- **New fullscreen video controls**: the title on top, the times and seek bar, and a row of buttons (Down): −10 s, play / pause, +10 s, **skip 30 s**, **speed** (0.5× to 2×, kept for the next video of the tab) and exit. **Number keys** jump like on YouTube (5 = halfway, 0 = start); CH+ / CH− skip 30 s.
+- **Split screen** (toolbar *Split*): two tabs side by side. The framed half gets the keys; switch with the blue key, the toolbar, or by pushing the pointer across the middle. Both halves stay live.
+- **Find on page** (toolbar *Find*): type a word, Up / Down step through the matches, Back closes.
+- **Suggestions while typing** an address or a search, ranked on the TV from open tabs, favourites and history (accents ignored). Nothing typed is sent anywhere.
+- **Dark pages** (off by default; Settings → Browsing, or per site in the Site panel), using the web engine's own darkening.
+- **Cookie banners hidden** without accepting anything (on by default; Settings → Ad blocking).
+- The toolbar shows **how much was blocked on the page**; Settings shows the total since install.
+
+### Changed
+- The address box moved out of `HomeScreen` into `ui/home/InputDialogs.kt` (with the find box).
+- The error screen's buttons wrap when the page is half the screen wide.
+
 ## [0.9.3] - 2026-11-17
 
 ### Changed

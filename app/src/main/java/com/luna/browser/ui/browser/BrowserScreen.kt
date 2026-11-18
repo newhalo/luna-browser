@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -34,6 +35,17 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.CloseFullscreen
+import androidx.compose.material.icons.rounded.DarkMode
+import androidx.compose.material.icons.rounded.FindInPage
+import androidx.compose.material.icons.rounded.Shield
+import androidx.compose.material.icons.rounded.SwapHoriz
+import androidx.compose.material.icons.rounded.VerticalSplit
+import androidx.compose.material.icons.rounded.FastForward
+import androidx.compose.material.icons.rounded.FastRewind
+import androidx.compose.material.icons.rounded.Forward30
+import androidx.compose.material.icons.rounded.FullscreenExit
+import androidx.compose.material.icons.rounded.Speed
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Lock
@@ -63,6 +75,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
@@ -88,6 +101,7 @@ import com.luna.browser.Screen
 import com.luna.browser.browser.BrowserController
 import com.luna.browser.browser.ErrorKind
 import com.luna.browser.browser.PageError
+import com.luna.browser.browser.VideoRules
 import com.luna.browser.data.K
 import com.luna.browser.data.SiteOverride
 import com.luna.browser.data.SiteSettings
@@ -118,22 +132,44 @@ import kotlinx.coroutines.delay
 @Composable
 fun BrowserScreen(app: AppState) {
     val b = app.browser
-    // Each tab has its own controller and WebView: start from scratch when the tab changes.
-    androidx.compose.runtime.key(b) { BrowserContent(app, b) }
+    val partner = if (app.splitOn) app.tabs.partnerController() else null
+    Box(Modifier.fillMaxSize().background(Bg)) {
+        if (partner == null) {
+            // Each tab has its own controller and WebView: start from scratch when the tab changes.
+            androidx.compose.runtime.key(b) { PageLayer(app, b, active = true, Modifier.fillMaxSize()) }
+        } else {
+            // Split screen: two pages side by side; the one with the keys has a bright frame.
+            val leftCurrent = app.tabs.current === app.tabs.splitLeft
+            val left = if (leftCurrent) b else partner
+            val right = if (leftCurrent) partner else b
+            Row(Modifier.fillMaxSize()) {
+                androidx.compose.runtime.key(left) { PageLayer(app, left, active = left === b, Modifier.weight(1f).fillMaxHeight()) }
+                Spacer(Modifier.width(4.dp).fillMaxHeight())
+                androidx.compose.runtime.key(right) { PageLayer(app, right, active = right === b, Modifier.weight(1f).fillMaxHeight()) }
+            }
+        }
+        // Layers that belong to the keys cover the whole screen, also in a split screen.
+        androidx.compose.runtime.key(b) {
+            if (b.customView != null) FullscreenLayer(b)
+            Toolbar(app, b)
+            if (b.sitePanel) SitePanel(app, b)
+        }
+    }
 }
 
+/** One page: the WebView with its pointer, progress bar, messages and errors. */
 @Composable
-private fun BrowserContent(app: AppState, b: BrowserController) {
-    LaunchedEffect(b.toolbarVisible, b.error, b.sitePanel) {
-        if (!b.toolbarVisible && b.error == null && !b.sitePanel) b.webView.requestFocus()
+private fun PageLayer(app: AppState, b: BrowserController, active: Boolean, modifier: Modifier) {
+    LaunchedEffect(b.toolbarVisible, b.error, b.sitePanel, active) {
+        if (active && !b.toolbarVisible && b.error == null && !b.sitePanel) b.webView.requestFocus()
     }
-    Box(Modifier.fillMaxSize().background(Bg)) {
+    Box(modifier.background(Bg)) {
         AndroidView(
             factory = { b.webView.also { v -> (v.parent as? ViewGroup)?.removeView(v) } },
             modifier = Modifier.fillMaxSize().onSizeChanged { b.onViewSize(it.width, it.height) },
         )
 
-        if (b.cursorMode && !b.reader && b.customView == null && !b.toolbarVisible && !b.sitePanel && b.error == null && !b.capturing) CursorOverlay(b)
+        if (active && b.cursorMode && !b.reader && b.customView == null && !b.toolbarVisible && !b.sitePanel && b.error == null && !b.capturing) CursorOverlay(b)
 
         // Slim progress bar
         if (b.loading && b.error == null && b.customView == null) {
@@ -144,11 +180,41 @@ private fun BrowserContent(app: AppState, b: BrowserController) {
         }
 
         if (b.isPrivate && b.customView == null && !b.capturing) PrivateBadge()
-        b.error?.let { ErrorPanel(app, it) }
-        if (b.customView != null) FullscreenLayer(b) else OsdFlash(b)
+        b.error?.let { ErrorPanel(app, b, it, active) }
+        if (b.customView == null) OsdFlash(b)
         if (b.reader) ReaderHud(b)
-        Toolbar(app, b)
-        if (b.sitePanel) SitePanel(app, b)
+        if (b.findQuery != null) FindHud(b)
+        if (app.splitOn) {
+            // Which half gets the keys: a frame on it (drawn as an outline, no layer over the page).
+            if (active) Box(Modifier.fillMaxSize().border(3.dp, Accent))
+            if (b.url.isBlank() && b.error == null) {
+                Txt(stringResource(R.string.split_empty), T.body, Modifier.align(Alignment.Center), color = TextSecondary)
+            }
+        }
+    }
+}
+
+/** "‘word’ 3 / 12 · Up / Down: previous / next · Back: close", at the bottom of the page while finding. */
+@Composable
+private fun BoxScope.FindHud(b: BrowserController) {
+    Row(
+        // Top right: a match is rarely there (the page header), and Up / Down scroll matches into the middle.
+        Modifier.align(Alignment.TopEnd).padding(top = 20.dp, end = 32.dp)
+            .clip(RoundedCornerShape(30.dp)).background(Color(0xF2121622)).border(1.dp, Outline, RoundedCornerShape(30.dp))
+            .padding(horizontal = 24.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        Icon(Icons.Rounded.Search, null, tint = Accent, modifier = Modifier.size(26.dp))
+        Txt("“${b.findQuery}”", T.label)
+        Txt(
+            when {
+                b.findCount > 0 -> stringResource(R.string.find_count, b.findIndex + 1, b.findCount)
+                b.findDone -> stringResource(R.string.find_none)
+                else -> stringResource(R.string.find_searching)
+            },
+            T.label, color = if (b.findDone && b.findCount == 0) Danger else Accent,
+        )
+        Txt(stringResource(R.string.find_keys), T.caption, color = TextSecondary)
     }
 }
 
@@ -234,17 +300,36 @@ private fun Toolbar(app: AppState, b: BrowserController) {
                     },
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                FocusSurface(
-                    onClick = { b.hideToolbar(); app.openAddress(b.url) },
-                    modifier = Modifier.fillMaxWidth().height(66.dp).focusRequester(addressFr),
-                    shape = RoundedCornerShape(33.dp),
-                ) {
-                    Row(Modifier.padding(horizontal = 22.dp).align(Alignment.CenterStart), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(if (b.isPrivate) Icons.Rounded.VisibilityOff else if (b.url.startsWith("https")) Icons.Rounded.Lock else Icons.Rounded.Search, null, tint = TextSecondary, modifier = Modifier.size(24.dp))
-                        Column(Modifier.padding(start = 14.dp)) {
-                            Txt(if (b.url.isEmpty()) stringResource(R.string.tb_address_hint) else hostOf(b.url), T.label)
-                            Txt(b.title.ifBlank { stringResource(R.string.tb_edit_hint) }, T.caption)
+                // Top row: the address (with what was blocked on this page), then Find and Split.
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    FocusSurface(
+                        onClick = { b.hideToolbar(); app.openAddress(b.url) },
+                        modifier = Modifier.weight(1f).height(66.dp).focusRequester(addressFr),
+                        shape = RoundedCornerShape(33.dp),
+                    ) {
+                        Row(Modifier.padding(horizontal = 22.dp).align(Alignment.CenterStart), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(if (b.isPrivate) Icons.Rounded.VisibilityOff else if (b.url.startsWith("https")) Icons.Rounded.Lock else Icons.Rounded.Search, null, tint = TextSecondary, modifier = Modifier.size(24.dp))
+                            Column(Modifier.padding(start = 14.dp).weight(1f)) {
+                                Txt(if (b.url.isEmpty()) stringResource(R.string.tb_address_hint) else hostOf(b.url), T.label)
+                                Txt(b.title.ifBlank { stringResource(R.string.tb_edit_hint) }, T.caption)
+                            }
+                            if (b.pageBlocked > 0) {
+                                Row(
+                                    Modifier.clip(RoundedCornerShape(16.dp)).background(Accent.copy(alpha = 0.18f)).padding(horizontal = 12.dp, vertical = 5.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                ) {
+                                    Icon(Icons.Rounded.Shield, null, tint = Accent, modifier = Modifier.size(18.dp))
+                                    Txt(" " + stringResource(R.string.tb_blocked_n, b.pageBlocked), T.caption.copy(fontSize = 15.sp), color = TextPrimary)
+                                }
+                            }
                         }
+                    }
+                    PillButton(stringResource(R.string.tb_find), Icons.Rounded.FindInPage) { b.hideToolbar(); app.findOpen = true }
+                    if (app.splitOn) {
+                        PillButton(stringResource(R.string.tb_split_switch), Icons.Rounded.SwapHoriz) { b.hideToolbar(); app.switchPane() }
+                        PillButton(stringResource(R.string.tb_split_off), Icons.Rounded.CloseFullscreen, highlighted = true) { b.hideToolbar(); app.endSplit() }
+                    } else {
+                        PillButton(stringResource(R.string.tb_split), Icons.Rounded.VerticalSplit) { b.hideToolbar(); app.toggleSplit() }
                     }
                 }
                 Row(
@@ -271,6 +356,22 @@ private fun Toolbar(app: AppState, b: BrowserController) {
                     IconLabelButton(stringResource(R.string.tb_settings), Icons.Rounded.Settings, { app.navigate(Screen.Settings) })
                 }
             }
+        }
+    }
+}
+
+/** A toolbar button for the top row: icon and label side by side, as tall as the address. */
+@Composable
+private fun PillButton(label: String, icon: androidx.compose.ui.graphics.vector.ImageVector, highlighted: Boolean = false, onClick: () -> Unit) {
+    FocusSurface(
+        onClick = onClick,
+        modifier = Modifier.height(66.dp),
+        shape = RoundedCornerShape(33.dp),
+        container = if (highlighted) Accent.copy(alpha = 0.2f) else Surface,
+    ) {
+        Row(Modifier.padding(horizontal = 20.dp).align(Alignment.Center), verticalAlignment = Alignment.CenterVertically) {
+            Icon(icon, null, tint = if (highlighted) Accent else TextPrimary, modifier = Modifier.size(24.dp))
+            Txt("  $label", T.label)
         }
     }
 }
@@ -358,6 +459,13 @@ private fun SitePanel(app: AppState, b: BrowserController) {
                 stringResource(R.string.site_adblock), stringResource(R.string.site_adblock_d),
                 chip(when (o.adblock) { null -> defBlock; true -> on; false -> off }), false,
             ) { set(o.copy(adblock = SiteSettings.next(o.adblock, listOf(null, true, false)))); b.siteChangeNeedsReload() }
+            if (BrowserController.darkSupported) {
+                val defDark = stringResource(R.string.site_default_v, onOff(st.bool(K.DARK_PAGES)))
+                SettingRow(
+                    stringResource(R.string.site_dark), stringResource(R.string.site_dark_d),
+                    chip(when (o.dark) { null -> defDark; true -> on; false -> off }), false,
+                ) { set(o.copy(dark = SiteSettings.next(o.dark, listOf(null, true, false)))); b.siteSettingsChanged(reload = false); b.siteChangeNeedsReload() }
+            }
             SettingRow(
                 stringResource(R.string.site_mode), stringResource(R.string.site_mode_d),
                 chip(when (o.pointer) { null -> defMode; true -> pointer; false -> links }), false,
@@ -397,11 +505,11 @@ private fun ColumnScope.ReportView(app: AppState, url: String, onBack: () -> Uni
 
 // ---------------------------------------------------------------- Errors
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
-private fun ErrorPanel(app: AppState, err: PageError) {
-    val b = app.browser
+private fun ErrorPanel(app: AppState, b: BrowserController, err: PageError, active: Boolean) {
     val fr = remember { FocusRequester() }
-    LaunchedEffect(err) { runCatching { fr.requestFocus() } }
+    LaunchedEffect(err, active) { if (active) runCatching { fr.requestFocus() } }
     Box(Modifier.fillMaxSize().background(Bg), contentAlignment = Alignment.Center) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Box(Modifier.size(96.dp).clip(RoundedCornerShape(48.dp)).background(Surface), contentAlignment = Alignment.Center) {
@@ -410,9 +518,14 @@ private fun ErrorPanel(app: AppState, err: PageError) {
             Spacer(Modifier.height(20.dp))
             Txt(stringResource(err.title), T.display.copy(fontSize = 34.sp), align = TextAlign.Center)
             Spacer(Modifier.height(8.dp))
-            Txt(stringResource(err.message), T.body.copy(color = TextSecondary), maxLines = 3, align = TextAlign.Center, modifier = Modifier.width(560.dp), color = TextSecondary)
+            Txt(stringResource(err.message), T.body.copy(color = TextSecondary), maxLines = 3, align = TextAlign.Center, modifier = Modifier.widthIn(max = 560.dp).padding(horizontal = 24.dp), color = TextSecondary)
             Spacer(Modifier.height(28.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+            // Wraps onto a second line in half of a split screen.
+            androidx.compose.foundation.layout.FlowRow(
+                Modifier.padding(horizontal = 24.dp),
+                horizontalArrangement = Arrangement.spacedBy(14.dp, Alignment.CenterHorizontally),
+                verticalArrangement = Arrangement.spacedBy(14.dp),
+            ) {
                 TvButton(stringResource(R.string.err_retry), { b.retry() }, Modifier.focusRequester(fr), Icons.Rounded.Refresh, primary = true)
                 // A certificate problem (often a wrong date on the TV, or a small site's expired certificate): open it anyway, knowingly.
                 err.sslHost?.let { host -> TvButton(stringResource(R.string.err_ssl_proceed), { b.proceedAnyway(host) }, icon = Icons.Rounded.ErrorOutline) }
@@ -485,12 +598,27 @@ private fun BoxScope.VideoOverlay(b: BrowserController) {
             Txt((if (o.icon != null) "  " else "") + o.label, T.title)
         }
     }
-    // Controls
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
-        AnimatedVisibility(visible = b.controlsVisible, enter = fadeIn(tween(ms(180))), exit = fadeOut(tween(ms(180)))) {
+    // Controls: the title on top; at the bottom the times, the seek bar and a row of buttons (Down selects them).
+    AnimatedVisibility(
+        visible = b.controlsVisible, modifier = Modifier.fillMaxSize(),
+        enter = fadeIn(tween(ms(180))), exit = fadeOut(tween(ms(180))),
+    ) {
+        Box(Modifier.fillMaxSize()) {
             Column(
-                Modifier.fillMaxWidth().background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xCC000000))))
-                    .padding(start = 48.dp, end = 48.dp, top = 56.dp, bottom = 32.dp),
+                Modifier.align(Alignment.TopStart).fillMaxWidth()
+                    .background(Brush.verticalGradient(listOf(Color(0xB3000000), Color.Transparent)))
+                    .padding(start = 48.dp, end = 48.dp, top = 27.dp, bottom = 48.dp),
+            ) {
+                val host = hostOf(b.url)
+                // A bare video file has its address as its title: show the site only.
+                val name = b.title.takeIf { it.isNotBlank() && !(it.contains('/') && !it.contains(' ')) }
+                Txt(name ?: host, T.title, maxLines = 1, color = Color.White)
+                if (name != null) Txt(host, T.caption, color = Color(0xCCFFFFFF))
+            }
+            Column(
+                Modifier.align(Alignment.BottomCenter).fillMaxWidth()
+                    .background(Brush.verticalGradient(listOf(Color.Transparent, Color(0xE6000000))))
+                    .padding(start = 48.dp, end = 48.dp, top = 72.dp, bottom = 27.dp),
             ) {
                 // While choosing a seek target, the bar shows the target (bright) ahead of / behind
                 // the real position (dim); the video is only told once the viewer stops pressing.
@@ -498,32 +626,78 @@ private fun BoxScope.VideoOverlay(b: BrowserController) {
                 val dur = v?.duration ?: 0.0
                 val frac = if (v != null && dur > 0) (v.position / dur).toFloat().coerceIn(0f, 1f) else 0f
                 val target = if (preview != null && dur > 0) (preview / dur).toFloat().coerceIn(0f, 1f) else null
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Txt(
-                        when {
-                            v == null -> stringResource(R.string.vid_no_video)
-                            preview != null -> stringResource(R.string.vid_skip_to, fmt(preview))
-                            v.paused -> stringResource(R.string.vid_paused)
-                            else -> stringResource(R.string.vid_playing)
-                        },
-                        T.label,
-                    )
-                    Spacer(Modifier.weight(1f))
-                    if (v != null) Txt("${fmt(preview ?: v.position)} / ${if (dur > 0) fmt(dur) else stringResource(R.string.vid_live)}", T.label)
-                }
-                Spacer(Modifier.height(10.dp))
-                Box(Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)).background(Color(0x44FFFFFF))) {
-                    if (target != null) {
-                        Box(Modifier.fillMaxWidth(frac).fillMaxHeight().background(Accent.copy(alpha = 0.45f)))
-                        Box(Modifier.fillMaxWidth(target).fillMaxHeight().background(Accent))
-                    } else {
-                        Box(Modifier.fillMaxWidth(frac).fillMaxHeight().background(Accent))
+                if (v == null) {
+                    Txt(stringResource(R.string.vid_no_video), T.label, color = Color.White)
+                } else {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Txt(fmt(preview ?: v.position), T.label.copy(fontSize = 20.sp), color = if (preview != null) Accent else Color.White)
+                        SeekBar(frac, target, highlighted = !b.videoRow, modifier = Modifier.weight(1f).padding(horizontal = 18.dp))
+                        Txt(if (dur > 0) fmt(dur) else stringResource(R.string.vid_live), T.label.copy(fontSize = 20.sp), color = Color.White)
                     }
                 }
-                Spacer(Modifier.height(12.dp))
-                Txt(stringResource(R.string.vid_hint), T.caption, color = Color(0xCCFFFFFF))
+                Spacer(Modifier.height(18.dp))
+                val step = b.seekStepSeconds
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.CenterHorizontally), verticalAlignment = Alignment.CenterVertically) {
+                    VideoRules.Button.entries.forEach { btn ->
+                        val (icon, label) = when (btn) {
+                            VideoRules.Button.Back -> Icons.Rounded.FastRewind to stringResource(R.string.vid_btn_back, step)
+                            VideoRules.Button.Play -> (if (v?.paused == false) Icons.Rounded.Pause else Icons.Rounded.PlayArrow) to
+                                stringResource(if (v?.paused == false) R.string.vid_btn_pause else R.string.vid_btn_play)
+                            VideoRules.Button.Forward -> Icons.Rounded.FastForward to stringResource(R.string.vid_btn_forward, step)
+                            VideoRules.Button.Skip -> Icons.Rounded.Forward30 to stringResource(R.string.vid_btn_skip, VideoRules.SKIP_SECONDS)
+                            VideoRules.Button.Speed -> Icons.Rounded.Speed to VideoRules.speedLabel(b.speed)
+                            VideoRules.Button.Exit -> Icons.Rounded.FullscreenExit to stringResource(R.string.vid_btn_exit)
+                        }
+                        VideoButton(icon, label, selected = b.videoRow && b.videoSel == btn.ordinal, accent = btn == VideoRules.Button.Speed && b.speed != 1.0)
+                    }
+                }
+                Spacer(Modifier.height(14.dp))
+                Txt(
+                    if (b.videoRow) stringResource(R.string.vid_hint_row) else stringResource(R.string.vid_hint_bar, step),
+                    T.caption, color = Color(0xCCFFFFFF), align = TextAlign.Center, modifier = Modifier.fillMaxWidth(),
+                )
             }
         }
+    }
+}
+
+/** The progress bar: played part, the seek target while choosing one, and a round thumb at the current point. */
+@Composable
+private fun SeekBar(frac: Float, target: Float?, highlighted: Boolean, modifier: Modifier = Modifier) {
+    val thumb = target ?: frac
+    androidx.compose.foundation.layout.BoxWithConstraints(modifier.height(22.dp), contentAlignment = Alignment.CenterStart) {
+        val w = maxWidth
+        Box(Modifier.fillMaxWidth().height(if (highlighted) 8.dp else 6.dp).clip(RoundedCornerShape(4.dp)).background(Color(0x40FFFFFF))) {
+            if (target != null) {
+                Box(Modifier.fillMaxWidth(frac).fillMaxHeight().background(Accent.copy(alpha = 0.45f)))
+                Box(Modifier.fillMaxWidth(target).fillMaxHeight().background(Accent))
+            } else {
+                Box(Modifier.fillMaxWidth(frac).fillMaxHeight().background(Accent))
+            }
+        }
+        val d = if (highlighted) 20.dp else 14.dp
+        Box(
+            Modifier.padding(start = (w * thumb - d / 2).coerceIn(0.dp, w - d)).size(d)
+                .clip(androidx.compose.foundation.shape.CircleShape).background(Color.White),
+        )
+    }
+}
+
+/** One button of the video row: icon and label in a pill; the selected one is white with dark content, slightly larger. */
+@Composable
+private fun VideoButton(icon: androidx.compose.ui.graphics.vector.ImageVector, label: String, selected: Boolean, accent: Boolean) {
+    val scale by animateFloatAsState(if (selected) 1.08f else 1f, tween(ms(140)), label = "vidBtn")
+    val fg = if (selected) Color(0xFF0B0D12) else if (accent) Accent else Color.White
+    Row(
+        Modifier.graphicsLayer { scaleX = scale; scaleY = scale }
+            .clip(RoundedCornerShape(26.dp))
+            .background(if (selected) Color.White else Color(0x33FFFFFF))
+            .padding(horizontal = 14.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Icon(icon, null, tint = fg, modifier = Modifier.size(24.dp))
+        Txt(label, T.label.copy(fontSize = 17.sp), color = fg)
     }
 }
 

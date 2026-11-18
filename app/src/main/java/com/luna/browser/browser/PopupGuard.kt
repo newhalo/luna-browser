@@ -40,14 +40,17 @@ object PopupGuard {
      * Injected into every frame at document start. Lets the remote control a video that lives in a
      * cross-site player iframe (common on video sites): the top page relays commands down to every
      * frame with postMessage, and the frame that owns the biggest video reports its state back up.
-     * State array: [paused, position, duration, buffering, failed, area].
+     * State array: [paused, position, duration, buffering, failed, area, playback rate].
+     * Commands: toggle, play, pause, seek (relative seconds), pct (jump to a percentage), rate (playback speed).
      */
     const val VIDEO_BRIDGE_JS = """(function(){if(window.__lunaBridge)return;window.__lunaBridge=1;
 function best(){var vs=document.getElementsByTagName('video'),b=null,ba=-1;for(var i=0;i<vs.length;i++){var r=vs[i].getBoundingClientRect(),a=r.width*r.height;if(a>ba){ba=a;b=vs[i];}}return b;}
-function st(b){var r=b.getBoundingClientRect();return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyState<3&&!b.paused&&!b.ended),!!b.error,r.width*r.height];}
+function st(b){var r=b.getBoundingClientRect();return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyState<3&&!b.paused&&!b.ended),!!b.error,r.width*r.height,b.playbackRate||1];}
 function act(b,a,v){if(a==='toggle'){if(b.paused){var p=b.play();if(p&&p.catch)p.catch(function(){});}else b.pause();}
 else if(a==='play'){var q=b.play();if(q&&q.catch)q.catch(function(){});}else if(a==='pause'){b.pause();}
-else if(a==='seek'){b.currentTime=Math.max(0,Math.min(isFinite(b.duration)?b.duration:1e9,b.currentTime+v));}}
+else if(a==='seek'){b.currentTime=Math.max(0,Math.min(isFinite(b.duration)?b.duration:1e9,b.currentTime+v));}
+else if(a==='pct'){if(isFinite(b.duration)&&b.duration>0)b.currentTime=b.duration*Math.max(0,Math.min(99,v))/100;}
+else if(a==='rate'){if(v>=0.25&&v<=4)b.playbackRate=v;}}
 function relay(m){for(var i=0;i<window.frames.length;i++){try{window.frames[i].postMessage(m,'*');}catch(e){}}}
 window.__lunaCmd=function(a,v){var b=best();var s=null;if(b){act(b,a,v);s=st(b);}relay({__luna:1,a:a,v:v});return s||window.__lunaRemote||null;};
 window.addEventListener('message',function(e){var d=e.data;if(!d||!d.__luna)return;

@@ -34,6 +34,7 @@ import com.luna.browser.ui.components.MoonLogo
 import com.luna.browser.ui.components.Aurora
 import androidx.compose.ui.unit.sp
 import com.luna.browser.ui.home.AddressDialog
+import com.luna.browser.ui.home.FindDialog
 import com.luna.browser.ui.home.HomeScreen
 import com.luna.browser.ui.library.FavoritesScreen
 import com.luna.browser.ui.library.HistoryScreen
@@ -80,6 +81,7 @@ fun LunaApp(app: AppState) {
                 Screen.Profiles -> ProfilesScreen(app)
             }
             if (app.addressOpen) AddressDialog(app)
+            if (app.findOpen) FindDialog(app)
             ToastHost(app, Modifier.align(Alignment.BottomCenter))
         }
     }

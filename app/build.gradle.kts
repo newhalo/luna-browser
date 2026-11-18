@@ -12,8 +12,8 @@ android {
         applicationId = "com.luna.browser"
         minSdk = 26
         targetSdk = 34
-        versionCode = 16
-        versionName = "0.9.3"
+        versionCode = 17
+        versionName = "0.10.0"
     }
 
     // Signing

@@ -8,8 +8,10 @@ services in the app.
 
 ## What stays on your TV
 
-History, favourites, open tabs, thumbnails, per-site settings, video positions and settings are stored in the app's
-private storage on your TV. They are never sent to the developer or to anyone else. *Settings → Privacy* clears history,
+History, favourites, open tabs, thumbnails, per-site settings, video positions, settings and the number of blocked ads
+are stored in the app's private storage on your TV. They are never sent to the developer or to anyone else. Address
+suggestions are worked out on the TV from these; what you type is not sent anywhere until you open it. Cookie banners are
+only hidden: Luna never clicks *Accept* for you. *Settings → Privacy* clears history,
 cookies, site data and the cache. Uninstalling Luna removes everything.
 
 Web pages you open are rendered by the Android System WebView and may set their own cookies, as in any browser. Those

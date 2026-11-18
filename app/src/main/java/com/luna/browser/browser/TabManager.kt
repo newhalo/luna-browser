@@ -60,6 +60,7 @@ class TabManager(private val app: AppState) {
 
     /** Loads the tabs of the (new) active profile; the caller has already released the old ones with [destroyAll]. */
     fun reload() {
+        endSplit()
         tabs.forEach { it.freeze() }
         tabs.clear()
         val (saved, cur) = TabPolicy.fromJson(app.store.readTabs())
@@ -83,7 +84,8 @@ class TabManager(private val app: AppState) {
         // Make room first: freeze the least recently used live tabs until this one fits.
         while (true) {
             val live = tabs.indices.filter { tabs[it].controller != null }.map { TabPolicy.LiveTab(it, tabs[it].lastUsed) }
-            val victim = TabPolicy.victim(live, tabs.indexOf(t), index, maxLive) ?: break
+            val keep = setOfNotNull(index, partnerIndex())
+            val victim = TabPolicy.victim(live, tabs.indexOf(t), keep, maxLive) ?: break
             tabs[victim].freeze()
         }
         val saved = t.savedPair()
@@ -92,6 +94,43 @@ class TabManager(private val app: AppState) {
         if (saved.first.startsWith("http")) c.load(saved.first)
         return c
     }
+
+    // ---- Split screen: two tabs side by side; the current tab is the half that gets the keys ----
+    var splitLeft by mutableStateOf<Tab?>(null)
+        private set
+    var splitRight by mutableStateOf<Tab?>(null)
+        private set
+
+    val splitActive: Boolean
+        get() { val l = splitLeft; val r = splitRight; return l != null && r != null && l !== r && tabs.contains(l) && tabs.contains(r) && (current === l || current === r) }
+
+    /** The index of the other half of the split screen, or null. */
+    fun partnerIndex(): Int? {
+        if (!splitActive) return null
+        val p = if (current === splitLeft) splitRight else splitLeft
+        return tabs.indexOf(p).takeIf { it >= 0 }
+    }
+
+    /** The other half's controller (made live if it was frozen), or null without a split screen. */
+    fun partnerController(): BrowserController? = partnerIndex()?.let { live(tabs[it]) }
+
+    /** Shows tab [other] next to the current one: the current tab stays on the left. */
+    fun startSplit(other: Int) {
+        if (other !in tabs.indices || other == index) return
+        splitLeft = current
+        splitRight = tabs[other]
+    }
+
+    fun endSplit() {
+        splitLeft = null
+        splitRight = null
+    }
+
+    /** The other half becomes current (gets the keys). */
+    fun switchPane() { partnerIndex()?.let { select(it) } }
+
+    /** A partner for a new split screen (most recently used other tab with a page), or null. */
+    fun suggestPartner(): Int? = TabPolicy.splitPartner(tabs.map { it.lastUsed }, tabs.map { !it.isEmpty }, index)
 
     fun select(i: Int) {
         if (i !in tabs.indices) return
@@ -110,6 +149,7 @@ class TabManager(private val app: AppState) {
 
     fun close(i: Int) {
         if (i !in tabs.indices) return
+        if (tabs[i] === splitLeft || tabs[i] === splitRight) endSplit()
         val wasPrivate = tabs[i].isPrivate
         if (!wasPrivate) tabs[i].url.takeIf { it.startsWith("http") }?.let { app.store.deleteTabThumb(it) }
         tabs[i].freeze()
@@ -122,6 +162,7 @@ class TabManager(private val app: AppState) {
 
     fun closeOthers(keep: Int) {
         if (keep !in tabs.indices) return
+        endSplit()
         var closedPrivate = false
         for (i in tabs.lastIndex downTo 0) if (i != keep) { closedPrivate = closedPrivate || tabs[i].isPrivate; tabs[i].freeze(); tabs.removeAt(i) }
         index = 0

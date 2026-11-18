@@ -318,6 +318,8 @@ private fun rows(category: Int, app: AppState): List<SRow> {
             Choice(K.CURSOR_SPEED, app.s(R.string.set_cursor_speed), app.s(R.string.set_cursor_speed_d), (1..5).map { it.toString() to app.s(R.string.level_n, it) }),
             Toggle(K.DESKTOP, app.s(R.string.set_desktop), app.s(R.string.set_desktop_d)),
             Choice(K.ZOOM, app.s(R.string.set_zoom), app.s(R.string.set_zoom_d), listOf("100", "125", "150", "175").map { it to "$it%" }),
+            if (com.luna.browser.browser.BrowserController.darkSupported) Toggle(K.DARK_PAGES, app.s(R.string.set_dark), app.s(R.string.set_dark_d))
+            else Info(app.s(R.string.set_dark), app.s(R.string.set_dark_unsupported)),
             Choice(
                 K.READER_SIZE, app.s(R.string.set_reader_size), app.s(R.string.set_reader_size_d),
                 com.luna.browser.browser.ReaderMode.sizes.indices.map { it.toString() to "${com.luna.browser.browser.ReaderMode.sizePercent(it)}%" },
@@ -332,6 +334,7 @@ private fun rows(category: Int, app: AppState): List<SRow> {
         AD_BLOCKING -> listOf(
             Toggle(K.ADBLOCK, app.s(R.string.set_adblock), app.s(R.string.set_adblock_d)),
             Toggle(K.BLOCK_POPUPS, app.s(R.string.set_popups), app.s(R.string.set_popups_d)),
+            Toggle(K.COOKIE_BANNERS, app.s(R.string.set_cookies), app.s(R.string.set_cookies_d)),
             Info(app.s(R.string.set_blocked), app.s(R.string.set_blocked_n, app.ads.blockedCount)),
             Info(app.s(R.string.set_rules), "%,d".format(app.locale, app.ads.listSize)),
         )

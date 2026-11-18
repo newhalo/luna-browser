@@ -12,6 +12,8 @@
 - [ ] Gradle 9 and the newest Compose, once the plugins catch up.
 - [ ] Google Play listing: Play Console account, 12-tester closed test, then production (see [docs/PUBLISHING.md](PUBLISHING.md)).
 
+**Done in 0.10.0:** new video controls (speed, skip 30 s, number keys), *split screen*, *find on page*, address suggestions, *dark pages*, hidden cookie banners, a per-page blocked count.
+
 **Done in 0.9.1:** the pointer snaps to links and buttons (Settings: *Snap pointer to links*); a click far down a page lands where the pointer is.
 
 **Done in 0.9.0:** *private tabs*, address fallbacks (`www.`, plain http, search) and *Open anyway* for certificate errors.

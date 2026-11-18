@@ -52,12 +52,17 @@ class AppState(val activity: Activity) {
     /** The page being shown: the current tab's controller (its WebView is created on first use). */
     val browser: BrowserController get() = tabs.controller()
     private var shownBrowser: BrowserController? = null
+    /** The other half of a split screen while the browser shows, else null. */
+    private var shownPartner: BrowserController? = null
 
     var screen by mutableStateOf(Screen.Home)
         private set
     private val stack = ArrayDeque<Screen>()
 
     var addressOpen by mutableStateOf(false)
+
+    /** The "Find on page" input is showing. */
+    var findOpen by mutableStateOf(false)
 
     /** A screen's own overlay (an edit panel) can claim Back first: return true when it closed something. */
     var closeOverlay: (() -> Boolean)? = null
@@ -391,9 +396,16 @@ class AppState(val activity: Activity) {
 
     private fun show(to: Screen) {
         // The controller that was shown is the one to leave, even if the current tab changed meanwhile.
-        if (screen == Screen.Browser) { shownBrowser?.onLeave(); shownBrowser = null }
+        if (screen == Screen.Browser) {
+            shownBrowser?.onLeave(); shownBrowser = null
+            shownPartner?.onLeave(); shownPartner = null
+        }
         screen = to
-        if (to == Screen.Browser) { val b = browser; shownBrowser = b; b.onEnter() }
+        if (to == Screen.Browser) {
+            // Split screen: both halves play and update; the current one (entered last) gets the focus and the keys.
+            tabs.partnerController()?.let { shownPartner = it; it.onEnter(focus = false) }
+            val b = browser; shownBrowser = b; b.onEnter()
+        }
     }
 
     /** The tab switcher; from a page it first takes a fresh thumbnail of that page (a moment, never more than half a second). */
@@ -422,6 +434,8 @@ class AppState(val activity: Activity) {
 
     /** Shows tab [i]; an empty tab has nothing to show, so it opens Home to pick something. */
     fun openTab(i: Int) {
+        // Picking a tab that is not on screen ends the split screen; picking its other half just switches to it.
+        if (tabs.splitActive && tabs.tabs.getOrNull(i) !== tabs.splitLeft && tabs.tabs.getOrNull(i) !== tabs.splitRight) tabs.endSplit()
         tabs.select(i)
         stack.clear()
         if (tabs.current.isEmpty) { show(Screen.Home); return }
@@ -431,6 +445,7 @@ class AppState(val activity: Activity) {
 
     /** A new, empty tab; Home opens so something can be chosen for it. */
     fun newTab() {
+        tabs.endSplit()
         if (!tabs.add()) { toast(R.string.toast_tab_limit, TabPolicy.MAX_TABS); return }
         stack.clear()
         show(Screen.Home)
@@ -438,6 +453,7 @@ class AppState(val activity: Activity) {
 
     /** A new, empty private tab (no history, resume positions, thumbnails or saved tab; its own sign-ins); Home opens to pick something. */
     fun newPrivateTab() {
+        tabs.endSplit()
         if (!tabs.add(isPrivate = true)) { toast(R.string.toast_tab_limit, TabPolicy.MAX_TABS); return }
         stack.clear()
         show(Screen.Home)
@@ -455,6 +471,61 @@ class AppState(val activity: Activity) {
     fun closeOtherTabs(keep: Int) {
         tabs.closeOthers(keep)
         toast(R.string.toast_tab_closed)
+    }
+
+    // ---- Split screen ----
+    val splitOn: Boolean get() = tabs.splitActive
+
+    /**
+     * Toolbar "Split": shows the most recently used other tab next to this one, or a new tab (the address box opens for it).
+     * Pressed again, the split ends and the current half fills the screen.
+     */
+    fun toggleSplit() {
+        if (tabs.splitActive) { endSplit(); return }
+        if (screen != Screen.Browser) return
+        val other = tabs.suggestPartner()
+        if (other != null) {
+            tabs.startSplit(other)
+            refreshBrowser()
+            toast(R.string.split_on)
+            return
+        }
+        // Nothing else open: a new tab on the right, and the address box for it.
+        val left = tabs.index
+        if (!tabs.add()) { toast(R.string.toast_tab_limit, TabPolicy.MAX_TABS); return }
+        val right = tabs.index
+        tabs.select(left)
+        tabs.startSplit(right)
+        tabs.select(right)
+        refreshBrowser()
+        openAddress()
+    }
+
+    fun endSplit() {
+        if (!tabs.splitActive) return
+        shownPartner?.onLeave(); shownPartner = null
+        tabs.endSplit()
+        toast(R.string.split_off)
+    }
+
+    /** The other half gets the keys (toolbar "Switch", the blue key, or the pointer pushed past the middle). */
+    fun switchPane(fromEdge: Boolean = false) {
+        if (!tabs.splitActive || screen != Screen.Browser) return
+        val old = browser
+        val leftWasCurrent = tabs.current === tabs.splitLeft
+        tabs.switchPane()
+        refreshBrowser()
+        if (fromEdge) browser.enterFromSide(fromLeft = leftWasCurrent, y = old.cursorY)
+        old.paneInactive()
+    }
+
+    /** Re-reads which controllers are on screen after the split changed, and gives the current one the focus. */
+    private fun refreshBrowser() {
+        if (screen != Screen.Browser) return
+        val b = browser
+        val p = tabs.partnerController()
+        if (p !== shownPartner) { if (shownPartner !== b) shownPartner?.onLeave(); p?.onEnter(focus = false); shownPartner = p }
+        if (b !== shownBrowser) { if (shownBrowser !== p) shownBrowser?.onLeave(); shownBrowser = b; b.onEnter() } else b.webView.requestFocus()
     }
 
     fun openAddress(initial: String = "") {
@@ -547,6 +618,7 @@ class AppState(val activity: Activity) {
         when {
             closeOverlay?.invoke() == true -> Unit
             addressOpen -> addressOpen = false
+            findOpen -> findOpen = false
             screen == Screen.Browser && browser.onBack() -> Unit
             stack.isNotEmpty() -> show(stack.removeLast())
             locked -> onExit()                       // no way past the PIN picker with Back

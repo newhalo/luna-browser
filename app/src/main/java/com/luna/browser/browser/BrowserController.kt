@@ -74,6 +74,7 @@ data class VideoState(
     val duration: Double,
     val buffering: Boolean,
     val failed: Boolean,
+    val rate: Double = 1.0,
 )
 
 data class Osd(val label: String, val icon: ImageVector?, val id: Long)
@@ -197,6 +198,19 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         s.textZoom = if (ref.startsWith("http")) app.store.zoomFor(ref) else app.store.int(K.ZOOM)
         s.javaScriptCanOpenWindowsAutomatically = !app.store.bool(K.BLOCK_POPUPS)
         cookies.setAcceptThirdPartyCookies(webView, app.store.bool(K.THIRD_PARTY))
+        applyDark(ref)
+    }
+
+    /**
+     * Dark pages: the web engine darkens pages that have no dark look of their own, and tells the others the viewer
+     * prefers dark (CSS prefers-color-scheme). Needs a recent WebView; off by default, per site in the Site panel.
+     */
+    private fun applyDark(target: String) {
+        if (!darkSupported) return
+        val on = if (target.startsWith("http")) app.store.darkFor(target) else app.store.bool(K.DARK_PAGES)
+        runCatching { androidx.webkit.WebSettingsCompat.setAlgorithmicDarkeningAllowed(webView.settings, on) }
+        // No white flash between dark pages.
+        webView.setBackgroundColor(if (on) Color.rgb(18, 18, 18) else Color.WHITE)
     }
 
     // ---- Per-site settings ----
@@ -222,6 +236,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         val st = app.store
         webView.settings.userAgentString = uaFor(target)
         webView.settings.textZoom = st.zoomFor(target)
+        applyDark(target)
         val key = st.siteKey(target)
         if (key != lastSiteKey) {
             lastSiteKey = key
@@ -253,6 +268,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         val st = app.store
         webView.settings.userAgentString = uaFor(ref)
         webView.settings.textZoom = st.zoomFor(ref)
+        applyDark(ref)
         st.pointerFor(ref)?.let { if (cursorMode != it) { cursorMode = it; held.clear() } }
         if (reload) reload()
     }
@@ -260,7 +276,8 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     /** True while the browser screen is showing; the inline video watcher only runs then. */
     private var active = false
 
-    fun onEnter() {
+    /** The page comes on screen; [focus] is false for the half of a split screen that does not get the keys. */
+    fun onEnter(focus: Boolean = true) {
         active = true
         startInlineWatch()
         applySettings()
@@ -268,12 +285,30 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         uaChanged = false
         webView.onResume()
         toolbarVisible = false
-        webView.requestFocus()
+        if (focus) webView.requestFocus()
         scheduleIdleHide()
+        if (!focus) return
         if (!app.store.bool(K.TIP_SHOWN)) {
             app.store.put(K.TIP_SHOWN, true)
             app.toast(R.string.toast_tip)
         }
+    }
+
+    /** Split screen: the other half now gets the keys. This page keeps playing, but drops what belonged to the keys. */
+    fun paneInactive() {
+        held.clear()
+        pendingCode = 0
+        handler.removeCallbacks(startHold)
+        toolbarVisible = false
+        if (sitePanel) hideSitePanel()
+        if (customView != null) exitFullscreen()
+        cursorActive = false
+    }
+
+    /** Split screen: the pointer was pushed over from the other half, so it appears at the edge it came through. */
+    fun enterFromSide(fromLeft: Boolean, y: Float) {
+        if (viewW == 0) return
+        placeCursor(if (fromLeft) 2f else viewW - 3f, y)
     }
 
     fun onLeave() {
@@ -519,6 +554,38 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         if (!keepPlace && reader) webView.evaluateJavascript(ReaderMode.CLEAR_HIGHLIGHT_JS, null)
     }
 
+    // ---- Find on page ----
+    /** The word being looked for while the find bar shows (Up / Down step through the matches), else null. */
+    var findQuery by mutableStateOf<String?>(null)
+        private set
+    /** Number of matches, and the one shown (0-based); [findDone] once the whole page has been searched. */
+    var findCount by mutableIntStateOf(0)
+        private set
+    var findIndex by mutableIntStateOf(0)
+        private set
+    var findDone by mutableStateOf(false)
+        private set
+
+    fun find(q: String) {
+        hideToolbar()
+        findQuery = q
+        findCount = 0
+        findIndex = 0
+        findDone = false
+        webView.findAllAsync(q)
+    }
+
+    fun findNext(forward: Boolean) {
+        if (findCount > 0) webView.findNext(forward)
+    }
+
+    fun closeFind() {
+        if (findQuery == null) return
+        findQuery = null
+        findCount = 0
+        webView.clearMatches()
+    }
+
     fun toggleMode() {
         cursorMode = !cursorMode
         held.clear()
@@ -529,11 +596,16 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     /** Back handling inside the browser. Returns true when consumed. */
     fun onBack(): Boolean {
         if (customView != null) {
-            if (controlsVisible) controlsVisible = false else exitFullscreen()
+            when {
+                videoRow -> { videoRow = false; showControls() }
+                controlsVisible -> { handler.removeCallbacks(hideControls); controlsVisible = false }
+                else -> exitFullscreen()
+            }
             return true
         }
         if (sitePanel) { hideSitePanel(); return true }
         if (toolbarVisible) { hideToolbar(); return true }
+        if (findQuery != null) { closeFind(); return true }
         if (reader) { exitReader(); return true }
         if (webView.canGoBack()) { webView.goBack(); return true }
         return false
@@ -582,6 +654,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             if (adblockOn() && !request.isForMainFrame &&
                 app.ads.shouldBlock(request.url.toString(), filterPageUrl, AdBlocker.typeOf(request))
             ) {
+                handler.post { pageBlocked++ }
                 return WebResourceResponse("text/plain", "utf-8", 204, "No Content", emptyMap(), ByteArrayInputStream(ByteArray(0)))
             }
             return null
@@ -589,6 +662,8 @@ class BrowserController(private val activity: Activity, private val app: AppStat
 
         override fun onPageStarted(view: WebView, pageUrl: String?, favicon: Bitmap?) {
             pageStartedAt = SystemClock.uptimeMillis()
+            if (!readerPending) pageBlocked = 0
+            closeFind()
             // The reading view is a page of its own: any other navigation (a link, Back) ends it.
             if (readerPending) readerPending = false else if (reader) reader = false
             resumeTried = null   // a new document: the saved position may apply again
@@ -599,7 +674,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
                     // Reached without passing through load() / a link (e.g. a redirect): restart once with the right agent.
                     if (uaFixedFor != u) { uaFixedFor = u; handler.post { view.reload() } }
                 }
-                if (u.startsWith("http")) view.settings.textZoom = app.store.zoomFor(u)
+                if (u.startsWith("http")) { view.settings.textZoom = app.store.zoomFor(u); applyDark(u) }
             }
             injectFallbackScripts(view)
             error = null
@@ -607,6 +682,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             progress = 0.05f
             pageUrl?.let { pageAddress(it) }
             injectCosmetics(view)
+            injectCookieGuard(view)
             syncNav()
             scheduleIdleHide()
         }
@@ -620,6 +696,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             syncNav()
             if (error == null && pageUrl != null && !pageUrl.startsWith("data:")) onVisited(pageUrl, title)
             injectCosmetics(view)
+            injectCookieGuard(view)
             if (app.store.bool(K.BLOCK_POPUPS)) view.evaluateJavascript(PopupGuard.OVERLAY_JS, null)
             if (!docStartScript) view.evaluateJavascript(PopupGuard.VIDEO_BRIDGE_JS, null)
         }
@@ -731,6 +808,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             if (active) startInlineWatch()
             customCb = null
             controlsVisible = false
+            videoRow = false
             video = null
             handler.removeCallbacks(poll)
             webView.requestFocus()
@@ -783,6 +861,11 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         )
     }
 
+    /** Hides cookie-consent banners without accepting anything ([CookieBanners]). */
+    private fun injectCookieGuard(view: WebView) {
+        if (app.store.bool(K.COOKIE_BANNERS) && !reader && url.startsWith("http")) view.evaluateJavascript(CookieBanners.JS, null)
+    }
+
     // ---- Pop-up guard ----
     private var pageStartedAt = 0L
     private var docStartScript = false
@@ -799,8 +882,13 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     }
     private var lastPopupToast = 0L
 
+    /** Ads, trackers and pop-ups blocked on the page being shown (counted again from 0 on every new page). */
+    var pageBlocked by mutableIntStateOf(0)
+        private set
+
     private fun notePopupBlocked(@StringRes msg: Int) {
         app.ads.countBlocked()
+        pageBlocked++
         val now = SystemClock.uptimeMillis()
         if (now - lastPopupToast > 4000) {
             lastPopupToast = now
@@ -915,6 +1003,11 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             if (!down) { if (sitePanel) hideSitePanel() else if (toolbarVisible) hideToolbar() else showToolbar() }
             return true
         }
+        // Blue coloured key: in a split screen, the other half gets the keys.
+        if (code == KeyEvent.KEYCODE_PROG_BLUE && app.splitOn && customView == null) {
+            if (!down) app.switchPane()
+            return true
+        }
         // Red coloured key (present on many TV remotes): switch pointer / link mode without holding OK.
         if (code == KeyEvent.KEYCODE_PROG_RED && customView == null && !toolbarVisible && error == null) {
             if (!down) toggleMode()
@@ -923,6 +1016,11 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         if (customView != null) return handleVideoKey(e)
         // Toolbar and error panels are Compose: let the focus system drive them.
         if (toolbarVisible || sitePanel || error != null) return false
+        // While the find bar shows, Up / Down step through the matches; the other keys still drive the page.
+        if (findQuery != null && !reader && (code == KeyEvent.KEYCODE_DPAD_UP || code == KeyEvent.KEYCODE_DPAD_DOWN)) {
+            if (down) findNext(code == KeyEvent.KEYCODE_DPAD_DOWN)
+            return true
+        }
         when (code) {
             KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, KeyEvent.KEYCODE_MEDIA_PLAY, KeyEvent.KEYCODE_MEDIA_PAUSE,
             KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, KeyEvent.KEYCODE_MEDIA_REWIND -> {
@@ -1159,6 +1257,12 @@ class BrowserController(private val activity: Activity, private val app: AppStat
 
     private fun moveCursor(dx: Float, dy: Float) {
         if (viewW == 0) return
+        // Split screen: pushing the pointer against the middle edge carries it over to the other half.
+        if (app.splitOn && ((dx > 0f && cursorX >= viewW - 1f && app.tabs.current === app.tabs.splitLeft) ||
+                (dx < 0f && cursorX <= 0f && app.tabs.current === app.tabs.splitRight))) {
+            app.switchPane(fromEdge = true)
+            return
+        }
         cursorX = (cursorX + dx).coerceIn(0f, viewW - 1f)
         val ny = cursorY + dy
         // Pushing against the top/bottom edge scrolls the page under the pointer.
@@ -1250,16 +1354,16 @@ class BrowserController(private val activity: Activity, private val app: AppStat
      * Uses the in-page bridge (reaches videos inside cross-site player iframes) when present,
      * otherwise acts on the top page's own video with [action].
      */
-    private fun videoJs(action: String, cmd: String, value: Int) = """(function(){if(window.__lunaCmd)return window.__lunaCmd('$cmd',$value);
+    private fun videoJs(action: String, cmd: String, value: Number) = """(function(){if(window.__lunaCmd)return window.__lunaCmd('$cmd',$value);
 var vs=document.getElementsByTagName('video'),b=null,ba=-1;
 for(var i=0;i<vs.length;i++){var r=vs[i].getBoundingClientRect(),a=r.width*r.height;if(a>ba){ba=a;b=vs[i];}}
 if(!b)return null;$action
-return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyState<3&&!b.paused&&!b.ended),!!b.error];})()"""
+return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyState<3&&!b.paused&&!b.ended),!!b.error,0,b.playbackRate||1];})()"""
 
     private fun runVideo(
         action: String,
         cmd: String = "state",
-        value: Int = 0,
+        value: Number = 0,
         after: (VideoState) -> VideoState = { it },
         done: (VideoState) -> Unit = {},
     ) {
@@ -1273,7 +1377,7 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
         if (r == null || r == "null") return null
         return try {
             val a = JSONArray(r)
-            VideoState(a.getBoolean(0), a.getDouble(1), a.getDouble(2), a.getBoolean(3), a.getBoolean(4))
+            VideoState(a.getBoolean(0), a.getDouble(1), a.getDouble(2), a.getBoolean(3), a.getBoolean(4), a.optDouble(6, 1.0))
         } catch (e: Exception) { null }
     }
 
@@ -1369,12 +1473,31 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
         if (customView != null) showControls()
     }
 
+    // ---- Fullscreen controls: the seek bar, and a row of buttons under it (Down selects them) ----
+    /** True while the button row under the progress bar has the selection (Left / Right move along it). */
+    var videoRow by mutableStateOf(false)
+        private set
+    /** The selected button, an index into [VideoRules.Button]. */
+    var videoSel by mutableIntStateOf(VideoRules.firstButton)
+        private set
+    /** The playback speed chosen with the Speed button; kept for the next videos of this tab. */
+    var speed by mutableStateOf(1.0)
+        private set
+
     private fun handleVideoKey(e: KeyEvent): Boolean {
         val down = e.action == KeyEvent.ACTION_DOWN
         val rc = e.repeatCount
+        VideoRules.digit(e.keyCode)?.let { d ->
+            if (down && rc == 0) jumpToPercent(d)
+            return true
+        }
         when (e.keyCode) {
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
-                if (!down) { if (!controlsVisible) showControls() else { togglePlay(); showControls() } }
+                if (!down) when {
+                    !controlsVisible -> showControls()
+                    videoRow -> { pressVideoButton(VideoRules.Button.entries[videoSel]); showControls() }
+                    else -> { togglePlay(); showControls() }
+                }
                 return true
             }
             KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, KeyEvent.KEYCODE_MEDIA_PLAY, KeyEvent.KEYCODE_MEDIA_PAUSE,
@@ -1382,8 +1505,17 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
                 if (down && rc == 0) mediaKey(e.keyCode)
                 return true
             }
+            KeyEvent.KEYCODE_CHANNEL_UP, KeyEvent.KEYCODE_PAGE_UP, KeyEvent.KEYCODE_CHANNEL_DOWN, KeyEvent.KEYCODE_PAGE_DOWN -> {
+                val sign = if (e.keyCode == KeyEvent.KEYCODE_CHANNEL_UP || e.keyCode == KeyEvent.KEYCODE_PAGE_UP) 1 else -1
+                if (down && rc == 0) { queueSeek(sign * VideoRules.SKIP_SECONDS, 400); showControls() }
+                return true
+            }
             KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_RIGHT -> {
                 val sign = if (e.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) 1 else -1
+                if (videoRow) {
+                    if (down) { videoSel = VideoRules.move(videoSel, sign); showControls() }
+                    return true
+                }
                 when {
                     !down -> settleSeek()
                     // Every press counts; while held, every 3rd repeat (~8 steps/s) with a growing step.
@@ -1391,17 +1523,67 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
                 }
                 return true
             }
-            KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN -> { if (down) showControls(); return true }
+            KeyEvent.KEYCODE_DPAD_DOWN -> {
+                if (down && rc == 0) {
+                    // Down goes straight to the buttons (Play / Pause selected), showing the controls if they were hidden.
+                    if (!videoRow) { videoRow = true; videoSel = VideoRules.firstButton }
+                    showControls()
+                }
+                return true
+            }
+            KeyEvent.KEYCODE_DPAD_UP -> {
+                if (down) { videoRow = false; showControls() }
+                return true
+            }
         }
         return false // volume and other system keys keep working
+    }
+
+    /** Seconds one Left / Right press (and the ±10 buttons) jump: the Seek step setting. */
+    val seekStepSeconds: Int get() = app.store.int(K.SEEK_STEP)
+
+    private fun pressVideoButton(b: VideoRules.Button) {
+        val step = app.store.int(K.SEEK_STEP)
+        when (b) {
+            VideoRules.Button.Back -> queueSeek(-step, 300)
+            VideoRules.Button.Play -> togglePlay()
+            VideoRules.Button.Forward -> queueSeek(step, 300)
+            VideoRules.Button.Skip -> queueSeek(VideoRules.SKIP_SECONDS, 300)
+            VideoRules.Button.Speed -> applySpeed(VideoRules.nextSpeed(speed))
+            VideoRules.Button.Exit -> exitFullscreen()
+        }
+    }
+
+    private fun applySpeed(rate: Double) {
+        speed = rate
+        runVideo("if($rate>=0.25&&$rate<=4)b.playbackRate=$rate;", "rate", rate)
+        flash(app.s(R.string.vid_speed_now, VideoRules.speedLabel(rate)))
+    }
+
+    /** A number key: 0 = the start, 5 = halfway, 9 = 90 % (as on YouTube). */
+    private fun jumpToPercent(digit: Int) {
+        handler.removeCallbacks(commitSeek)
+        pendingSeek = 0
+        seekPreview = null
+        val dur = video?.duration ?: 0.0
+        val target = VideoRules.percentTarget(digit, dur)
+        if (dur <= 0 || target == null) { flash(app.s(R.string.vid_live)); return }
+        runVideo("if(isFinite(b.duration)&&b.duration>0)b.currentTime=b.duration*${digit * 10}/100;", "pct", digit * 10)
+        flash(app.s(R.string.vid_jump_pct, digit * 10, fmtTime(target)), null, hold = true)
+        showControls()
+    }
+
+    private val hideControls = Runnable {
+        controlsVisible = false
+        videoRow = false
     }
 
     private fun showControls() {
         controlsVisible = true
         lastControls = SystemClock.uptimeMillis()
-        handler.postDelayed({
-            if (SystemClock.uptimeMillis() - lastControls >= 3900) controlsVisible = false
-        }, 4000)
+        handler.removeCallbacks(hideControls)
+        // A little longer while a button is selected: the viewer is reading the row.
+        handler.postDelayed(hideControls, if (videoRow) 6000 else 4000)
     }
 
     fun exitFullscreen() {
@@ -1413,7 +1595,11 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
     private val poll = object : Runnable {
         override fun run() {
             if (customView == null) return
-            runVideo("", done = { trackProgress(it) })
+            runVideo("", done = {
+                trackProgress(it)
+                // Players reset the speed when they load the next episode or an ad: keep the one the viewer chose.
+                if (speed != 1.0 && kotlin.math.abs(it.rate - speed) > 0.01 && !it.buffering) runVideo("b.playbackRate=$speed;", "rate", speed)
+            })
             handler.postDelayed(this, 600)
         }
     }
@@ -1494,8 +1680,10 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
         handler.post(poll)
     }
 
-    private companion object {
-        const val HOLD_MS = 220L
+    companion object {
+        /** Whether this TV's web engine can darken pages (Settings and the Site panel say so when it can't). */
+        val darkSupported: Boolean by lazy { runCatching { WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING) }.getOrDefault(false) }
+        private const val HOLD_MS = 220L
         /** Lists the visible clickable elements (links, buttons, inputs, anything with a pointer cursor) in view pixels. */
         const val TARGETS_JS = """(function(){try{var de=document.documentElement,v=window.visualViewport,s=(v&&v.scale>0)?v.scale:1,ox=v?(+v.offsetLeft||0):0,oy=v?(+v.offsetTop||0):0,
 d=(window.devicePixelRatio||1)*s,W=(v&&v.width>0)?v.width:(de.clientWidth||+window.innerWidth||0),H=(v&&v.height>0)?v.height:(de.clientHeight||+window.innerHeight||0),out=[],seen={};
@@ -1532,6 +1720,7 @@ return 'ok';})()"""
     init {
         webView.webViewClient = client
         webView.webChromeClient = chrome
+        webView.setFindListener { active, count, done -> findIndex = active; findCount = count; findDone = done }
         // Run the overlay sweeper before any page script, so click-catchers never get a first click.
         if (WebViewFeature.isFeatureSupported(WebViewFeature.DOCUMENT_START_SCRIPT)) {
             runCatching {

@@ -14,8 +14,10 @@ data class SiteOverride(
     val adblock: Boolean? = null,
     /** true = pointer mode, false = link-to-link mode. */
     val pointer: Boolean? = null,
+    /** true = show this site dark, false = never darken it. */
+    val dark: Boolean? = null,
 ) {
-    val isEmpty: Boolean get() = desktop == null && zoom == null && adblock == null && pointer == null
+    val isEmpty: Boolean get() = desktop == null && zoom == null && adblock == null && pointer == null && dark == null
 }
 
 object SiteSettings {
@@ -31,6 +33,7 @@ object SiteSettings {
         o.zoom?.let { put("z", it) }
         o.adblock?.let { put("a", it) }
         o.pointer?.let { put("p", it) }
+        o.dark?.let { put("k", it) }
     }
 
     fun fromJson(j: JSONObject): SiteOverride = SiteOverride(
@@ -38,6 +41,7 @@ object SiteSettings {
         zoom = if (j.has("z")) j.optInt("z").takeIf { it in 50..300 } else null,
         adblock = if (j.has("a")) j.optBoolean("a") else null,
         pointer = if (j.has("p")) j.optBoolean("p") else null,
+        dark = if (j.has("k")) j.optBoolean("k") else null,
     )
 
     fun parseAll(json: String): Map<String, SiteOverride> = try {

@@ -46,7 +46,7 @@ A short arrow press jumps to the next link or button; hold to glide. Every scree
 <td width="33%" valign="top">
 
 **🎬 Video first**<br>
-Fullscreen controls for any HTML5 video, even inside another site's player iframe. Seek by holding ← / →.
+Fullscreen controls for any HTML5 video, even inside another site's player iframe: seek, skip 30 s, speed, 0–9 to jump.
 
 </td>
 <td width="33%" valign="top">
@@ -79,9 +79,10 @@ Up to five people plus a guest, each with their own history and sign-ins, option
 </table>
 
 > [!NOTE]
-> **Latest: [v0.9.3](https://github.com/newhalo/luna-browser/releases/latest).** The snapping pointer now only jumps to
-> links close by, lands exactly on them even on zoomed pages, and scrolls the page only at the screen edge. 0.9.1 brought the
-> *snapping pointer*, 0.9.0 *private tabs* and smarter address typing. Every release: [CHANGELOG.md](CHANGELOG.md).
+> **Latest: [v0.10.0](https://github.com/newhalo/luna-browser/releases/latest).** New video controls (speed, skip 30 s,
+> number keys jump like on YouTube), **split screen**, **find on page**, address suggestions, optional **dark pages**,
+> hidden cookie banners and a count of what was blocked on each page. 0.9.3 tamed the *snapping pointer*, 0.9.0 brought
+> *private tabs*. Every release: [CHANGELOG.md](CHANGELOG.md).
 
 ## Features
 
@@ -112,11 +113,27 @@ Any HTML5 video gets big, readable fullscreen controls, **even when the player s
 as on many video sites. Hold **←** / **→** to seek: the jump grows (10 s → 30 s → 60 s), is previewed on the bar and sent
 as **one** seek, so the stream doesn't reload at every step.
 
+**↓** opens a row of buttons: −10 s, play / pause, +10 s, **skip 30 s**, **speed** (0.5× to 2×, kept for the next
+episode) and exit. The **number keys** jump like on YouTube: **5** is halfway, **0** the start. **CH+ / CH−** skip 30 s.
+
 **Continue where you left off:** videos of three minutes or more remember their position, fullscreen or inline, and
 Home shows them with a progress bar.
 
 </td>
-<td width="55%"><img src="docs/screenshots/04-video-seek-preview.jpg" alt="Fullscreen video with the seek target previewed on the progress bar"></td>
+<td width="55%"><img src="docs/screenshots/28-video-controls.jpg" alt="Fullscreen video controls: title on top, times and seek bar, and a row of buttons with the speed set to 1.25×"></td>
+</tr>
+</table>
+
+### Split screen and find on page
+
+<table>
+<tr>
+<td width="50%"><img src="docs/screenshots/29-split-screen.jpg" alt="Two Wikipedia pages side by side; the left half, which gets the keys, has a bright frame"></td>
+<td width="50%"><img src="docs/screenshots/30-find-on-page.jpg" alt="Find on page: the word Blender highlighted, match 3 of 27 shown at the top right"></td>
+</tr>
+<tr>
+<td valign="top"><b>Split screen</b> (toolbar <i>Split</i>): two tabs side by side, a video next to an article or two pages to compare. The framed half gets the keys; switch with the <b>blue</b> key, the toolbar, or by pushing the pointer across the middle.</td>
+<td valign="top"><b>Find on page</b> (toolbar <i>Find</i>): type a word, then <b>↑ / ↓</b> step through the matches. Back closes.</td>
 </tr>
 </table>
 
@@ -164,17 +181,22 @@ weak TVs). Add the optional frosted **Glass look**, pick a thumbnail size for Ho
 **Browsing**
 - Streaming-style **home screen**: animated background, a backdrop that follows the focused card, real thumbnails of
   what you opened, *continue watching*, your most-used sites, favourites, clock and **voice search**.
-- Floating two-row **toolbar** (address; Back, Forward, Refresh, Home, Tabs, Save, pointer mode, This site, Settings),
-  History, Favourites, clear error screens (offline, DNS, timeout, TLS).
+- Floating two-row **toolbar** (address with what was blocked on the page, Find, Split; Back, Forward, Refresh, Home, Tabs,
+  Save, Read, pointer mode, This site, Settings), History, Favourites, clear error screens (offline, DNS, timeout, TLS).
+- **Suggestions while typing** from your open tabs, favourites and history, matched without accents ("phim" finds
+  "Phím"). Worked out on the TV: nothing you type is sent anywhere.
+- **Dark pages** (off by default; *Settings → Browsing*, or per site): the web engine darkens pages that have no dark look of
+  their own.
 - Type a site without `www` or `https` and it still opens: Luna retries `www.`, plain http, or searches.
-- **Per-site settings** (toolbar *Site*): desktop mode, text size, ad blocking and pointer mode for one site, plus
+- **Per-site settings** (toolbar *Site*): desktop mode, text size, ad blocking, dark page and pointer mode for one site, plus
   **Report a problem** with a QR code that opens a pre-filled GitHub report.
 
 **Privacy and safety**
 - **Private tabs**: no history, video position, thumbnail or saved tab; own sign-ins (on a recent web engine) until the
   last private tab closes.
 - **Ad, tracker and pop-up blocking** with Adblock Plus / uBlock Origin syntax, lists refreshed daily
-  ([docs/ADBLOCK.md](docs/ADBLOCK.md)).
+  ([docs/ADBLOCK.md](docs/ADBLOCK.md)). The toolbar shows how much was blocked on the page.
+- **Cookie banners hidden** without accepting anything (on by default, *Settings → Ad blocking*).
 - No accounts, analytics or telemetry ([Privacy](#privacy)). Guest mode erases itself, even after a crash.
 
 **Made for TV**
@@ -217,11 +239,14 @@ favourites are kept. Store plans: [docs/PUBLISHING.md](docs/PUBLISHING.md).
 
 | Key | On a web page | In fullscreen video |
 |---|---|---|
-| **D-pad** | short press: jump to the next nearby link or button that way (scrolls when there is none close by); hold: move freely, settle on a link on release; **Up** at the very top opens the toolbar | **← / →** seek (hold to accelerate) |
+| **D-pad** | short press: jump to the next nearby link or button that way (scrolls when there is none close by); hold: move freely, settle on a link on release; **Up** at the very top opens the toolbar | **← / →** seek (hold to accelerate); **↓** the buttons (−10 s, play, +10 s, skip 30 s, speed, exit) |
+| **0–9** | — | jump to 0–90 % of the video |
+| **CH+ / CH−** | scroll the page | skip 30 s forward / back |
+| **Blue** key | split screen: the other half gets the keys | — |
 | **OK** | click | show controls, then play / pause |
 | Hold **OK** | switch pointer ⇄ link-focus mode | — |
 | **Menu** / **Info** | show / hide the toolbar | same |
-| **Back** | close toolbar → previous page → Home → exit | hide controls → leave fullscreen |
+| **Back** | close toolbar → find bar → previous page → Home → exit | leave the buttons → hide controls → leave fullscreen |
 | Hold **Back** | open the toolbar (for remotes without Menu) | leave fullscreen, open toolbar |
 | Play/Pause, ⏪ ⏩ | control the page's video | same |
 

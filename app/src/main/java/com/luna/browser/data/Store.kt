@@ -191,6 +191,10 @@ object K {
     const val ASK_PROFILE = "askProfile"
     /** Text size of the reading page: an index into [com.luna.browser.browser.ReaderMode.sizes]. */
     const val READER_SIZE = "readerSize"
+    /** Show every page dark (the web engine darkens pages that have no dark look of their own). Off by default. */
+    const val DARK_PAGES = "darkPages"
+    /** Hide cookie-consent banners (without accepting anything). */
+    const val COOKIE_BANNERS = "cookieBanners"
 }
 
 /** Languages the UI is translated into (code to its own name, never translated). Keep in sync with res/xml/locales_config.xml. */
@@ -243,6 +247,7 @@ class Store(ctx: Context) {
         K.TILE_SIZE to TileSize.LARGE, K.HISTORY_VIEW to "list",
         K.UPDATE_CHECK to "true", K.UPDATE_LAST to "0", K.UPDATE_LATEST to "", K.UPDATE_URL to "",
         K.PROFILE to ProfileRules.DEFAULT, K.ASK_PROFILE to "false", K.READER_SIZE to "1",
+        K.DARK_PAGES to "false", K.COOKIE_BANNERS to "true",
     )
 
     val settings = mutableStateMapOf<String, String>().apply {
@@ -376,6 +381,10 @@ class Store(ctx: Context) {
     fun desktopFor(url: String) = overrideFor(url).desktop ?: bool(K.DESKTOP)
     fun zoomFor(url: String) = overrideFor(url).zoom ?: int(K.ZOOM)
     fun adblockFor(url: String) = overrideFor(url).adblock ?: bool(K.ADBLOCK)
+    fun darkFor(url: String) = overrideFor(url).dark ?: bool(K.DARK_PAGES)
+
+    /** How often the active profile opened [host] (for ranking address suggestions). */
+    fun visitsOf(host: String): Int = visits[host] ?: 0
     fun pointerFor(url: String): Boolean? = overrideFor(url).pointer
 
     var lastSession by mutableStateOf(readSites(pk("last")).firstOrNull())

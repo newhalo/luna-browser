@@ -29,6 +29,12 @@
 | **Profile PIN:** four digits with the remote's number keys or the on-screen pad | The picker opens first when the remembered profile has a PIN |
 | ![Home in a private tab](screenshots/27-private-tab.jpg) | ![Home settings](screenshots/16-settings-home.jpg) |
 | **Private tab:** *Private* next to the search bar; the greeting says what is not kept | **Home settings:** first screen, *Continue watching* and thumbnail size |
+| ![Fullscreen video controls with the button row](screenshots/28-video-controls.jpg) | ![Split screen with two pages](screenshots/29-split-screen.jpg) |
+| **Video controls:** **↓** selects the buttons: −10 s, play, +10 s, skip 30 s, speed, exit; **0–9** jump to 0–90 % | **Split screen** (toolbar *Split*): the framed half gets the keys; blue key or the pointer pushed across switches |
+| ![Find on page](screenshots/30-find-on-page.jpg) | ![A page shown dark](screenshots/31-dark-page.jpg) |
+| **Find on page** (toolbar *Find*): **↑ / ↓** step through the matches | **Dark pages** (Settings → Browsing, or per site) |
+| ![Address suggestions](screenshots/32-suggestions.jpg) | |
+| **Suggestions** from open tabs, favourites and history while typing | |
 
 ![Themes: Luna, Dusk, Forest, Ocean, Night sky, Graphite](screenshots/25-themes.jpg)
 
