@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Fixed
+- The pointer no longer jumps over thin seek bars in a page's own video player. Seek bars are often only a few pixels tall, so they were not counted as clickable. Range inputs, `role=slider`, `<progress>` and seek / scrub / timeline bars on pages with a video are now targets with a taller hit area; up / down land on the bar at the pointer's own position, and left / right slide along it instead of jumping to the next button.
+
 ## [0.10.1] - 2026-11-18
 
 ### Changed
