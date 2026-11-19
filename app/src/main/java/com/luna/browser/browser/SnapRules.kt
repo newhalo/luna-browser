@@ -39,6 +39,18 @@ object SnapRules {
         return floatArrayOf(b[0].toFloat(), b[1].toFloat(), b[2].toFloat(), b[3].toFloat())
     }
 
+    /** A seek bar / slider (flag 2 or 3 in the fifth value): the pointer moves along it instead of jumping off it. */
+    fun isSlider(r: IntArray) = r.size > 4 && r[4] >= 2
+
+    /** The slider under the point, or null. */
+    fun sliderAt(list: List<IntArray>, x: Float, y: Float): IntArray? =
+        list.filter { isSlider(it) && x >= it[0] && x <= it[2] && y >= it[1] && y <= it[3] }
+            .minByOrNull { (it[2] - it[0]).toLong() * (it[3] - it[1]) }
+
+    /** Where the pointer lands on [r]: a slider keeps the pointer's own x (clamped to the bar), anything else its centre. */
+    fun landing(r: IntArray, x: Float): FloatArray =
+        floatArrayOf(if (isSlider(r)) x.coerceIn(r[0].toFloat(), r[2].toFloat()) else (r[0] + r[2]) / 2f, (r[1] + r[3]) / 2f)
+
     /** The item a press of [dir] should move to, or null when nothing lies in the zone that way. */
     fun pick(list: List<IntArray>, x: Float, y: Float, dir: Int, viewW: Int, viewH: Int, density: Float): IntArray? {
         val o = origin(list, x, y)
@@ -66,7 +78,7 @@ object SnapRules {
             val minor = if (horizontal) max(0f, max(t - o[3], o[1] - b)) else max(0f, max(l - o[2], o[0] - rr))
             if (major > reach || minor > side) continue
             // Floating buttons ("back to top", chat bubbles) stay on screen everywhere: reachable only from their own row or column.
-            if (r.size > 4 && r[4] == 1 && minor > 16 * density) continue
+            if (r.size > 4 && (r[4] and 1) == 1 && minor > 16 * density) continue
             val offset = if (horizontal) abs((t + b) / 2 - (o[1] + o[3]) / 2) else abs((l + rr) / 2 - (o[0] + o[2]) / 2)
             val score = major + 3f * minor + 0.3f * offset + (if (minor > 0f) 24 * density else 0f)
             if (score < bestScore) { bestScore = score; best = r }

@@ -1172,8 +1172,18 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     private fun jumpTo(code: Int, retry: Boolean, fromY: Float? = null) {
         if (viewW == 0 || !cursorMode) return
         queryTargets { list ->
+            if (code == KeyEvent.KEYCODE_DPAD_LEFT || code == KeyEvent.KEYCODE_DPAD_RIGHT) {
+                // On a seek bar, left / right slide along it (about 4% of its length) rather than jump to a neighbour.
+                val bar = SnapRules.sliderAt(list, cursorX, fromY ?: cursorY)
+                if (bar != null) {
+                    val step = maxOf((bar[2] - bar[0]) * 0.04f, 12 * density)
+                    val nx = cursorX + (if (code == KeyEvent.KEYCODE_DPAD_RIGHT) step else -step)
+                    placeCursor(nx.coerceIn(bar[0].toFloat(), bar[2].toFloat()), cursorY)
+                    return@queryTargets
+                }
+            }
             val best = pickTarget(list, cursorX, fromY ?: cursorY, code)
-            if (best != null) { placeCursor((best[0] + best[2]) / 2f, (best[1] + best[3]) / 2f); return@queryTargets }
+            if (best != null) { val p = SnapRules.landing(best, cursorX); placeCursor(p[0], p[1]); return@queryTargets }
             val vertical = code == KeyEvent.KEYCODE_DPAD_UP || code == KeyEvent.KEYCODE_DPAD_DOWN
             if (code == KeyEvent.KEYCODE_DPAD_UP && !webView.canScrollVertically(-1)) {
                 if (cursorY <= 2f || list.isEmpty()) showToolbar() else placeCursor(cursorX, 0f)
@@ -1232,7 +1242,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
                 val d = kotlin.math.hypot(ddx, ddy)
                 if (d < bd || (d == bd && area < ba)) { bd = d; ba = area; best = r }
             }
-            best?.let { placeCursor((it[0] + it[2]) / 2f, (it[1] + it[3]) / 2f) }
+            best?.let { val p = SnapRules.landing(it, cursorX); placeCursor(p[0], p[1]) }
         }
     }
 
@@ -1690,16 +1700,23 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
         /** Lists the visible clickable elements (links, buttons, inputs, anything with a pointer cursor) in view pixels. */
         const val TARGETS_JS = """(function(){try{var de=document.documentElement,v=window.visualViewport,s=(v&&v.scale>0)?v.scale:1,ox=v?(+v.offsetLeft||0):0,oy=v?(+v.offsetTop||0):0,
 d=(window.devicePixelRatio||1)*s,W=(v&&v.width>0)?v.width:(de.clientWidth||+window.innerWidth||0),H=(v&&v.height>0)?v.height:(de.clientHeight||+window.innerHeight||0),out=[],seen={};
-function ok(e){var b=e.getBoundingClientRect();if(b.width<8||b.height<8)return;
-var cr=e.getClientRects();if(cr.length>1){var ba=0;for(var z=0;z<cr.length;z++){var c=cr[z],ca=c.width*c.height;if(ca>ba&&c.bottom>oy&&c.top<oy+H){ba=ca;b=c;}}if(b.width<8||b.height<8)return;}
-var l=Math.max(b.left,ox),t=Math.max(b.top,oy),r=Math.min(b.right,ox+W),bt=Math.min(b.bottom,oy+H);if(r-l<8||bt-t<8)return;
-var h=document.elementFromPoint((l+r)/2,(t+bt)/2);if(!h||!(h===e||e.contains(h)))return;
+var hasVid=!!document.querySelector('video');
+function sl(e){if(e.tagName==='INPUT')return e.type==='range';if(e.tagName==='PROGRESS'||e.getAttribute('role')==='slider')return true;
+return hasVid&&/seek|scrub|progress|timeline|slider/i.test((typeof e.className==='string'?e.className:'')+' '+(e.id||''));}
+function ok(e,sk){var b=e.getBoundingClientRect(),thin=0;
+if(sk&&b.width>=80&&b.height<8&&b.height>=1){thin=1;}else if(b.width<8||b.height<8)return;
+var cr=e.getClientRects();if(!thin&&cr.length>1){var ba=0;for(var z=0;z<cr.length;z++){var c=cr[z],ca=c.width*c.height;if(ca>ba&&c.bottom>oy&&c.top<oy+H){ba=ca;b=c;}}if(b.width<8||b.height<8)return;}
+var l=Math.max(b.left,ox),t=Math.max(b.top,oy),r=Math.min(b.right,ox+W),bt=Math.min(b.bottom,oy+H);if(r-l<(thin?40:8)||bt-t<(thin?1:8))return;
+if(thin||(sk&&bt-t<28)){var mid=(t+bt)/2;t=mid-14;bt=mid+14;if(t<oy)t=oy;if(bt>oy+H)bt=oy+H;}
+var h=document.elementFromPoint((l+r)/2,(t+bt)/2);if(!h||!(h===e||e.contains(h)||(sk&&e.parentElement&&e.parentElement.contains(h)&&h!==document.body&&h!==de)))return;
 var s=getComputedStyle(e);if(s.visibility==='hidden'||s.pointerEvents==='none'||parseFloat(s.opacity)<0.05)return;
 var hr=e.href;if(hr&&typeof hr==='string'){var pr=seen[hr]||(seen[hr]=[]);for(var u=0;u<pr.length;u++){var q=pr[u];if(Math.max(q[0]-r,l-q[2],0)<40&&Math.max(q[1]-bt,t-q[3],0)<40)return;}pr.push([l,t,r,bt]);}
 var f=0;for(var n=e,k=0;n&&k<8;n=n.parentElement,k++){if(getComputedStyle(n).position==='fixed'){f=1;break;}}
-out.push([Math.round((l-ox)*d),Math.round((t-oy)*d),Math.round((r-ox)*d),Math.round((bt-oy)*d),f]);}
-var q=document.querySelectorAll('a[href],button,input:not([type=hidden]),select,textarea,summary,label[for],[role=button],[role=link],[role=tab],[role=menuitem],[role=checkbox],[onclick],[tabindex]:not([tabindex="-1"])');
-for(var i=0;i<q.length&&out.length<250;i++)ok(q[i]);
+out.push([Math.round((l-ox)*d),Math.round((t-oy)*d),Math.round((r-ox)*d),Math.round((bt-oy)*d),sk?2+f:f]);}
+var q=document.querySelectorAll('a[href],button,input:not([type=hidden]),select,textarea,summary,label[for],[role=button],[role=link],[role=tab],[role=menuitem],[role=checkbox],[role=slider],progress,[onclick],[tabindex]:not([tabindex="-1"])');
+for(var i=0;i<q.length&&out.length<250;i++)ok(q[i],sl(q[i]));
+if(hasVid){var sq=document.querySelectorAll('[class*=seek],[class*=scrub],[class*=progress],[class*=timeline],[class*=slider]');
+for(var y=0;y<sq.length&&y<60&&out.length<250;y++){if(sl(sq[y]))ok(sq[y],true);}}
 if(out.length<250){var c=document.querySelectorAll('div,span,li,img,td,svg');var n=0;
 for(var j=0;j<c.length&&n<1200&&out.length<250;j++){var e=c[j];var b=e.getBoundingClientRect();if(b.bottom<oy||b.top>oy+H||b.right<ox||b.left>ox+W)continue;n++;
 if(getComputedStyle(e).cursor!=='pointer')continue;var p=e.parentElement;if(p&&getComputedStyle(p).cursor==='pointer')continue;if(e.closest('a[href],button'))continue;ok(e);}}

@@ -76,4 +76,22 @@ class SnapRulesTest {
         assertArrayEquals(floatArrayOf(200f, 200f, 300f, 250f), SnapRules.origin(listOf(card, button), 250f, 220f), 0f)
         assertArrayEquals(floatArrayOf(50f, 60f, 50f, 60f), SnapRules.origin(listOf(card), 50f, 60f), 0f)
     }
+
+    @Test fun upFromTheControlsLandsOnTheSeekBarAtThePointersX() {
+        val bar = r(100, 990, 1820, 1018, 2)                 // a 28 px tall (inflated) seek bar
+        val play = r(100, 1030, 160, 1070)
+        val list = listOf(bar, play)
+        val to = pick(list, 130, 1050, SnapRules.UP)!!
+        assertArrayEquals(bar, to)
+        assertArrayEquals(floatArrayOf(130f, 1004f), SnapRules.landing(to, 130f), 0f)
+        assertArrayEquals(floatArrayOf(100f, 1004f), SnapRules.landing(to, 20f), 0f)
+    }
+
+    @Test fun sliderIsFoundUnderThePointer() {
+        val bar = r(100, 990, 1820, 1018, 3)
+        val btn = r(100, 1030, 160, 1070)
+        assertArrayEquals(bar, SnapRules.sliderAt(listOf(btn, bar), 900f, 1000f))
+        assertNull(SnapRules.sliderAt(listOf(btn, bar), 900f, 1050f))
+        assertNull(SnapRules.sliderAt(listOf(btn), 130f, 1050f))
+    }
 }
