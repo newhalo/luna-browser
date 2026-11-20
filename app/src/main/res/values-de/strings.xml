@@ -398,7 +398,7 @@
     <string name="priv_shared">Die Web-Engine dieses Systems kann private Anmeldungen nicht trennen: Cookies dieses Tabs bleiben wie sonst erhalten. Verlauf und Videopositionen werden trotzdem nicht gespeichert.</string>
     <string name="err_ssl_proceed">Trotzdem öffnen (unsicher)</string>
     <string name="set_snap">Zeiger rastet auf Links ein</string>
-    <string name="set_snap_d">Ein kurzer Druck auf eine Pfeiltaste springt zum nächsten Link oder Button in dieser Richtung. Pfeiltaste gedrückt halten, um den Zeiger frei zu bewegen.</string>
+    <string name="set_snap_d">Ein kurzer Druck auf eine Pfeiltaste verschiebt den Zeiger um wenige Pixel, um kleine Elemente wie eine Zeitleiste zu erreichen. Pfeiltaste gedrückt halten, um in dieser Richtung von Link zu Link zu springen.</string>
     <string name="vid_speed_now">Tempo %s</string>
     <string name="vid_jump_pct">Gesprungen zu %1$d%% · %2$s</string>
     <string name="vid_btn_back">−%d s</string>

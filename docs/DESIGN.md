@@ -65,7 +65,7 @@ artwork or brand gradient), `SiteIcon`, `EmptyState`, `ToastHost`, `Aurora`, `Ba
 
 | Key | Page (cursor mode) | Fullscreen video |
 |---|---|---|
-| D-pad | Short press: the pointer jumps to the next nearby link or button in that direction, same row / column first, only within a zone around the pointer (`SnapRules`; setting *Snap pointer to links*), else scrolls; hold: move freely (accelerates) and snap to a nearby link on release; push at the top/bottom edge to scroll; Up at the very top opens the toolbar | Left / Right seek (hold to accelerate); Down selects the button row (−10 s, play, +10 s, skip 30 s, speed, exit: Left / Right move, OK presses, Up returns); 0–9 jump to 0–90 %; CH+ / CH− skip 30 s |
+| D-pad | Short press: nudge the pointer 8 dp; hold (after 0.22 s): jump to the next nearby link or button in that direction, same row / column first, only within a zone around the pointer (`SnapRules`; setting *Snap pointer to links*), else scroll, repeating every 0.4 s while held; with snapping off, hold moves freely (accelerates); push at the top/bottom edge to scroll; Up at the very top opens the toolbar | Left / Right seek (hold to accelerate); Down selects the button row (−10 s, play, +10 s, skip 30 s, speed, exit: Left / Right move, OK presses, Up returns); 0–9 jump to 0–90 %; CH+ / CH− skip 30 s |
 | OK | Click | First press shows controls, then play / pause |
 | Hold OK | Switch cursor ⇄ link-focus mode | — |
 | Menu / Info / Bookmark | Toggle the floating toolbar | Toggle toolbar |

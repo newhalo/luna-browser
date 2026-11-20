@@ -394,7 +394,7 @@
     <string name="priv_shared">Công cụ web của hệ thống này không tách được đăng nhập ẩn danh: cookie của tab này được giữ như thường. Lịch sử và vị trí video vẫn không được lưu.</string>
     <string name="err_ssl_proceed">Vẫn mở (không an toàn)</string>
     <string name="set_snap">Con trỏ tự bắt vào liên kết</string>
-    <string name="set_snap_d">Nhấn nhanh mũi tên để con trỏ nhảy tới liên kết hoặc nút gần nhất theo hướng đó. Giữ mũi tên để di chuyển tự do.</string>
+    <string name="set_snap_d">Nhấn nhanh mũi tên để nhích con trỏ một chút, dùng để chạm tới vật nhỏ như thanh tua. Giữ mũi tên để nhảy từ liên kết này sang liên kết khác theo hướng đó.</string>
     <string name="vid_speed_now">Tốc độ %s</string>
     <string name="vid_jump_pct">Đã tới %1$d%% · %2$s</string>
     <string name="vid_btn_back">−%d giây</string>

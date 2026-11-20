@@ -398,7 +398,7 @@
     <string name="priv_shared">El motor web de este sistema no puede separar los inicios de sesión privados: las cookies de esta pestaña se conservan como las normales. El historial y las posiciones de vídeo siguen sin guardarse.</string>
     <string name="err_ssl_proceed">Abrir de todos modos (no seguro)</string>
     <string name="set_snap">El puntero salta a los enlaces</string>
-    <string name="set_snap_d">Una pulsación corta de una flecha lleva el puntero al enlace o botón más cercano en esa dirección. Mantén la flecha para moverlo libremente.</string>
+    <string name="set_snap_d">Una pulsación corta de una flecha mueve el puntero unos píxeles, para alcanzar cosas pequeñas como una barra de progreso. Mantén la flecha para saltar de enlace en enlace en esa dirección.</string>
     <string name="vid_speed_now">Velocidad %s</string>
     <string name="vid_jump_pct">Saltó al %1$d%% · %2$s</string>
     <string name="vid_btn_back">−%d s</string>

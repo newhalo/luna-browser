@@ -419,7 +419,7 @@
     <string name="priv_shared">This system\'s web engine can\'t keep private sign-ins apart: cookies from this tab are kept like normal ones. History and video positions are still not saved.</string>
     <string name="err_ssl_proceed">Open anyway (not secure)</string>
     <string name="set_snap">Snap pointer to links</string>
-    <string name="set_snap_d">A short press of an arrow jumps the pointer to the nearest link or button in that direction. Hold an arrow to move it freely.</string>
+    <string name="set_snap_d">A short press of an arrow nudges the pointer a few pixels, to reach small things like a seek bar. Hold an arrow to jump from link to link in that direction.</string>
     <string name="vid_speed_now">Speed %s</string>
     <string name="vid_jump_pct">Jumped to %1$d%% · %2$s</string>
     <string name="vid_btn_back">−%d s</string>

@@ -394,7 +394,7 @@
     <string name="priv_shared">このシステムのWebエンジンはプライベートのログインを分離できません。このタブのCookieは通常どおり保持されます。履歴と動画の再生位置は引き続き保存されません。</string>
     <string name="err_ssl_proceed">安全でないまま開く</string>
     <string name="set_snap">ポインターをリンクに吸着</string>
-    <string name="set_snap_d">矢印キーを短く押すと、その方向で最も近いリンクやボタンにポインターが移動します。長押しで自由に動かせます。</string>
+    <string name="set_snap_d">矢印キーを短く押すと、ポインターが少しだけ動き、シークバーのような小さな対象にも届きます。長押しすると、その方向のリンクへ次々に移動します。</string>
     <string name="vid_speed_now">速度 %s</string>
     <string name="vid_jump_pct">%1$d%% へ移動 · %2$s</string>
     <string name="vid_btn_back">−%d 秒</string>

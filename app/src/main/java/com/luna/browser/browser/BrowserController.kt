@@ -299,6 +299,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         held.clear()
         pendingCode = 0
         handler.removeCallbacks(startHold)
+        stopJumping()
         toolbarVisible = false
         if (sitePanel) hideSitePanel()
         if (customView != null) exitFullscreen()
@@ -1077,9 +1078,8 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             lastTick = now
             val dx = (if (KeyEvent.KEYCODE_DPAD_RIGHT in held) 1 else 0) - (if (KeyEvent.KEYCODE_DPAD_LEFT in held) 1 else 0)
             val dy = (if (KeyEvent.KEYCODE_DPAD_DOWN in held) 1 else 0) - (if (KeyEvent.KEYCODE_DPAD_UP in held) 1 else 0)
-            // Ramps up to 4x over 1.5 s; with snapping the first moments are slow (0.4x) so small nudges are easy.
-            val accel = if (snapOn) 0.4f + min((now - heldSince) / 1000f * 2.4f, 3.6f) else 1f + min((now - heldSince) / 1000f * 2f, 3f)
-            freeDist += kotlin.math.hypot(dx.toFloat(), dy.toFloat()) * (max(viewW, 960) / 1920f) * (250 + 150 * app.store.int(K.CURSOR_SPEED)) * accel * dt
+            // Ramps up to 4x over 1.5 s.
+            val accel = 1f + min((now - heldSince) / 1000f * 2f, 3f)
             val base = (250 + 150 * app.store.int(K.CURSOR_SPEED)) * (max(viewW, 960) / 1920f)
             moveCursor(dx * base * accel * dt, dy * base * accel * dt)
             handler.postDelayed(this, 16)
@@ -1089,12 +1089,10 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     private fun handleCursorKey(e: KeyEvent): Boolean {
         val code = e.keyCode
         if (e.action == KeyEvent.ACTION_UP) {
-            if (code == pendingCode) { handler.removeCallbacks(startHold); pendingCode = 0; jumpTo(code, true); return true }
-            if (held.remove(code) && held.isEmpty() && freeMoved) {
-                freeMoved = false
-                // A small nudge is a deliberate fine adjustment: leave the pointer exactly where it is.
-                if (freeDist > 90 * density) snapToNearby()
-            }
+            // A short press was already a nudge; releasing just ends a pending hold or the repeating jumps.
+            if (code == pendingCode) { handler.removeCallbacks(startHold); pendingCode = 0 }
+            if (code == jumpCode) stopJumping()
+            held.remove(code)
             return true
         }
         if (e.repeatCount > 0 || code in held || code == pendingCode) return true
@@ -1104,10 +1102,17 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             return true
         }
         if (snapOn) {
-            // A short press jumps to the nearest clickable item in that direction; holding moves the pointer freely.
-            if (pendingCode != 0) { handler.removeCallbacks(startHold); beginHold() }
-            if (held.isEmpty() && pendingCode == 0) { pendingCode = code; handler.postDelayed(startHold, HOLD_MS); return true }
-            held.add(code)
+            // A short press nudges the pointer a few pixels, so small targets (seek bars) can be reached by hand;
+            // holding the arrow jumps from link to link in that direction, repeating while it stays down.
+            handler.removeCallbacks(startHold)
+            stopJumping()
+            val nudge = 8 * density
+            moveCursor(
+                nudge * ((if (code == KeyEvent.KEYCODE_DPAD_RIGHT) 1 else 0) - (if (code == KeyEvent.KEYCODE_DPAD_LEFT) 1 else 0)),
+                nudge * ((if (code == KeyEvent.KEYCODE_DPAD_DOWN) 1 else 0) - (if (code == KeyEvent.KEYCODE_DPAD_UP) 1 else 0)),
+            )
+            pendingCode = code
+            handler.postDelayed(startHold, HOLD_MS)
             return true
         }
         val wasEmpty = held.isEmpty()
@@ -1128,20 +1133,32 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     // ---- Pointer snapping ----
     private val snapOn get() = app.store.bool(K.SNAP)
     private var pendingCode = 0
-    private var freeMoved = false
-    private var freeDist = 0f
+    private var jumpCode = 0
+    private var jumpStart = 0L
     private val startHold = Runnable { beginHold() }
+    private val repeatJump = object : Runnable {
+        override fun run() {
+            // The key-up may never arrive (focus lost): stop on our own after a while, or when the toolbar opened.
+            if (jumpCode == 0 || !cursorMode || customView != null || toolbarVisible || SystemClock.uptimeMillis() - jumpStart > 10_000) { stopJumping(); return }
+            jumpTo(jumpCode, true)
+            handler.postDelayed(this, JUMP_REPEAT_MS)
+        }
+    }
 
-    /** The arrow stayed down: from now on the pointer moves freely. */
+    /** The arrow stayed down: jump to the next link that way now, and keep jumping while it is held. */
     private fun beginHold() {
         val c = pendingCode
         pendingCode = 0
         if (c == 0 || !cursorMode || customView != null) return
-        val first = held.isEmpty()
-        held.add(c)
-        freeMoved = true
-        if (first) freeDist = 0f
-        if (first) { heldSince = SystemClock.uptimeMillis(); lastTick = heldSince; handler.post(ticker) }
+        jumpCode = c
+        jumpStart = SystemClock.uptimeMillis()
+        jumpTo(c, true)
+        handler.postDelayed(repeatJump, JUMP_REPEAT_MS)
+    }
+
+    private fun stopJumping() {
+        jumpCode = 0
+        handler.removeCallbacks(repeatJump)
     }
 
     /** Clickable things on screen, as [left, top, right, bottom, fixed] in view pixels; the answer arrives on the main thread. */
@@ -1225,25 +1242,6 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             else -> SnapRules.UP
         }
         return SnapRules.pick(list, cx, cy, dir, viewW, viewH, density)
-    }
-
-    /** After free movement: if the pointer stopped on or right next to a clickable item, centre it on that item. */
-    private fun snapToNearby() {
-        queryTargets { list ->
-            var best: IntArray? = null
-            var bd = 36 * density
-            var ba = Long.MAX_VALUE
-            val big = viewW.toLong() * viewH / 4
-            for (r in list) {
-                val area = (r[2] - r[0]).toLong() * (r[3] - r[1])
-                if (area > big) continue
-                val ddx = maxOf(r[0] - cursorX, 0f, cursorX - r[2])
-                val ddy = maxOf(r[1] - cursorY, 0f, cursorY - r[3])
-                val d = kotlin.math.hypot(ddx, ddy)
-                if (d < bd || (d == bd && area < ba)) { bd = d; ba = area; best = r }
-            }
-            best?.let { val p = SnapRules.landing(it, cursorX); placeCursor(p[0], p[1]) }
-        }
     }
 
     // ---- Phone touchpad ----
@@ -1697,6 +1695,7 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
         /** Whether this TV's web engine can darken pages (Settings and the Site panel say so when it can't). */
         val darkSupported: Boolean by lazy { runCatching { WebViewFeature.isFeatureSupported(WebViewFeature.ALGORITHMIC_DARKENING) }.getOrDefault(false) }
         private const val HOLD_MS = 220L
+        private const val JUMP_REPEAT_MS = 420L
         /** Lists the visible clickable elements (links, buttons, inputs, anything with a pointer cursor) in view pixels. */
         const val TARGETS_JS = """(function(){try{var de=document.documentElement,v=window.visualViewport,s=(v&&v.scale>0)?v.scale:1,ox=v?(+v.offsetLeft||0):0,oy=v?(+v.offsetTop||0):0,
 d=(window.devicePixelRatio||1)*s,W=(v&&v.width>0)?v.width:(de.clientWidth||+window.innerWidth||0),H=(v&&v.height>0)?v.height:(de.clientHeight||+window.innerHeight||0),out=[],seen={};

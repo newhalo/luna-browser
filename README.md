@@ -93,9 +93,10 @@ Up to five people plus a guest, each with their own history and sign-ins, option
 <td width="55%"><img src="docs/screenshots/03-web-cursor.jpg" alt="The on-screen pointer resting on a link of a Wikipedia page"></td>
 <td valign="top">
 
-A **short press** of an arrow jumps the pointer to the next link or button close by in that direction, and scrolls when
-there is none nearby (also sideways, for rows of episodes), so it never flies across the page. **Hold** an arrow to move freely: it accelerates, scrolls at the edge and
-settles on a nearby link when you let go. **OK** clicks.
+A **short press** of an arrow nudges the pointer a few pixels, so small things like a video's seek bar can be reached
+by hand. **Hold** an arrow to jump from link to link in that direction (repeating while it is down, nothing farther than
+a zone around the pointer, scrolling when there is none nearby, also sideways for rows of episodes). On a seek bar, holding
+Left / Right slides along it. **OK** clicks.
 
 Prefer the classic way? Hold **OK** for link-to-link focus, or switch snapping off in Settings.
 
@@ -240,7 +241,7 @@ favourites are kept. Store plans: [docs/PUBLISHING.md](docs/PUBLISHING.md).
 
 | Key | On a web page | In fullscreen video |
 |---|---|---|
-| **D-pad** | short press: jump to the next nearby link or button that way (scrolls when there is none close by); hold: move freely, settle on a link on release; **Up** at the very top opens the toolbar | **← / →** seek (hold to accelerate); **↓** the buttons (−10 s, play, +10 s, skip 30 s, speed, exit) |
+| **D-pad** | short press: nudge the pointer a few pixels; hold: jump to the next nearby link or button that way, repeating (scrolls when there is none close by); **Up** at the very top opens the toolbar | **← / →** seek (hold to accelerate); **↓** the buttons (−10 s, play, +10 s, skip 30 s, speed, exit) |
 | **0–9** | — | jump to 0–90 % of the video |
 | **CH+ / CH−** | scroll the page | skip 30 s forward / back |
 | **Blue** key | split screen: the other half gets the keys | — |

@@ -6,6 +6,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+### Changed
+- With *Snap pointer to links* on, a short press of an arrow now nudges the pointer a few pixels, and holding the arrow jumps from link to link (repeating while held). Before, it was the other way round, which made small targets such as a page player's seek bar hard to reach. On a seek bar, holding Left / Right slides along it.
+
 ## [0.10.2] - 2026-11-19
 
 ### Fixed

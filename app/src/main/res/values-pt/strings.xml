@@ -398,7 +398,7 @@
     <string name="priv_shared">O mecanismo web deste sistema não consegue separar logins anônimos: os cookies desta aba são mantidos como os normais. O histórico e as posições de vídeo continuam sem ser salvos.</string>
     <string name="err_ssl_proceed">Abrir mesmo assim (inseguro)</string>
     <string name="set_snap">Ponteiro salta para links</string>
-    <string name="set_snap_d">Um toque curto numa seta leva o ponteiro ao link ou botão mais próximo nessa direção. Mantenha a seta premida para mover livremente.</string>
+    <string name="set_snap_d">Um toque curto numa seta move o ponteiro alguns pixels, para alcançar coisas pequenas como a barra de progresso. Mantenha a seta premida para saltar de link em link nessa direção.</string>
     <string name="vid_speed_now">Velocidade %s</string>
     <string name="vid_jump_pct">Foi para %1$d%% · %2$s</string>
     <string name="vid_btn_back">−%d s</string>
