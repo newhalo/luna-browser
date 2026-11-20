@@ -6,6 +6,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ## [Unreleased]
 
+## [0.10.3] - 2026-11-20
+
 ### Changed
 - With *Snap pointer to links* on, a short press of an arrow now nudges the pointer a few pixels, and holding the arrow jumps from link to link (repeating while held). Before, it was the other way round, which made small targets such as a page player's seek bar hard to reach. On a seek bar, holding Left / Right slides along it.
 - Holding an arrow on top of a video or a player frame (whose own controls Luna cannot see, they often live in another site's frame), or with no link nearby, now moves the pointer freely and accelerating instead of stepping.
