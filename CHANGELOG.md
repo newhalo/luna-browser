@@ -8,6 +8,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 
 ### Changed
 - With *Snap pointer to links* on, a short press of an arrow now nudges the pointer a few pixels, and holding the arrow jumps from link to link (repeating while held). Before, it was the other way round, which made small targets such as a page player's seek bar hard to reach. On a seek bar, holding Left / Right slides along it.
+- Holding an arrow on top of a video or a player frame (whose own controls Luna cannot see, they often live in another site's frame), or with no link nearby, now moves the pointer freely and accelerating instead of stepping.
+
+### Added
+- Number keys jump the video in the page to that tenth (0 = start, 5 = halfway), like in fullscreen, unless a text field has the focus. The play / pause and rewind / forward keys already worked in the page.
+- More player sliders are recognised as targets: volume bars and the progress bars of the common player kits (Video.js, Plyr, JW Player, MediaElement, DPlayer, xgplayer).
 
 ## [0.10.2] - 2026-11-19
 

@@ -96,7 +96,8 @@ Up to five people plus a guest, each with their own history and sign-ins, option
 A **short press** of an arrow nudges the pointer a few pixels, so small things like a video's seek bar can be reached
 by hand. **Hold** an arrow to jump from link to link in that direction (repeating while it is down, nothing farther than
 a zone around the pointer, scrolling when there is none nearby, also sideways for rows of episodes). On a seek bar, holding
-Left / Right slides along it. **OK** clicks.
+Left / Right slides along it; on top of a video or player frame, holding moves the pointer freely (its controls are
+often out of reach for Luna). **OK** clicks. Number keys jump a video in the page to 0–90 %.
 
 Prefer the classic way? Hold **OK** for link-to-link focus, or switch snapping off in Settings.
 

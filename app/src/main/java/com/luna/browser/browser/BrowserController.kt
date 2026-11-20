@@ -1025,6 +1025,9 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             if (down) findNext(code == KeyEvent.KEYCODE_DPAD_DOWN)
             return true
         }
+        // A number key jumps the page's video to that tenth (0 = start), unless a text field has the focus; the key is
+        // not consumed, so typing into a field and the page's own shortcuts still work.
+        if (!reader && down && e.repeatCount == 0) VideoRules.digit(code)?.let { pageDigit(it) }
         when (code) {
             KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE, KeyEvent.KEYCODE_MEDIA_PLAY, KeyEvent.KEYCODE_MEDIA_PAUSE,
             KeyEvent.KEYCODE_MEDIA_FAST_FORWARD, KeyEvent.KEYCODE_MEDIA_REWIND -> {
@@ -1140,7 +1143,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         override fun run() {
             // The key-up may never arrive (focus lost): stop on our own after a while, or when the toolbar opened.
             if (jumpCode == 0 || !cursorMode || customView != null || toolbarVisible || SystemClock.uptimeMillis() - jumpStart > 10_000) { stopJumping(); return }
-            jumpTo(jumpCode, true)
+            jumpTo(jumpCode, true, hold = true)
             handler.postDelayed(this, JUMP_REPEAT_MS)
         }
     }
@@ -1152,8 +1155,29 @@ class BrowserController(private val activity: Activity, private val app: AppStat
         if (c == 0 || !cursorMode || customView != null) return
         jumpCode = c
         jumpStart = SystemClock.uptimeMillis()
-        jumpTo(c, true)
-        handler.postDelayed(repeatJump, JUMP_REPEAT_MS)
+        // On a video or a player frame the page's own controls can't be listed (they may live in another site's iframe),
+        // so the hold moves the pointer freely there; elsewhere it jumps, and moves freely when nothing is near.
+        webView.evaluateJavascript(overPlayerJs(), { r ->
+            if (jumpCode != c) return@evaluateJavascript
+            if (r == "true") freeMove(c) else { jumpTo(c, true, hold = true); handler.postDelayed(repeatJump, JUMP_REPEAT_MS) }
+        })
+    }
+
+    /** The arrow is still down and there is nothing to jump to: move the pointer freely (accelerating) until it is released. */
+    private fun freeMove(code: Int) {
+        if (jumpCode != code) return
+        stopJumping()
+        if (!cursorMode || customView != null || code in held) return
+        val first = held.isEmpty()
+        held.add(code)
+        if (first) { heldSince = SystemClock.uptimeMillis(); lastTick = heldSince; handler.post(ticker) }
+    }
+
+    private fun overPlayerJs(): String {
+        val x = cursorX; val y = cursorY
+        return "(function(){try{var v=window.visualViewport,s=(v&&v.scale>0)?v.scale:1,d=(window.devicePixelRatio||1)*s,ox=v?(+v.offsetLeft||0):0,oy=v?(+v.offsetTop||0):0;" +
+            "var h=document.elementFromPoint($x/d+ox,$y/d+oy);if(!h)return false;var t=h.tagName;" +
+            "return t==='VIDEO'||t==='IFRAME'||t==='OBJECT'||t==='EMBED';}catch(e){return false;}})()"
     }
 
     private fun stopJumping() {
@@ -1186,7 +1210,7 @@ class BrowserController(private val activity: Activity, private val app: AppStat
     }
 
     /** Short press: move the pointer onto the nearest clickable item in the arrow's direction. */
-    private fun jumpTo(code: Int, retry: Boolean, fromY: Float? = null) {
+    private fun jumpTo(code: Int, retry: Boolean, fromY: Float? = null, hold: Boolean = false) {
         if (viewW == 0 || !cursorMode) return
         queryTargets { list ->
             if (code == KeyEvent.KEYCODE_DPAD_LEFT || code == KeyEvent.KEYCODE_DPAD_RIGHT) {
@@ -1201,6 +1225,8 @@ class BrowserController(private val activity: Activity, private val app: AppStat
             }
             val best = pickTarget(list, cursorX, fromY ?: cursorY, code)
             if (best != null) { val p = SnapRules.landing(best, cursorX); placeCursor(p[0], p[1]); return@queryTargets }
+            // Held and nothing near: carry on moving freely instead of stepping or scrolling.
+            if (hold && jumpCode == code && !(code == KeyEvent.KEYCODE_DPAD_UP && cursorY <= 2f)) { freeMove(code); return@queryTargets }
             val vertical = code == KeyEvent.KEYCODE_DPAD_UP || code == KeyEvent.KEYCODE_DPAD_DOWN
             if (code == KeyEvent.KEYCODE_DPAD_UP && !webView.canScrollVertically(-1)) {
                 if (cursorY <= 2f || list.isEmpty()) showToolbar() else placeCursor(cursorX, 0f)
@@ -1472,6 +1498,17 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
         return if (t >= 3600) "%d:%02d:%02d".format(t / 3600, (t % 3600) / 60, t % 60) else "%d:%02d".format(t / 60, t % 60)
     }
 
+    private fun pageDigit(d: Int) {
+        val guard = "var a=document.activeElement;while(a&&a.shadowRoot&&a.shadowRoot.activeElement)a=a.shadowRoot.activeElement;" +
+            "if(a&&(/^(INPUT|TEXTAREA|SELECT)\$/.test(a.tagName)||a.isContentEditable))return null;"
+        webView.evaluateJavascript("(function(){$guard return ${videoJs("if(isFinite(b.duration)&&b.duration>0)b.currentTime=b.duration*${d * 10}/100;", "pct", d * 10)};})()") { r ->
+            val st = parse(r) ?: return@evaluateJavascript
+            if (st.duration <= 0) return@evaluateJavascript
+            video = st
+            app.toast(app.s(R.string.vid_jump_pct, d * 10, fmtTime(st.duration * d / 10)))
+        }
+    }
+
     private fun mediaKey(code: Int) {
         val step = app.store.int(K.SEEK_STEP)
         when (code) {
@@ -1701,7 +1738,8 @@ return [b.paused,b.currentTime||0,isFinite(b.duration)?b.duration:0,(b.readyStat
 d=(window.devicePixelRatio||1)*s,W=(v&&v.width>0)?v.width:(de.clientWidth||+window.innerWidth||0),H=(v&&v.height>0)?v.height:(de.clientHeight||+window.innerHeight||0),out=[],seen={};
 var hasVid=!!document.querySelector('video');
 function sl(e){if(e.tagName==='INPUT')return e.type==='range';if(e.tagName==='PROGRESS'||e.getAttribute('role')==='slider')return true;
-return hasVid&&/seek|scrub|progress|timeline|slider/i.test((typeof e.className==='string'?e.className:'')+' '+(e.id||''));}
+if(!hasVid||!/seek|scrub|progress|timeline|slider|volume|vjs-|plyr__|jw-|mejs__|dplayer-|xgplayer/i.test((typeof e.className==='string'?e.className:'')+' '+(e.id||'')))return false;
+var r=e.getBoundingClientRect();return r.height<=48&&r.width>=80;}
 function ok(e,sk){var b=e.getBoundingClientRect(),thin=0;
 if(sk&&b.width>=80&&b.height<8&&b.height>=1){thin=1;}else if(b.width<8||b.height<8)return;
 var cr=e.getClientRects();if(!thin&&cr.length>1){var ba=0;for(var z=0;z<cr.length;z++){var c=cr[z],ca=c.width*c.height;if(ca>ba&&c.bottom>oy&&c.top<oy+H){ba=ca;b=c;}}if(b.width<8||b.height<8)return;}
@@ -1714,8 +1752,8 @@ var f=0;for(var n=e,k=0;n&&k<8;n=n.parentElement,k++){if(getComputedStyle(n).pos
 out.push([Math.round((l-ox)*d),Math.round((t-oy)*d),Math.round((r-ox)*d),Math.round((bt-oy)*d),sk?2+f:f]);}
 var q=document.querySelectorAll('a[href],button,input:not([type=hidden]),select,textarea,summary,label[for],[role=button],[role=link],[role=tab],[role=menuitem],[role=checkbox],[role=slider],progress,[onclick],[tabindex]:not([tabindex="-1"])');
 for(var i=0;i<q.length&&out.length<250;i++)ok(q[i],sl(q[i]));
-if(hasVid){var sq=document.querySelectorAll('[class*=seek],[class*=scrub],[class*=progress],[class*=timeline],[class*=slider]');
-for(var y=0;y<sq.length&&y<60&&out.length<250;y++){if(sl(sq[y]))ok(sq[y],true);}}
+if(hasVid){var sq=document.querySelectorAll('[class*=seek],[class*=scrub],[class*=progress],[class*=timeline],[class*=slider],[class*=volume],[class*=vjs-],[class*=plyr__],[class*=jw-],[class*=mejs__],[class*=dplayer-],[class*=xgplayer]');
+for(var y=0;y<sq.length&&y<120&&out.length<250;y++){if(sl(sq[y]))ok(sq[y],true);}}
 if(out.length<250){var c=document.querySelectorAll('div,span,li,img,td,svg');var n=0;
 for(var j=0;j<c.length&&n<1200&&out.length<250;j++){var e=c[j];var b=e.getBoundingClientRect();if(b.bottom<oy||b.top>oy+H||b.right<ox||b.left>ox+W)continue;n++;
 if(getComputedStyle(e).cursor!=='pointer')continue;var p=e.parentElement;if(p&&getComputedStyle(p).cursor==='pointer')continue;if(e.closest('a[href],button'))continue;ok(e);}}
